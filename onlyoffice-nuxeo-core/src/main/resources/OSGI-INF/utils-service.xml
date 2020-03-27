@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.utils.Utils" version="1.0">
+
+  <implementation class="org.onlyoffice.utils.UtilsImpl" />
+
+  <service>
+    <provide interface="org.onlyoffice.utils.Utils" />
+  </service>
+</component>

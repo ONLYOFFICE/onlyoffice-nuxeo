@@ -1,0 +1,12 @@
+<link rel="import" href="onlyoffice-editor.html">
+<link rel="import" href="onlyoffice-settings.html">
+
+<nuxeo-slot-content name="onlyoffice-edit" slot="DOCUMENT_ACTIONS" order="-100">
+    <template>
+        <nuxeo-filter document="[[document]]" type="File" permission="Read">
+            <template>
+                <onlyoffice-editor document="[[document]]"></onlyoffice-editor>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>

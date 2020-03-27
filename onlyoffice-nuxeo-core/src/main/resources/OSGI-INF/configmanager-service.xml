@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.utils.ConfigManager" version="1.0">
+
+  <implementation class="org.onlyoffice.utils.ConfigManagerImpl" />
+
+  <service>
+    <provide interface="org.onlyoffice.utils.ConfigManager" />
+  </service>
+</component>
