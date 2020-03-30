@@ -16,6 +16,16 @@
     <!-- append the translations -->
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages.json"
       to="nuxeo.war/ui/i18n/messages.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-de.json"
+      to="nuxeo.war/ui/i18n/messages-de.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-es.json"
+      to="nuxeo.war/ui/i18n/messages-es.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-fr.json"
+      to="nuxeo.war/ui/i18n/messages-fr.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-it.json"
+      to="nuxeo.war/ui/i18n/messages-it.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-ru.json"
+      to="nuxeo.war/ui/i18n/messages-ru.json"/>
 
     <delete path="${bundle.fileName}.tmp"/>
   </install>
