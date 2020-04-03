@@ -49,7 +49,7 @@ If you used other installation options, check the [API documentation](https://ap
 
 ## Compiling Nuxeo ONLYOFFICE plugin
 
-To build Nuxeo plugin, the following steps must be performed for Ubuntu 14.04:
+To build Nuxeo plugin, the following steps must be performed for Ubuntu:
 
 1. The stable Java version is necessary for the successful build. If you do not have it installed, use the following commands to install Open JDK 8:
     ```bash
