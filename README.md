@@ -43,6 +43,9 @@ Edit [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index-nux
 onlyoffice.docserv.url=http://documentserver/
 onlyoffice.jwt.secret=
 ```
+If you used Docker to install ONLYOFFICE Document Server, use information from [this repo](https://github.com/ONLYOFFICE/Docker-DocumentServer/#available-configuration-parameters) to configure JWT.
+
+If you used other installation options, check the [API documentation](https://api.onlyoffice.com/editors/signature/) for configuring JWT on the Document Server side.  
 
 ## Compiling Nuxeo ONLYOFFICE plugin
 
