@@ -75,7 +75,7 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 ## How it works
 
-The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/editors/basic):
+The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/editors/basic). 
 
 ## ONLYOFFICE Document Server editions 
 
