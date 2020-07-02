@@ -1,0 +1,72 @@
+<link rel="import" href="onlyoffice-behavior.html">
+
+<dom-module id="onlyoffice-editor">
+    <template>
+        <template is="dom-if" if="[[_isAvailable(document)]]">
+            <div class="action" on-click="_openEditor">
+                <paper-icon-button src="[[icon]]" noink></paper-icon-button>
+                <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+            </div>
+            <paper-tooltip>[[i18n(label)]]</paper-tooltip>
+        </template>
+    </template>
+    <script>
+        Polymer({
+            is: 'onlyoffice-editor',
+            behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior, Nuxeo.ONLYOFFICE],
+            properties: {
+                label: {
+                    type: String,
+                    value: ''
+                },
+
+                showLabel: {
+                    type: Boolean,
+                    value: false
+                },
+
+                icon: {
+                    type: String,
+                    value: '../site/skin/onlyedit/icon_32.png'
+                },
+
+                editor: {
+                    type: Object
+                },
+
+                writable: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            _isAvailable: function(document) {
+                if (!this.getBlob(document)) return false;
+
+                this.writable = this.hasPermission(document, 'Write');
+                this.label = (this.writable && this.canEdit()) ? 'label.onlyoffice.edit' : 'label.onlyoffice.view';
+
+                return true;
+            },
+
+            _openEditor: function() {
+                this.editor = window.open(this.getEditUrl(this.writable && this.canEdit()), '_blank');
+                this.async(this._editorClosed, 1500);
+            },
+
+            _editorClosed: function() {
+                if (!this.editor) return;
+                if (this.editor.closed) {
+                    this.editor = null;
+                    this.async(this._refresh, 10500);
+                } else {
+                    this.async(this._editorClosed, 1500);
+                }
+            },
+
+            _refresh: function() {
+                this.fire('document-updated');
+            }
+        });
+    </script>
+</dom-module>
