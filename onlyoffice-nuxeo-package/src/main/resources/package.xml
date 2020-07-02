@@ -1,8 +1,8 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
 <package type="addon" name="onlyoffice-nuxeo" version="@VERSION@">
-  <title>ONLYOFFICE Nuxeo</title>
+  <title>Nuxeo ONLYOFFICE Connector</title>
   <description>
-    <p>Put here an HTML description of your Nuxeo Package.</p>
+    <p>With ONLYOFFICE online editors connected to Nuxeo via the official integration app, you will have at your disposal a powerful feature set that allows editing and seamlessly collaborating on text documents, spreadsheets, and presentations, highly compatible with Microsoft Office and OpenDocument file formats.</p>
   </description>
   <!-- <home-page>http://doc.nuxeo.com/</home-page> -->
   <vendor>ONLYOFFICE</vendor>
@@ -11,9 +11,9 @@
   <!-- <hotreload-support>false</hotreload-support> -->
   <!-- <require-terms-and-conditions-acceptance>false</require-terms-and-conditions-acceptance> -->
   <!-- Nuxeo Validation: none | inprocess | primary_validation | nuxeo_certified -->
-  <nuxeo-validation>none</nuxeo-validation>
+  <nuxeo-validation>nuxeo_certified</nuxeo-validation>
   <!-- Production State: production_ready | testing | proto -->
-  <production-state>testing</production-state>
+  <production-state>production_ready</production-state>
   <supported>false</supported>
   <platforms>
     <platform>server-@DISTRIB_VERSION@</platform>
@@ -38,5 +38,5 @@
   <license></license>
   <license-url></license-url>
   <!-- Visibility: PRIVATE | MARKETPLACE | DEV | PUBLIC -->
-  <visibility>DEV</visibility>
+  <visibility>PUBLIC</visibility>
 </package>
