@@ -1,0 +1,50 @@
+Nuxeo ONLYOFFICE integration plugin uses code from the following 3rd party projects:
+
+
+javax.servlet-api     - Java Servlet API (https://opensource.org/licenses/CDDL-1.0 https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+License:                CDDL, GPL 2.0
+License File:           javax.servlet-api.license
+
+jersey-core           - Jersey Core (https://oss.oracle.com/licenses/CDDL+GPL-1.1)
+License:                CDDL+GPL 1.1
+License File:           jersey-core.license
+
+maven-compiler-plugin - The Compiler Plugin is used to compile the sources of your project. (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           maven-compiler-plugin.license
+
+maven-jar-plugin      - Builds a Java Archive (JAR) file from the compiled project classes and resources. (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           maven-jar-plugin.license
+
+maven-surefire-plugin - Maven Surefire MOJO in maven-surefire-plugin. (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           maven-surefire-plugin.license
+
+nuxeo-automation-core - Automation Framework and Core Operations (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-automation-core.license
+
+nuxeo-distribution    - Build package distributions of nuxeo applications (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-distribution.license
+
+nuxeo-nxr-server      - Nuxeo Server NXR (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-nxr-server.license
+
+nuxeo-platform-login-token - Nuxeo Login Module For Token Authentication (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-platform-login-token.license
+
+nuxeo-runtime         - Nuxeo Runtime: The Nuxeo Runtime. (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-runtime.license
+
+nuxeo-webengine-core  - WebEngine's core services and model. (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           nuxeo-webengine-core.license
+
+surefire-junit47      - SureFire JUnitCore (JUnit 4.7+) Runner (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           surefire-junit47.license
