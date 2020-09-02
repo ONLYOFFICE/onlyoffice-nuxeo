@@ -82,7 +82,7 @@ The ONLYOFFICE integration follows the API documented [here](https://api.onlyoff
 ONLYOFFICE offers different versions of its online document editors that can be deployed on your own servers.
 
 * Community Edition (`onlyoffice-documentserver` package)
-* Integration Edition (`onlyoffice-documentserver-ie` package)
+* Enterprise Edition (`onlyoffice-documentserver-ie` package)
 
 The table below will help you make the right choice.
 
