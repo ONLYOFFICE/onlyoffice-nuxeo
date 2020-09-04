@@ -128,8 +128,8 @@ The table below will help you make the right choice.
 | Object insertion                | + | + |
 | Functions, formulas, equations  | + | + |
 | Table templates                 | + | + |
-| Pivot tables                    | -** | + |
-| Conditional formatting  for viewing | +*** | +** |
+| Pivot tables                    | + | + |
+| Conditional formatting  for viewing | +** | +** |
 | **Presentation Editor features** | **Community Edition** | **Enterprise Edition** |
 | Font and paragraph formatting   | + | + |
 | Object insertion                | + | + |
@@ -139,7 +139,5 @@ The table below will help you make the right choice.
 | | [Get it now](https://www.onlyoffice.com/download.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubNuxeo)  | [Start Free Trial](https://www.onlyoffice.com/enterprise-edition-free.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubNuxeo)  |
 
 \* It's possible to add documents for comparison from your local drive and from URL. Adding files for comparison from storage is not available yet.
-
-\** In free version, pivot tables are supported for viewing, changing style and deleting
 
 \*** Support for all conditions and gradient. Adding/Editing capabilities are coming soon
