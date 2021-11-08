@@ -15,10 +15,10 @@
   <!-- Production State: production_ready | testing | proto -->
   <production-state>production_ready</production-state>
   <supported>false</supported>
-  <platforms>
-    <platform>server-@DISTRIB_VERSION@</platform>
-    <platform>server-@DISTRIB_VERSION@-HF*</platform>
-  </platforms>
+  <target-platform>
+    <name>lts</name>
+    <version>[@NUXEO_TARGET_VERSION@,)</version>
+  </target-platform>
   <!-- Dependencies on other packages -->
   <dependencies>
   <!-- <package>another-package:1.0.0:1.0.0</package> -->
