@@ -44,7 +44,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <nuxeo.target.version>2021</nuxeo.target.version>
+    <nuxeo.target.version>2019</nuxeo.target.version>
   </properties>
 
   <build>
