@@ -2,7 +2,7 @@
 <component name="org.onlyoffice.mimetypes">
     <extension point="mimetype" target="org.nuxeo.ecm.platform.mimetype.service.MimetypeRegistryService">
 
-        <mimetype binary="true" iconPath="docx.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        <mimetype binary="true" iconPath="docx.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document" oleSupported="true" onlineEditable="true">
             <mimetypes>
                 <mimetype>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mimetype>
             </mimetypes>
@@ -11,7 +11,7 @@
             </extensions>
         </mimetype>
 
-        <mimetype binary="true" iconPath="oform.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document.form">
+        <mimetype binary="true" iconPath="oform.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document.form" oleSupported="true" onlineEditable="true">
             <mimetypes>
                 <mimetype>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</mimetype>
             </mimetypes>
@@ -20,5 +20,24 @@
             </extensions>
         </mimetype>
 
+    </extension>
+
+    <extension point="MimeTypePreviewer" target="org.nuxeo.ecm.platform.preview.adapter.PreviewAdapterManagerComponent">
+        <previewer class="org.nuxeo.ecm.platform.preview.adapter.OfficePreviewer">
+            <pattern>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</pattern>
+        </previewer>
+    </extension>
+
+    <extension target="org.nuxeo.ecm.core.convert.service.ConversionServiceImpl" point="converter">
+        <converter name="any2pdf" class="org.nuxeo.ecm.platform.convert.plugins.LibreOfficeConverter" bypassIfSameMimeType="true">
+            <destinationMimeType>application/pdf</destinationMimeType>
+
+            <sourceMimeType>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</sourceMimeType>
+
+            <parameters>
+                <parameter name="CommandLineName">soffice</parameter>
+                <parameter name="format">pdf</parameter>
+            </parameters>
+        </converter>
     </extension>
 </component>
