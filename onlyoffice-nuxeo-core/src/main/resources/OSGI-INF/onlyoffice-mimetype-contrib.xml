@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.mimetypes">
+    <extension point="mimetype" target="org.nuxeo.ecm.platform.mimetype.service.MimetypeRegistryService">
+
+        <mimetype binary="true" iconPath="docx.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+            <mimetypes>
+                <mimetype>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mimetype>
+            </mimetypes>
+            <extensions>
+                <extension>docxf</extension>
+            </extensions>
+        </mimetype>
+
+    </extension>
+</component>
