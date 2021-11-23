@@ -39,5 +39,10 @@
                 <parameter name="format">pdf</parameter>
             </parameters>
         </converter>
+
+        <converter class="org.nuxeo.ecm.platform.thumbnail.converter.AnyToThumbnailConverter" name="anyToThumbnail">
+            <destinationMimeType>image/png</destinationMimeType>
+            <sourceMimeType>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</sourceMimeType>
+        </converter>
     </extension>
 </component>
