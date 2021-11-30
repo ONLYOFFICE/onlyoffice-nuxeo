@@ -11,5 +11,14 @@
             </extensions>
         </mimetype>
 
+        <mimetype binary="true" iconPath="oform.png" normalized="application/vnd.openxmlformats-officedocument.wordprocessingml.document.form">
+            <mimetypes>
+                <mimetype>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</mimetype>
+            </mimetypes>
+            <extensions>
+                <extension>oform</extension>
+            </extensions>
+        </mimetype>
+
     </extension>
 </component>
