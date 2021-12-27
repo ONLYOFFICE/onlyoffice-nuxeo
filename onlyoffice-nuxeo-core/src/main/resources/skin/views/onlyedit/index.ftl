@@ -48,8 +48,19 @@
 <body>
     <div id="placeholder"></div>
     <script>
-        var config = ${config};
-        new DocsAPI.DocEditor("placeholder", config);
+        var connectEditor = function () {
+            var config = ${config};
+
+            if ((config.document.fileType === "docxf" || config.document.fileType === "oform")
+                && DocsAPI.DocEditor.version().split(".")[0] < 7) {
+                alert("Please update ONLYOFFICE Docs to version 7.0 to work on fillable forms online.");
+                return;
+            }
+
+            new DocsAPI.DocEditor("placeholder", config);
+        }
+
+        connectEditor();
     </script>
 </body>
 </html>
