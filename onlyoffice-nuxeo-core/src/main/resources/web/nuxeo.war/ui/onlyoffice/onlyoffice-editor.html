@@ -44,13 +44,19 @@
                 if (!this.getBlob(document)) return false;
 
                 this.writable = this.hasPermission(document, 'Write');
-                this.label = (this.writable && this.canEdit()) ? 'label.onlyoffice.edit' : 'label.onlyoffice.view';
+                if (this.writable && this.canEdit()) {
+                    this.label = 'label.onlyoffice.edit';
+                } else if (this.writable && this.canFillForm()) {
+                    this.label = 'label.onlyoffice.fillForm';
+                } else {
+                    this.label ='label.onlyoffice.view';
+                }
 
                 return true;
             },
 
             _openEditor: function() {
-                this.editor = window.open(this.getEditUrl(this.writable && this.canEdit()), '_blank');
+                this.editor = window.open(this.getEditUrl(this.writable && (this.canEdit() || this.canFillForm())), '_blank');
                 this.async(this._editorClosed, 1500);
             },
 
