@@ -47,6 +47,14 @@
                     ]
                 },
 
+                fillFormTypes: {
+                    type: Array,
+                    readOnly: true,
+                    value: [
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document.form"
+                    ]
+                },
+
                 validTypes: {
                     type: Array,
                     readOnly: true,
@@ -61,6 +69,7 @@
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
                         "application/vnd.oasis.opendocument.text",
                         "application/pdf",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document.form",
 
                         "text/csv",
                         "application/vnd.ms-excel",
@@ -99,6 +108,10 @@
 
             canEdit: function() {
                 return this.editableTypes.indexOf(this.blob['mime-type']) >= 0;
+            },
+
+            canFillForm: function() {
+                return this.fillFormTypes.indexOf(this.blob['mime-type']) >= 0;
             },
 
             getBlob: function(document) {

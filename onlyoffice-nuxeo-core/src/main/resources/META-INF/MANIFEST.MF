@@ -2,7 +2,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Manifest-Version: 1.0
 Bundle-Vendor: org.onlyoffice
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.0
 Bundle-Name: onlyoffice-nuxeo-core
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-core;singleton=true
@@ -10,4 +10,5 @@ Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=onlyedit
 Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/jwtmanager-service.xml,
  OSGI-INF/configmanager-service.xml,
- OSGI-INF/web-contrib.xml
+ OSGI-INF/web-contrib.xml,
+ OSGI-INF/onlyoffice-mimetype-contrib.xml
