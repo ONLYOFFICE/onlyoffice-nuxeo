@@ -22,13 +22,7 @@
 
     </extension>
 
-    <extension point="MimeTypePreviewer" target="org.nuxeo.ecm.platform.preview.adapter.PreviewAdapterManagerComponent">
-        <previewer class="org.nuxeo.ecm.platform.preview.adapter.OfficePreviewer">
-            <pattern>application/vnd.openxmlformats-officedocument.wordprocessingml.document.form</pattern>
-        </previewer>
-    </extension>
-
-    <extension target="org.nuxeo.ecm.core.convert.service.ConversionServiceImpl" point="converter">
+    <extension point="converter" target="org.nuxeo.ecm.core.convert.service.ConversionServiceImpl">
         <converter name="any2pdf" class="org.nuxeo.ecm.platform.convert.plugins.LibreOfficeConverter" bypassIfSameMimeType="true">
             <destinationMimeType>application/pdf</destinationMimeType>
 
