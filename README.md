@@ -137,7 +137,6 @@ The table below will help you make the right choice.
 | Conditional formatting          | + | + |
 | Sparklines                   | + | + |
 | Sheet Views                     | + | + |
-| Sheet Views                     | - | + |
 | **Presentation Editor features** | **Community Edition** | **Enterprise Edition** |
 | Font and paragraph formatting   | + | + |
 | Object insertion                | + | + |
