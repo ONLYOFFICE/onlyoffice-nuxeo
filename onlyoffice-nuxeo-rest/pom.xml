@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.onlyoffice</groupId>
     <artifactId>onlyoffice-nuxeo-parent</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
   </parent>
   <artifactId>onlyoffice-nuxeo-rest</artifactId>
   <name>ONLYOFFICE Nuxeo Rest</name>
