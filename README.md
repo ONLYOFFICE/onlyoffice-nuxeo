@@ -38,14 +38,18 @@ nuxeoctl mp-install /path/to/onlyoffice-nuxeo-package-x.x.zip
 
 ## Configuring Nuxeo ONLYOFFICE integration plugin
 
-Edit [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index-nuxeoconf/) and add following lines:
+Open the [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index-nuxeoconf/) file and enter the name of the server with ONLYOFFICE Docs installed:
+
 ```
 onlyoffice.docserv.url=http://documentserver/
-onlyoffice.jwt.secret=
 ```
-If you used Docker to install ONLYOFFICE Document Server, use information from [this repo](https://github.com/ONLYOFFICE/Docker-DocumentServer/#available-configuration-parameters) to configure JWT.
+where the **documentserver** is the name of the server with **ONLYOFFICE Docs** installed. 
+The address must be accessible from the user browser and from the Nuxeo server. 
+The Nuxeo server address must also be accessible from **ONLYOFFICE Docs** for correct work.
 
-If you used other installation options, check the [API documentation](https://api.onlyoffice.com/editors/signature/) for configuring JWT on the Document Server side.  
+Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
+Specify your own secret key by adding the `onlyoffice.jwt.secret=yoursecret` line to the **nuxeo.conf** file. 
+In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
 
 ## Compiling Nuxeo ONLYOFFICE plugin
 
