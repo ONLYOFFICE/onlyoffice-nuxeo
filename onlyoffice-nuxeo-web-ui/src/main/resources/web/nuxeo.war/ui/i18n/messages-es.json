@@ -1,5 +1,10 @@
 {
     "label.onlyoffice.edit": "Editar en ONLYOFFICE",
     "label.onlyoffice.view": "Ver en ONLYOFFICE",
-    "label.onlyoffice.fillForm": "Rellenar el formulario en ONLYOFFICE"
+    "label.onlyoffice.fillForm": "Rellenar el formulario en ONLYOFFICE",
+    "label.onlyoffice.create": "Crear con ONLYOFFICE",
+    "label.onlyoffice.document.word": "Documento",
+    "label.onlyoffice.document.cell": "Hoja de cálculo",
+    "label.onlyoffice.document.slide": "Presentación",
+    "label.onlyoffice.document.form": "Plantilla de formulario"
 }

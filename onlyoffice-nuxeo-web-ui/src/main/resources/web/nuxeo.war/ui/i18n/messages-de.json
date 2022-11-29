@@ -1,5 +1,10 @@
 {
     "label.onlyoffice.edit": "Mit ONLYOFFICE bearbeiten",
     "label.onlyoffice.view": "Ansicht in ONLYOFFICE",
-    "label.onlyoffice.fillForm": "Formular in ONLYOFFICE ausfüllen"
+    "label.onlyoffice.fillForm": "Formular in ONLYOFFICE ausfüllen",
+    "label.onlyoffice.create": "In ONLYOFFICE erstellen",
+    "label.onlyoffice.document.word": "Dokument",
+    "label.onlyoffice.document.cell": "Tabelle",
+    "label.onlyoffice.document.slide": "Präsentation",
+    "label.onlyoffice.document.form": "Formularvorlage"
 }

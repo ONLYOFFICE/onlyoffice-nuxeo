@@ -1,0 +1,324 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2022
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<link rel="import" href="onlyoffice-create-behavior.html">
+
+<dom-module id="onlyoffice-create">
+    <template>
+        <style include="iron-flex iron-flex-alignment nuxeo-styles">
+            :host {
+                display: block;
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                --paper-dialog-scrollable: {
+                    padding: 0;
+                    overflow-x: hidden;
+                }
+            }
+
+            paper-dialog-scrollable {
+                display: block;
+                @apply --layout-flex;
+            }
+
+            .typeSelection {
+                margin: 1rem 0;
+                @apply --layout-wrap;
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+            }
+
+            .typeSelection paper-button {
+                min-width: 128px;
+                max-width: 128px;
+                height: 128px;
+                margin: 4px;
+                padding: 4px;
+                border: none;
+                text-align: center;
+                box-shadow: none;
+                background-color: var(--input-background, rgba(0, 0, 0, 0.05));
+                @apply --layout-vertical;
+                @apply --nuxeo-document-create-selection-button;
+            }
+
+            .typeSelection paper-button:hover {
+                color: var(--nuxeo-link-hover-color);
+                filter: brightness(102%);
+                -webkit-filter: brightness(102%);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3), 0 -3px 0 var(--nuxeo-link-hover-color) inset;
+            }
+
+            .typeIcon {
+                /* These variables are deprecated. Instead, use the mixin bellow */
+                width: var(--nuxeo-document-creation-form-icon-width, 42px);
+                height: var(--nuxeo-document-creation-form-icon-height, 42px);
+                @apply --nuxeo-document-create-selection-icon;
+            }
+
+            .typeLabel {
+                width: 100%;
+                margin-top: 1em;
+                overflow: hidden;
+                line-height: normal;
+                text-overflow: ellipsis;
+                text-align: center;
+                white-space: nowrap;
+                word-break: break-word;
+                @apply --nuxeo-document-create-selection-label;
+            }
+
+            .container {
+                margin: 0 2rem;
+                padding: 0;
+                display: inline-block;
+                @apply --layout-flex;
+                @apply --layout-vertical;
+            }
+
+            #form {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+            }
+
+            .heading {
+                font-size: 1.1rem;
+                padding: 1.7rem 2.5rem;
+            }
+
+            .heading iron-icon {
+                width: 1.2rem;
+                height: 1.2rem;
+                margin-right: 8px;
+            }
+
+            .buttons {
+                @apply --buttons-bar;
+            }
+
+            .error {
+                border-left: 4px solid var(--nuxeo-warn-text);
+                color: var(--nuxeo-text-default);
+                padding-left: 8px;
+            }
+
+            .suggester {
+                background-color: var(--input-background, rgba(0, 0, 0, 0.05));
+                padding: 8px 16px;
+                margin: 1rem 0;
+                z-index: 100;
+            }
+
+            .importing-label {
+                margin-right: 8px;
+            }
+
+            .vertical {
+                @apply --layout-flex;
+                @apply --layout-vertical;
+            }
+
+            iron-pages {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+            }
+
+            .docTypeButton.selected {
+                color: var(--nuxeo-link-hover-color);
+                filter: brightness(102%);
+                -webkit-filter: brightness(102%);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3), 0 -3px 0 var(--nuxeo-link-hover-color) inset;
+            }
+        </style>
+
+        <nuxeo-operation
+                id="opOnlyofficeCreate"
+                op="ONLYOFFICE.Create"
+                response="{{version}}"
+                sync-indexing
+        ></nuxeo-operation>
+
+        <iron-pages selected="edit" attr-for-selected="name">
+            <div name="edit" class="vertical layout flex">
+
+                <div class="horizontal layout heading center">
+                    <iron-icon src="images/doctypes/file.svg"></iron-icon>
+                    <span>[[_newDocumentLabel()]]</span>
+                </div>
+
+                <div id="editor" class="container">
+                    <paper-dialog-scrollable id="editScrollable">
+                        <div class="suggester">
+                            <nuxeo-path-suggestion
+                                    id="pathSuggesterEdit"
+                                    value="{{targetPath}}"
+                                    label="[[i18n('documentCreationForm.location')]]"
+                                    parent="{{suggesterParent}}"
+                                    children="{{suggesterChildren}}"
+                                    always-float-label
+                            ></nuxeo-path-suggestion>
+                            <span class$="horizontal layout [[_formatErrorMessage(errorMessage)]]">[[errorMessage]]</span>
+                        </div>
+
+                        <iron-form id="form">
+                            <form class="form vertical layout flex">
+                                <iron-a11y-keys keys="enter" on-keys-pressed="_submitKeyHandler"></iron-a11y-keys>
+                                <nuxeo-input
+                                        role="widget"
+                                        label="[[i18n('title')]]"
+                                        id="title"
+                                        name="title"
+                                        autofocus
+                                        required
+                                >
+                                </nuxeo-input>
+                                <div name="typeSelection" class="typeSelection">
+                                    <template is="dom-repeat" items="[[docTypes]]" as="type">
+                                        <paper-button
+                                                noink
+                                                name$="[[type]]"
+                                                class$="docTypeButton [[_isSelectedDocType(type, selectedDocType)]]"
+                                                on-tap="_selectDocType"
+                                                data-args$="[[type]]"
+                                                aria-label$="[[_getOnlyofficeTypeLabel(type)]]"
+                                        >
+                                            <iron-icon class="typeIcon" src="[[_getOnlyofficeTypeIcon(type)]]"></iron-icon>
+                                            <div class="typeLabel">[[_getOnlyofficeTypeLabel(type)]]</div>
+                                            <nuxeo-tooltip>[[_getOnlyofficeTypeLabel(type)]]</nuxeo-tooltip>
+                                        </paper-button>
+                                    </template>
+                                </div>
+                            </form>
+                        </iron-form>
+                    </paper-dialog-scrollable>
+                </div>
+
+                <div class="buttons horizontal end-justified layout">
+                    <div class="flex start-justified">
+                        <paper-button class="secondary" noink dialog-dismiss on-tap="_cancel" disabled$="[[creating]]">[[i18n('command.cancel')]]</paper-button>
+                    </div>
+                    <paper-button
+                            id="create"
+                            noink
+                            class="primary"
+                            on-tap="_create"
+                            disabled$="[[!_canCreate(canCreate, creating, selectedDocType)]]"
+                            aria-label$="[[i18n('command.create')]]"
+                    >
+                        <template is="dom-if" if="[[!creating]]">
+                            [[i18n('command.create')]]
+                        </template>
+                        <template is="dom-if" if="[[creating]]">
+                            <span class="importing-label">[[i18n('documentImport.creating')]]</span>
+                            <paper-spinner-lite active></paper-spinner-lite>
+                        </template>
+                    </paper-button>
+                </div>
+            </div>
+        </iron-pages>
+    </template>
+    <script>
+        Polymer({
+            is: 'onlyoffice-create',
+            behaviors: [
+                Nuxeo.I18nBehavior,
+                Nuxeo.NotifyBehavior,
+                Nuxeo.IronResizableBehavior,
+                Nuxeo.RoutingBehavior,
+                Nuxeo.ONLYOFFICECreateBehavior
+            ],
+
+            properties: {
+                visible: {
+                  type: Boolean,
+                },
+
+                creating: {
+                  type: Boolean,
+                  value: false,
+                  readOnly: true,
+                }
+            },
+
+            observers: ['_clear(visible)'],
+
+            _newDocumentLabel() {
+                return this.i18n('documentCreationForm.newDoc.heading', this.i18n('label.document.type.file'));
+            },
+
+            _getOnlyofficeTypeLabel(type) {
+                return this.i18n("label.onlyoffice.document." + type);
+            },
+
+            _getOnlyofficeTypeIcon(type) {
+                return "images/" + type + ".svg";
+            },
+
+            _isSelectedDocType(type) {
+                return type === this.selectedDocType ? "selected" : "";
+            },
+
+            _selectDocType(e) {
+                this.selectedDocType = e.model.type;
+            },
+
+            _canCreate() {
+                return this.canCreate && !this.creating && this.selectedDocType != null;
+            },
+
+            _create() {
+                this.$.opOnlyofficeCreate.params = {
+                    path: this.targetPath,
+                    title: this.$.title.value,
+                    type: this.selectedDocType,
+                    language: window.nuxeo.I18n.language || 'en'
+                };
+
+                this._setCreating(true);
+
+                const valid = this.$.form.validate();
+
+                if (!valid) {
+                    const nodes = this.$.form._getValidatableElements();
+                    const invalidField = nodes.find((node) => node.invalid);
+                    if (invalidField) {
+                      invalidField.scrollIntoView();
+                      invalidField.focus();
+                      this._setCreating(false);
+                      return;
+                    }
+                }
+                this.$.opOnlyofficeCreate.execute().then((res) => {
+                    document.location.href = "../site/onlyedit/" + res.value + "?mode=edit";
+                }).catch((err) => {
+                    this.fire("notify", { message: this.i18n("documentCreationForm.createError") });
+                }).finally(() => this._setCreating(false));
+            },
+
+            _cancel() {
+                this._clear();
+                this.fire('nx-creation-wizard-show-tabs');
+            },
+
+            _clear() {
+                this.selectedDocType = null;
+                this.$.title.value = '';
+            }
+        });
+    </script>
+</dom-module>

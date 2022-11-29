@@ -1,5 +1,10 @@
 {
     "label.onlyoffice.edit": "Modifier dans ONLYOFFICE",
     "label.onlyoffice.view": "Voir dans ONLYOFFICE",
-    "label.onlyoffice.fillForm": "Remplir le formulaire dans ONLYOFFICE"
+    "label.onlyoffice.fillForm": "Remplir le formulaire dans ONLYOFFICE",
+    "label.onlyoffice.create": "Créer avec ONLYOFFICE",
+    "label.onlyoffice.document.word": "Document",
+    "label.onlyoffice.document.cell": "Classeur",
+    "label.onlyoffice.document.slide": "Présentation",
+    "label.onlyoffice.document.form": "Modèle de formulaire"
 }
