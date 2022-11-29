@@ -1,0 +1,9 @@
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Manifest-Version: 1.0
+Bundle-Vendor: org.onlyoffice
+Bundle-Version: 2.0.0
+Bundle-Name: onlyoffice-nuxeo-web-ui
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-web-ui;singleton=true
+Nuxeo-Component: OSGI-INF/web-contrib.xml
