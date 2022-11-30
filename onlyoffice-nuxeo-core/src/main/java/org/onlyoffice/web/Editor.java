@@ -89,7 +89,7 @@ public class Editor extends ModuleRoot {
     private JSONObject getConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
         String user = ctx.getPrincipal().getName();
         String token = authService.acquireToken(user, "ONLYOFFICE", "editor", "auth", "rw");
-        String baseUrl = ctx.getBaseURL();
+        String baseUrl = ctx.getServerURL().toString();
         String repoName = ctx.getCoreSession().getRepositoryName();
         String locale = ctx.getLocale().toLanguageTag();
 
