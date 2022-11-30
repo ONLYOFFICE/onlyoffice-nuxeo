@@ -17,7 +17,7 @@
  -->
 
 <link rel="import" href="onlyoffice-editor.html">
-<link rel="import" href="onlyoffice-settings.html">
+<link rel="import" href="onlyoffice-create.html">
 
 <nuxeo-slot-content name="onlyoffice-edit" slot="DOCUMENT_ACTIONS" order="-100">
     <template>
@@ -26,5 +26,23 @@
                 <onlyoffice-editor document="[[document]]"></onlyoffice-editor>
             </template>
         </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="documentCreateItemOnlyoffice" slot="CREATE_POPUP_ITEMS" order="40">
+    <template>
+        <paper-tab name="onlyofficeCreate">[[i18n("label.onlyoffice.create")]]</paper-tab>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="documentCreateItemOnlyoffice" slot="CREATE_POPUP_PAGES">
+    <template>
+        <onlyoffice-create
+                id="onlyofficeCreate"
+                name="onlyofficeCreate"
+                parent="[[parent]]"
+                target-path="{{parentPath}}"
+                suggester-children="{{suggesterChildren}}"
+        ></onlyoffice-create>
     </template>
 </nuxeo-slot-content>

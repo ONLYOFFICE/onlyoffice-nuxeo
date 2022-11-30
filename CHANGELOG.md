@@ -1,5 +1,9 @@
 # Change Log
 
+## 
+## Added
+- ability to create documents
+
 ## 2.0.0
 ## Added
 - support for version 2021

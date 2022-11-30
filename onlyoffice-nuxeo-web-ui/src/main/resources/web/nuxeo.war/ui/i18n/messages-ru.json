@@ -1,5 +1,10 @@
 {
     "label.onlyoffice.edit": "Редактировать в ONLYOFFICE",
     "label.onlyoffice.view": "Открыть в ONLYOFFICE",
-    "label.onlyoffice.fillForm": "Заполнить форму в ONLYOFFICE"
+    "label.onlyoffice.fillForm": "Заполнить форму в ONLYOFFICE",
+    "label.onlyoffice.create": "Создать в ONLYOFFICE",
+    "label.onlyoffice.document.word": "Документ",
+    "label.onlyoffice.document.cell": "Таблица",
+    "label.onlyoffice.document.slide": "Презентация",
+    "label.onlyoffice.document.form": "Шаблон формы"
 }
