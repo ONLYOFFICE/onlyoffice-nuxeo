@@ -19,11 +19,45 @@
 package org.onlyoffice.utils;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.model.DocumentType;
 
 public class UtilsImpl extends DefaultComponent implements Utils {
+
+    private static final Map<String, String> PathLocale = new HashMap<String, String>(){{
+        put("az", "az-Latn-AZ");
+        put("bg", "bg-BG");
+        put("cs", "cs-CZ");
+        put("de", "de-DE");
+        put("el", "el-GR");
+        put("en-GB", "en-GB");
+        put("en", "en-US");
+        put("es", "es-ES");
+        put("fr", "fr-FR");
+        put("it", "it-IT");
+        put("ja", "ja-JP");
+        put("ko", "ko-KR");
+        put("lv", "lv-LV");
+        put("nl", "nl-NL");
+        put("pl", "pl-PL");
+        put("pt-BR", "pt-BR");
+        put("pt", "pt-PT");
+        put("ru", "ru-RU");
+        put("sk", "sk-SK");
+        put("sv", "sv-SE");
+        put("uk", "uk-UA");
+        put("vi", "vi-VN");
+        put("zh", "zh-CN");
+    }};
+
+    @Override
+    public String getPathLocale(String language) {
+        return PathLocale.get(language);
+    }
 
     @Override
     public String getDocumentKey(DocumentModel model) {
@@ -58,4 +92,19 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         }
     }
 
+    @Override
+    public String getDefaultExtensionByType(DocumentType documentType) {
+        switch (documentType) {
+            case WORD:
+                return "docx";
+            case CELL:
+                return "xlsx";
+            case SLIDE:
+                return "pptx";
+            case FORM:
+                return "docxf";
+        }
+
+        return null;
+    }
 }

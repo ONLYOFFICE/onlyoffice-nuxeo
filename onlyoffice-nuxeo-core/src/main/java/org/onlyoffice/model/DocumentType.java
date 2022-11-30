@@ -16,16 +16,11 @@
  *
  */
 
-package org.onlyoffice.utils;
+package org.onlyoffice.model;
 
-import org.nuxeo.ecm.core.api.DocumentModel;
-import org.onlyoffice.model.DocumentType;
-
-public interface Utils {
-    public String getPathLocale(String language);
-    public String getDocumentKey(DocumentModel model);
-    public String getFileExtension(String filename);
-    public String getDocumentType(String ext);
-    public String getChangeToken(String key);
-    public String getDefaultExtensionByType(DocumentType documentType);
+public enum DocumentType {
+    WORD,
+    CELL,
+    SLIDE,
+    FORM
 }
