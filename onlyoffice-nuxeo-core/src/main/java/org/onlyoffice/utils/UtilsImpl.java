@@ -20,10 +20,13 @@ package org.onlyoffice.utils;
 
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.constants.Format;
+import org.onlyoffice.constants.ListFormats;
 import org.onlyoffice.model.DocumentType;
 
 public class UtilsImpl extends DefaultComponent implements Utils {
@@ -70,10 +73,15 @@ public class UtilsImpl extends DefaultComponent implements Utils {
     }
 
     @Override
-    public String getDocumentType(String ext) {
-        if (".doc.docx.docm.dot.dotx.dotm.odt.fodt.ott.rtf.txt.html.htm.mht.pdf.djvu.fb2.epub.xps.docxf.oform".indexOf(ext) != -1) return "text";
-        if (".xls.xlsx.xlsm.xlt.xltx.xltm.ods.fods.ots.csv".indexOf(ext) != -1) return "spreadsheet";
-        if (".pps.ppsx.ppsm.ppt.pptx.pptm.pot.potx.potm.odp.fodp.otp".indexOf(ext) != -1) return "presentation";
+    public String getDocumentType(String extension) {
+        List<Format> supportedFormats = ListFormats.getSupportedFormats();
+
+        for (Format format : supportedFormats) {
+            if (format.getName().equals(extension)) {
+                return format.getType().name().toLowerCase();
+            }
+        }
+
         return null;
     }
 
