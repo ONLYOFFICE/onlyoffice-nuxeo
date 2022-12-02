@@ -1,4 +1,11 @@
 {
+    "app.title.admin.onlyoffice-settings": "",
+    "label.onlyoffice.settings": "",
+    "label.onlyoffice.settings.server": "Paramètres du serveur",
+    "label.onlyoffice.settings.server.doc-url": "Adresse du service d'édition de document",
+    "label.onlyoffice.settings.server.jwt-secret": "Clé secrète (laisser vide pour désactiver)",
+    "label.onlyoffice.settings.success": "",
+    "label.onlyoffice.settings.error": "",
     "label.onlyoffice.edit": "Modifier dans ONLYOFFICE",
     "label.onlyoffice.view": "Voir dans ONLYOFFICE",
     "label.onlyoffice.fillForm": "Remplir le formulaire dans ONLYOFFICE",

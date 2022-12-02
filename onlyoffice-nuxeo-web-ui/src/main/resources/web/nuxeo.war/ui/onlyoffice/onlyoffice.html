@@ -16,8 +16,33 @@
  *
  -->
 
+<link rel="import" href="onlyoffice-settings.html">
 <link rel="import" href="onlyoffice-editor.html">
 <link rel="import" href="onlyoffice-create.html">
+
+<nuxeo-slot-content name="onlyofficeSettingsMenuItem" slot="ADMINISTRATION_MENU" order="70">
+    <template>
+        <nuxeo-filter user="[[user]]" expression="user.isAdministrator">
+            <template>
+                <nuxeo-menu-item
+                        label="label.onlyoffice.settings"
+                        name="onlyoffice-settings"
+                        route="administration:onlyoffice-settings"
+                ></nuxeo-menu-item>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="onlyofficeSettingsPage" slot="ADMINISTRATION_PAGES">
+    <template>
+        <nuxeo-filter user="[[user]]" expression="user.isAdministrator">
+            <template>
+                <onlyoffice-settings name="onlyoffice-settings" id="onlyoffice-settings"></onlyoffice-settings>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
 
 <nuxeo-slot-content name="onlyoffice-edit" slot="DOCUMENT_ACTIONS" order="-100">
     <template>
