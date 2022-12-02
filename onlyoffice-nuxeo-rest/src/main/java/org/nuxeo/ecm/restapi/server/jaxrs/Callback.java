@@ -18,18 +18,13 @@
 
 package org.nuxeo.ecm.restapi.server.jaxrs;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -37,32 +32,27 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.util.DocumentHelper;
-import org.nuxeo.ecm.core.api.Blob;
-import org.nuxeo.ecm.core.api.Blobs;
-import org.nuxeo.ecm.core.api.CoreSession;
-import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.core.api.IdRef;
-import org.nuxeo.ecm.core.api.VersioningOption;
+import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.versioning.VersioningService;
 import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.ecm.webengine.model.WebObject;
+import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
+import org.onlyoffice.api.SettingsService;
 import org.onlyoffice.utils.JwtManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/onlyoffice")
 @WebObject(type = "onlyoffice")
-@Consumes(MediaType.WILDCARD)
-@Produces(MediaType.APPLICATION_JSON)
 public class Callback extends DefaultObject {
 
     private static final Logger logger = LoggerFactory.getLogger(Callback.class);
 
     private JwtManager jwtManager;
+    private SettingsService settingsService;
     private Utils utils;
 
     @Override
@@ -70,12 +60,42 @@ public class Callback extends DefaultObject {
         super.initialize(args);
 
         jwtManager = Framework.getService(JwtManager.class);
+        settingsService = Framework.getService(SettingsService.class);
         utils = Framework.getService(Utils.class);
+    }
+
+    @GET
+    @Path("settings")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getSettings() {
+        checkAdministrator();
+
+        return Response.status(Status.OK)
+                .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .type("application/json")
+                .build();
+    }
+
+    @POST
+    @Path("settings")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object setSettings(InputStream input) throws IOException {
+        checkAdministrator();
+
+        JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
+
+        settingsService.updateSettings(json);
+
+        return Response.status(Status.OK)
+                .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .type("application/json")
+                .build();
     }
 
     @POST
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Object postCallback(@PathParam("id") String id, InputStream input) {
         Status code = Status.OK;
         Exception error = null;
@@ -200,5 +220,12 @@ public class Callback extends DefaultObject {
             }
         }
         return blob;
+    }
+
+    private void checkAdministrator() {
+        NuxeoPrincipal currentUser = getContext().getCoreSession().getPrincipal();
+        if (!currentUser.isAdministrator()) {
+            throw new WebSecurityException("You don't have the permission to ONLYOFFICE settings!");
+        }
     }
 }
