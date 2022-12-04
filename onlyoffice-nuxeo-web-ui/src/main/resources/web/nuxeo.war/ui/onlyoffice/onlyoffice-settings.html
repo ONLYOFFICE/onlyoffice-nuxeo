@@ -46,6 +46,9 @@
                         <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-secret')]]" value="{{settings.jwtSecret}}" name="jwt-secret">
                         </nuxeo-input>
 
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-header')]]" value="{{settings.jwtHeader}}" name="jwt-header">
+                        </nuxeo-input>
+
                         <div class="form-buttons">
                             <paper-button noink id="saveButton" class="primary" on-click="_submit">
                                 [[i18n('command.save')]]

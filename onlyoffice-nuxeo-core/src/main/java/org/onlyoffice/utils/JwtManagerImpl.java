@@ -27,6 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.json.JSONObject;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.constants.SettingsConstants;
 
 public class JwtManagerImpl extends DefaultComponent implements JwtManager {
 
@@ -71,6 +72,11 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
         }
 
         return true;
+    }
+
+    public String getJwtHeader() {
+        String jwtHeader = Framework.getProperty(SettingsConstants.JWT_HEADER, null);
+        return jwtHeader == null || jwtHeader.isEmpty() ? "Authorization" : jwtHeader;
     }
 
     private String calculateHash(String header, String payload) throws Exception {
