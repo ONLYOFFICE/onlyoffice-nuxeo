@@ -18,8 +18,10 @@
 
 package org.onlyoffice.utils;
 
+import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.constants.SettingsConstants;
 
 public class ConfigManagerImpl extends DefaultComponent implements ConfigManager {
 
@@ -36,8 +38,41 @@ public class ConfigManagerImpl extends DefaultComponent implements ConfigManager
         return appendSlash(getProp(DOCSERV_URL, "http://127.0.0.1/"));
     }
 
+    @Override
+    public String getInnerDocServUrl() {
+        String innerDocServUrl = Framework.getProperty(SettingsConstants.DOC_SERVER_INNER_URL, null);
+        if (innerDocServUrl == null || innerDocServUrl.isEmpty()) {
+            return getDocServUrl();
+        } else {
+            return appendSlash(innerDocServUrl);
+        }
+    }
+
+    @Override
+    public String getBaseNuxeoUrl(WebContext ctx) {
+        String nuxeoServerInnerUrl = Framework.getProperty(SettingsConstants.NUXEO_SERVER_INNER_URL, null);
+        if (nuxeoServerInnerUrl == null || nuxeoServerInnerUrl.isEmpty()) {
+            return appendSlash(ctx.getServerURL().toString());
+        } else {
+            return appendSlash(nuxeoServerInnerUrl);
+        }
+    }
+
     private String getProp(String key, String defValue) {
         return Framework.getProperty(key, defValue);
+    }
+
+
+    @Override
+    public String replaceDocEditorURLToInnner(String url) {
+        String innerDocEditorUrl = getInnerDocServUrl();
+        String publicDocEditorUrl = getDocServUrl();
+
+        if (!publicDocEditorUrl.equals(innerDocEditorUrl)) {
+            url = url.replace(publicDocEditorUrl, innerDocEditorUrl);
+        }
+
+        return url;
     }
 
     private String appendSlash(String url) {

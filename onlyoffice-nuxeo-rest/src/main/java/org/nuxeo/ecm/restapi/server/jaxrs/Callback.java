@@ -41,6 +41,7 @@ import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.SettingsService;
+import org.onlyoffice.utils.ConfigManager;
 import org.onlyoffice.utils.JwtManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public class Callback extends DefaultObject {
 
     private JwtManager jwtManager;
     private SettingsService settingsService;
+    private ConfigManager configManager;
     private Utils utils;
 
     @Override
@@ -61,6 +63,7 @@ public class Callback extends DefaultObject {
 
         jwtManager = Framework.getService(JwtManager.class);
         settingsService = Framework.getService(SettingsService.class);
+        configManager = Framework.getService(ConfigManager.class);
         utils = Framework.getService(Utils.class);
     }
 
@@ -181,7 +184,10 @@ public class Callback extends DefaultObject {
         case 2:
             logger.info("Document Updated, changing content");
             model.removeLock();
-            updateDocument(session, model, json.getString("key"), json.getString("url"));
+
+            String documentUrl = configManager.replaceDocEditorURLToInnner(json.getString("url"));
+
+            updateDocument(session, model, json.getString("key"), documentUrl);
             break;
         case 3:
             logger.error("ONLYOFFICE has reported that saving the document has failed");

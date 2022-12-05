@@ -89,7 +89,7 @@ public class Editor extends ModuleRoot {
     private JSONObject getConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
         String user = ctx.getPrincipal().getName();
         String token = authService.acquireToken(user, "ONLYOFFICE", "editor", "auth", "rw");
-        String baseUrl = ctx.getServerURL().toString();
+        String baseUrl = config.getBaseNuxeoUrl(ctx);
         String repoName = ctx.getCoreSession().getRepositoryName();
         String locale = ctx.getLocale().toLanguageTag();
 
@@ -104,8 +104,8 @@ public class Editor extends ModuleRoot {
         String docExt = utils.getFileExtension(docFilename);
         String docId = model.getId();
 
-        String contentUrl = String.format("%1s/nuxeo/nxfile/%2s/%3s/file:content/%4s?token=%5s", baseUrl, repoName, docId, docFilename, token);
-        String callbackUrl = String.format("%1s/nuxeo/api/v1/onlyoffice/callback/%2s?token=%3s", baseUrl, docId, token);
+        String contentUrl = String.format("%1snuxeo/nxfile/%2s/%3s/file:content/%4s?token=%5s", baseUrl, repoName, docId, docFilename, token);
+        String callbackUrl = String.format("%1snuxeo/api/v1/onlyoffice/callback/%2s?token=%3s", baseUrl, docId, token);
 
         Boolean toEdit = mode != null && mode.equals("edit");
 

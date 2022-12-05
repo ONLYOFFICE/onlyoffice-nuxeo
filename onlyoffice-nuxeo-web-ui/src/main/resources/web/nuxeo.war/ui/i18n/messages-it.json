@@ -5,6 +5,8 @@
     "label.onlyoffice.settings.server.doc-url": "Indirizzo del Servizio di modifica documenti",
     "label.onlyoffice.settings.server.jwt-secret": "Chiave segreta (lasciare vuoto per disabilitare)",
     "label.onlyoffice.settings.server.jwt-header": "Intestazione di autorizzazione (Lascia vuoto per utilizzare l'intestazione predefinita)",
+    "label.onlyoffice.settings.server.doc-inner-url": "",
+    "label.onlyoffice.settings.server.nuxeo-inner-url": "",
     "label.onlyoffice.settings.success": "",
     "label.onlyoffice.settings.error": "",
     "label.onlyoffice.edit": "Modifica in ONLYOFFICE",

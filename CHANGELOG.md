@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- advanced server settings for specifying internal addresses
 - setting authorization header
 - settings page
 - ability to create documents

@@ -5,6 +5,8 @@
     "label.onlyoffice.settings.server.doc-url": "Document Editing Service address",
     "label.onlyoffice.settings.server.jwt-secret": "Secret key (leave blank to disable)",
     "label.onlyoffice.settings.server.jwt-header": "Authorization header (Leave blank to use default header)",
+    "label.onlyoffice.settings.server.doc-inner-url": "Document Editing Service internal address (Address for internal requests from the Nuxeo Server)",
+    "label.onlyoffice.settings.server.nuxeo-inner-url": "Nuxeo Server internal address (Address for internal requests from the Document Editing Service)",
     "label.onlyoffice.settings.success": "Settings was successfully saved",
     "label.onlyoffice.settings.error": "An error occurred while saving the settings.",
     "label.onlyoffice.edit": "Edit in ONLYOFFICE",
