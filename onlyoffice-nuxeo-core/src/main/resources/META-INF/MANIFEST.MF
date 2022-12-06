@@ -11,5 +11,6 @@ Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/jwtmanager-service.xml,
  OSGI-INF/configmanager-service.xml,
  OSGI-INF/settings-service.xml,
+ OSGI-INF/callback-service.xml,
  OSGI-INF/onlyoffice-mimetype-contrib.xml,
  OSGI-INF/onlyoffice-operation-contrib.xml
