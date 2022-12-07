@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- settings page
 - ability to create documents
 
 ## Changed
