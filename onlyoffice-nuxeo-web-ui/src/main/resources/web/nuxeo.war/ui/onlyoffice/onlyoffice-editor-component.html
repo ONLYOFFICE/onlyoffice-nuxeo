@@ -1,0 +1,103 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2022
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<dom-module id="onlyoffice-editor-component">
+    <template>
+        <style include="nuxeo-styles">
+            :host {
+                display: block;
+                padding: 0;
+                margin: 0;
+                height: 100%;
+            }
+
+            div {
+                padding: 0;
+                margin: 0;
+            }
+      </style>
+        <div id="docEditor"></div>
+    </template>
+    <script>
+    Polymer({
+        is: 'onlyoffice-editor-component',
+        properties: {
+            url: String,
+            config: String
+        },
+
+        observers: ['_initEditor(url,config)'],
+
+        _initEditor() {
+            let url = this.url;
+            if (!url.endsWith("/")) url += "/";
+
+            const docApiUrl = `http://192.168.0.169:3000/javascripts/api.js`;
+            this._loadScript(docApiUrl)
+                .then(() => this._onLoad())
+                .catch((err) => {
+                    console.error(err);
+                });
+        },
+
+        _onLoad() {
+            try {
+                if (!window.DocsAPI) throw new Error("DocsAPI is not defined");
+
+                let initConfig = Object.assign({}, this.config || {});
+
+                const editor = window.DocsAPI.DocEditor("docEditor", this.$.docEditor, initConfig);
+            } catch (err) {
+              console.error(err);
+            }
+        },
+
+        async _loadScript (url) {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (document.getElementById("onlyofficeEditorApi")) {
+                        if (window.DocsAPI) return resolve(null);
+
+                        let intervalHandler = setInterval(() => {
+                            if (!window.DocsAPI) return;
+
+                            clearInterval(intervalHandler);
+
+                            return resolve(null);
+                        }, 500);
+                    } else {
+                        const script = document.createElement("script");
+                        script.setAttribute("type", "text/javascript");
+                        script.setAttribute("id", "onlyofficeEditorApi");
+
+                        script.onload = resolve;
+                        script.onerror = reject;
+
+                        script.src = url;
+                        script.async = true;
+
+                        document.head.appendChild(script);
+                    }
+                } catch (e) {
+                  console.error(e);
+                }
+            });
+        }
+    });
+  </script>
+</dom-module>

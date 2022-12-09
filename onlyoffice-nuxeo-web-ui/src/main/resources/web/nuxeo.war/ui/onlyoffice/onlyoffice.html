@@ -19,6 +19,7 @@
 <link rel="import" href="onlyoffice-settings.html">
 <link rel="import" href="onlyoffice-editor-button.html">
 <link rel="import" href="onlyoffice-create.html">
+<link rel="import" href="onlyoffice-editor-page.html">
 
 <nuxeo-slot-content name="onlyofficeSettingsMenuItem" slot="ADMINISTRATION_MENU" order="70">
     <template>
@@ -69,5 +70,13 @@
                 target-path="{{parentPath}}"
                 suggester-children="{{suggesterChildren}}"
         ></onlyoffice-create>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="onlyofficeEditorPage" slot="PAGES">
+    <template>
+        <onlyoffice-editor-page
+                name="onlyoffice-editor"
+        ></onlyoffice-editor-page>
     </template>
 </nuxeo-slot-content>

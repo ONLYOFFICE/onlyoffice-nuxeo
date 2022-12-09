@@ -31,12 +31,15 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.*;
+import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.CallbackService;
+import org.onlyoffice.api.ConfigService;
 import org.onlyoffice.api.SettingsService;
+import org.onlyoffice.utils.ConfigManager;
 import org.onlyoffice.utils.JwtManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,16 +50,20 @@ public class OnlyofficeObject extends DefaultObject {
     private static final Logger logger = LoggerFactory.getLogger(OnlyofficeObject.class);
 
     private JwtManager jwtManager;
+    private ConfigManager configManager;
     private SettingsService settingsService;
     private CallbackService callbackService;
+    private ConfigService configService;
 
     @Override
     protected void initialize(Object... args) {
         super.initialize(args);
 
         jwtManager = Framework.getService(JwtManager.class);
+        configManager = Framework.getService(ConfigManager.class);
         settingsService = Framework.getService(SettingsService.class);
         callbackService = Framework.getService(CallbackService.class);
+        configService = Framework.getService(ConfigService.class);
     }
 
     @GET
@@ -83,6 +90,27 @@ public class OnlyofficeObject extends DefaultObject {
 
         return Response.status(Status.OK)
                 .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .type("application/json")
+                .build();
+    }
+
+    @POST
+    @Path("config")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getConfig(InputStream input) throws Exception {
+
+        JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
+
+        WebContext ctx = getContext();
+        CoreSession session = ctx.getCoreSession();
+        DocumentModel model = session.getDocument(new IdRef(json.getString("uid")));
+
+        JSONObject response = new JSONObject();
+        response.put("apiUrl", configManager.getDocServUrl());
+        response.put("config", configService.createConfig(ctx, model, "edit"));
+
+        return Response.status(Status.OK)
+                .entity(response.toString(2))
                 .type("application/json")
                 .build();
     }
