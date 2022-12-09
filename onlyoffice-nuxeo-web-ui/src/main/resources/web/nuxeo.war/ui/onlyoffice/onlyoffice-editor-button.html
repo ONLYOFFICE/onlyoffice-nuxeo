@@ -16,9 +16,9 @@
  *
  -->
 
-<link rel="import" href="onlyoffice-behavior.html">
+<link rel="import" href="onlyoffice-editor-button-behavior.html">
 
-<dom-module id="onlyoffice-editor">
+<dom-module id="onlyoffice-editor-button">
     <template>
         <template is="dom-if" if="[[_isAvailable(document)]]">
             <div class="action" on-click="_openEditor">
@@ -30,7 +30,7 @@
     </template>
     <script>
         Polymer({
-            is: 'onlyoffice-editor',
+            is: 'onlyoffice-editor-button',
             behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior, Nuxeo.ONLYOFFICE],
             properties: {
                 label: {

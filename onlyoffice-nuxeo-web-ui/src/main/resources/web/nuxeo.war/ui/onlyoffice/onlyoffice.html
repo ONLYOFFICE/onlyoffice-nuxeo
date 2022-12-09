@@ -17,7 +17,7 @@
  -->
 
 <link rel="import" href="onlyoffice-settings.html">
-<link rel="import" href="onlyoffice-editor.html">
+<link rel="import" href="onlyoffice-editor-button.html">
 <link rel="import" href="onlyoffice-create.html">
 
 <nuxeo-slot-content name="onlyofficeSettingsMenuItem" slot="ADMINISTRATION_MENU" order="70">
@@ -48,7 +48,7 @@
     <template>
         <nuxeo-filter document="[[document]]" type="File" permission="Read">
             <template>
-                <onlyoffice-editor document="[[document]]"></onlyoffice-editor>
+                <onlyoffice-editor-button document="[[document]]"></onlyoffice-editor-button>
             </template>
         </nuxeo-filter>
     </template>
