@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- setting authorization header
 - settings page
 - ability to create documents
 

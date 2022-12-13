@@ -40,9 +40,11 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
 
         String docUrl = Framework.getProperty(SettingsConstants.DOC_SERVER_URL, "http://127.0.0.1/");
         String jwtSecret = Framework.getProperty(SettingsConstants.JWT_SECRET, null);
+        String jwtHeader = Framework.getProperty(SettingsConstants.JWT_HEADER, null);
 
         settings.put("docUrl", docUrl);
         settings.put("jwtSecret", jwtSecret);
+        settings.put("jwtHeader", jwtHeader);
 
         return settings;
     }
@@ -57,6 +59,10 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
 
         if (settings.has("jwtSecret")) {
             properties.put(SettingsConstants.JWT_SECRET, settings.getString("jwtSecret").trim());
+        }
+
+        if (settings.has("jwtHeader")) {
+            properties.put(SettingsConstants.JWT_HEADER, settings.getString("jwtHeader").trim());
         }
 
         Properties frameworkProperties = Framework.getProperties();

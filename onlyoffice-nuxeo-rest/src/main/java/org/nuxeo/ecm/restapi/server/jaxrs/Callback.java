@@ -108,7 +108,8 @@ public class Callback extends DefaultObject {
                 Boolean inBody = true;
                 
                 if (token == null || token == "") {
-                    List<String> values = getContext().getHttpHeaders().getRequestHeader("Authorization");
+                    String jwtHeader = jwtManager.getJwtHeader();
+                    List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
                     String header = values.isEmpty() ? null : values.get(0);
                     token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
                     inBody = false;
