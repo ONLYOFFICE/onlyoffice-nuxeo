@@ -21,8 +21,7 @@
     *
      -->
 
-    <link rel="icon" sizes="32x32" href="images/touch/favicon-32x32.png" type="image/png">
-    <link rel="icon" sizes="16x16" href="images/touch/favicon-16x16.png" type="image/png">
+    <link rel="shortcut icon" href="${skinPath}/images/${docType}.ico"/>
     <title>${docTitle} - ONLYOFFICE</title>
     <style>
         html, body {

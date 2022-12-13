@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
@@ -73,11 +74,16 @@ public class Editor extends ModuleRoot {
         CoreSession session = ctx.getCoreSession();
         DocumentModel model = session.getDocument(new IdRef(id));
 
+        String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
+        String docExt = utils.getFileExtension(docFilename);
+        String docType = utils.getDocumentType(docExt);
+
         try {
             return getView("index")
                 .arg("config", configService.createConfig(ctx, model, mode))
                 .arg("docUrl", urlManager.getDocServUrl())
-                .arg("docTitle", model.getTitle());
+                .arg("docTitle", model.getTitle())
+                .arg("docType", docType);
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
             return Response.serverError().build();
