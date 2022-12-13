@@ -26,22 +26,22 @@ import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.api.ConfigService;
-import org.onlyoffice.utils.ConfigManager;
 import org.onlyoffice.utils.JwtManager;
+import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
 
 public class ConfigServiceImpl extends DefaultComponent implements ConfigService {
 
-    private ConfigManager configManager;
+    private UrlManager urlManager;
     private Utils utils;
     private JwtManager jwtManager;
     private TokenAuthenticationService authService;
 
-    protected ConfigManager getConfigManager() {
-        if (configManager == null) {
-            configManager = Framework.getService(ConfigManager.class);
+    protected UrlManager getUrlManager() {
+        if (urlManager == null) {
+            urlManager = Framework.getService(UrlManager.class);
         }
-        return configManager;
+        return urlManager;
     }
 
     protected Utils getUtils() {
@@ -66,14 +66,14 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
     }
     @Override
     public JSONObject createConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
-        ConfigManager configManager = getConfigManager();
+        UrlManager urlManager = getUrlManager();
         Utils utils = getUtils();
         TokenAuthenticationService authService = getAuthService();
         JwtManager jwtManager = getJwtManager();
 
         String user = ctx.getPrincipal().getName();
         String token = authService.acquireToken(user, "ONLYOFFICE", "editor", "auth", "rw");
-        String baseUrl = configManager.getBaseNuxeoUrl(ctx);
+        String baseUrl = urlManager.getBaseNuxeoUrl(ctx);
         String repoName = ctx.getCoreSession().getRepositoryName();
         String locale = ctx.getLocale().toLanguageTag();
 

@@ -31,12 +31,9 @@ import org.onlyoffice.constants.SettingsConstants;
 
 public class JwtManagerImpl extends DefaultComponent implements JwtManager {
 
-    private ConfigManager config;
-
     @Override
     public Boolean isEnabled() {
-        getConfig();
-        String secret = getConfig().getJwtSecret();
+        String secret = getJwtSecret();
         return secret != null && !secret.isEmpty();
     }
 
@@ -79,6 +76,10 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
         return jwtHeader == null || jwtHeader.isEmpty() ? "Authorization" : jwtHeader;
     }
 
+    private String getJwtSecret() {
+        return Framework.getProperty(SettingsConstants.JWT_SECRET, null);
+    }
+
     private String calculateHash(String header, String payload) throws Exception {
         Mac hasher;
         hasher = getHasher();
@@ -86,19 +87,12 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
     }
 
     private Mac getHasher() throws Exception {
-        String jwts = getConfig().getJwtSecret();
+        String jwts = getJwtSecret();
 
         Mac sha256 = Mac.getInstance("HmacSHA256");
         SecretKeySpec secret_key = new SecretKeySpec(jwts.getBytes("UTF-8"), "HmacSHA256");
         sha256.init(secret_key);
 
         return sha256;
-    }
-
-    private ConfigManager getConfig() {
-        if (config == null) {
-            config = Framework.getService(ConfigManager.class);
-        }
-        return config;
     }
 }

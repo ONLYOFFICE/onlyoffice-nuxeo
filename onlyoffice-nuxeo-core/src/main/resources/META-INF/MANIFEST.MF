@@ -9,7 +9,7 @@ Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-core;singleton=true
 Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=onlyedit
 Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/jwtmanager-service.xml,
- OSGI-INF/configmanager-service.xml,
+ OSGI-INF/urlmanager-service.xml,
  OSGI-INF/settings-service.xml,
  OSGI-INF/callback-service.xml,
  OSGI-INF/config-service.xml,

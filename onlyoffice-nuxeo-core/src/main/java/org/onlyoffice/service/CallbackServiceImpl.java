@@ -27,7 +27,7 @@ import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.api.CallbackService;
-import org.onlyoffice.utils.ConfigManager;
+import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +37,14 @@ import java.net.URL;
 public class CallbackServiceImpl extends DefaultComponent implements CallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
 
-    private ConfigManager configManager;
+    private UrlManager urlManager;
     private Utils utils;
 
-    protected ConfigManager getConfigManager() {
-        if (configManager == null) {
-            configManager = Framework.getService(ConfigManager.class);
+    protected UrlManager getUrlManager() {
+        if (urlManager == null) {
+            urlManager = Framework.getService(UrlManager.class);
         }
-        return configManager;
+        return urlManager;
     }
 
     protected Utils getUtils() {
@@ -73,8 +73,8 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
                 logger.info("Document Updated, changing content");
                 model.removeLock();
 
-                configManager = getConfigManager();
-                String documentUrl = configManager.replaceDocEditorURLToInnner(json.getString("url"));
+                urlManager = getUrlManager();
+                String documentUrl = urlManager.replaceDocEditorURLToInnner(json.getString("url"));
 
                 updateDocument(session, model, json.getString("key"), documentUrl);
                 break;

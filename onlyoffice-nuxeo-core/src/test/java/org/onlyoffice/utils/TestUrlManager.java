@@ -18,12 +18,27 @@
 
 package org.onlyoffice.utils;
 
-import org.nuxeo.ecm.webengine.model.WebContext;
+import static org.junit.Assert.assertNotNull;
 
-public interface ConfigManager {
-    public String getJwtSecret();
-    public String getDocServUrl();
-    public String getInnerDocServUrl();
-    public String getBaseNuxeoUrl(WebContext ctx);
-    public String replaceDocEditorURLToInnner(String url);
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.nuxeo.ecm.platform.test.PlatformFeature;
+import org.nuxeo.runtime.test.runner.Deploy;
+import org.nuxeo.runtime.test.runner.Features;
+import org.nuxeo.runtime.test.runner.FeaturesRunner;
+
+import javax.inject.Inject;
+
+@RunWith(FeaturesRunner.class)
+@Features({ PlatformFeature.class })
+@Deploy("org.onlyoffice.onlyoffice-nuxeo-core")
+public class TestUrlManager {
+
+    @Inject
+    protected UrlManager urlManager;
+
+    @Test
+    public void testService() {
+        assertNotNull(urlManager);
+    }
 }

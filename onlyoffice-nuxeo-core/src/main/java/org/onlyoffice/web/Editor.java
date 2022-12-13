@@ -27,19 +27,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
-import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.ConfigService;
-import org.onlyoffice.utils.ConfigManager;
-import org.onlyoffice.utils.JwtManager;
+import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +49,7 @@ public class Editor extends ModuleRoot {
 
     private static final Logger logger = LoggerFactory.getLogger(Editor.class);
 
-    private JwtManager jwtManager;
-    private ConfigManager config;
+    private UrlManager urlManager;
     private Utils utils;
     private ConfigService configService;
 
@@ -63,8 +59,7 @@ public class Editor extends ModuleRoot {
     protected void initialize(Object... args) {
         super.initialize(args);
 
-        jwtManager = Framework.getService(JwtManager.class);
-        config = Framework.getService(ConfigManager.class);
+        urlManager = Framework.getService(UrlManager.class);
         utils = Framework.getService(Utils.class);
         configService = Framework.getService(ConfigService.class);
         authService = Framework.getService(TokenAuthenticationService.class);
@@ -81,7 +76,7 @@ public class Editor extends ModuleRoot {
         try {
             return getView("index")
                 .arg("config", configService.createConfig(ctx, model, mode))
-                .arg("docUrl", config.getDocServUrl())
+                .arg("docUrl", urlManager.getDocServUrl())
                 .arg("docTitle", model.getTitle());
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
