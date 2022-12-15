@@ -21,7 +21,6 @@ package org.onlyoffice.service;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
-import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -35,7 +34,6 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
     private UrlManager urlManager;
     private Utils utils;
     private JwtManager jwtManager;
-    private TokenAuthenticationService authService;
 
     protected UrlManager getUrlManager() {
         if (urlManager == null) {
@@ -51,13 +49,6 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         return utils;
     }
 
-    protected TokenAuthenticationService getAuthService() {
-        if (authService == null) {
-            authService = Framework.getService(TokenAuthenticationService.class);
-        }
-        return authService;
-    }
-
     protected JwtManager getJwtManager() {
         if (jwtManager == null) {
             jwtManager = Framework.getService(JwtManager.class);
@@ -68,13 +59,9 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
     public JSONObject createConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
         UrlManager urlManager = getUrlManager();
         Utils utils = getUtils();
-        TokenAuthenticationService authService = getAuthService();
         JwtManager jwtManager = getJwtManager();
 
         String user = ctx.getPrincipal().getName();
-        String token = authService.acquireToken(user, "ONLYOFFICE", "editor", "auth", "rw");
-        String baseUrl = urlManager.getBaseNuxeoUrl(ctx);
-        String repoName = ctx.getCoreSession().getRepositoryName();
         String locale = ctx.getLocale().toLanguageTag();
 
         JSONObject responseJson = new JSONObject();
@@ -86,10 +73,9 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         String docTitle = model.getTitle();
         String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
         String docExt = utils.getFileExtension(docFilename);
-        String docId = model.getId();
 
-        String contentUrl = String.format("%1snuxeo/nxfile/%2s/%3s/file:content/%4s?token=%5s", baseUrl, repoName, docId, docFilename, token);
-        String callbackUrl = String.format("%1snuxeo/api/v1/onlyoffice/callback/%2s?token=%3s", baseUrl, docId, token);
+        String contentUrl = urlManager.getContentUrl(ctx, model);
+        String callbackUrl = urlManager.getCallbackUrl(ctx, model);
 
         Boolean toEdit = mode != null && mode.equals("edit");
 
