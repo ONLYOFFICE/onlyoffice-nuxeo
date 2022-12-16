@@ -22,7 +22,7 @@ import org.json.JSONObject;
 
 public interface JwtManager {
     public Boolean isEnabled();
-    public String createToken(JSONObject payload) throws Exception;
+    public String createToken(JSONObject payload);
     public Boolean verify(String token);
     public String getJwtHeader();
 }
