@@ -24,6 +24,7 @@ import org.onlyoffice.model.DocumentType;
 public interface Utils {
     public String getPathLocale(String language);
     public String getDocumentKey(DocumentModel model);
+    public String getTitleWithoutExtension(String filename);
     public String getFileExtension(String filename);
     public String getDocumentType(String ext);
     public String getChangeToken(String key);

@@ -86,6 +86,18 @@ public class UtilsImpl extends DefaultComponent implements Utils {
     }
 
     @Override
+    public String getTitleWithoutExtension(String filename) {
+        if (filename != null) {
+            int index = filename.lastIndexOf('.');
+            if (index > -1) {
+                return filename.substring(0, filename.lastIndexOf("."));
+            }
+        }
+
+        return filename;
+    }
+
+    @Override
     public String getFileExtension(String filename) {
         return filename.substring(filename.lastIndexOf(".") + 1).trim().toLowerCase();
     }
