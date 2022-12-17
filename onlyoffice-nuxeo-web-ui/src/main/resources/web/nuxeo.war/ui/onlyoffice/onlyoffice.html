@@ -19,6 +19,7 @@
 <link rel="import" href="onlyoffice-settings.html">
 <link rel="import" href="onlyoffice-editor-button.html">
 <link rel="import" href="onlyoffice-create.html">
+<link rel="import" href="onlyoffice-convert-button.html">
 
 <nuxeo-slot-content name="onlyofficeSettingsMenuItem" slot="ADMINISTRATION_MENU" order="70">
     <template>
@@ -69,5 +70,11 @@
                 target-path="{{parentPath}}"
                 suggester-children="{{suggesterChildren}}"
         ></onlyoffice-create>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="convertOnlyofficeBlobAction" slot="BLOB_ACTIONS" order="33">
+    <template>
+        <onlyoffice-convert-button document="[[document]]" xpath="[[xpath]]"></onlyoffice-convert-button>
     </template>
 </nuxeo-slot-content>
