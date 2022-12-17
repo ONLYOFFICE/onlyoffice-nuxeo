@@ -97,6 +97,7 @@ public class CreateOperation {
             newDoc.setPropertyValue("file:content", (Serializable) blob);
 
             DocumentModel result = session.createDocument(newDoc);
+            session.save();
 
             return result.getId();
         }
