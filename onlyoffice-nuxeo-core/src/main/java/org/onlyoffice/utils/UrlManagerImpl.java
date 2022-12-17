@@ -18,12 +18,16 @@
 
 package org.onlyoffice.utils;
 
+import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
+import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.constants.SettingsConstants;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl implements UrlManager {
     @Override
@@ -54,6 +58,19 @@ public class UrlManagerImpl implements UrlManager {
     }
 
     @Override
+    public String getBaseNuxeoUrl(OperationContext ctx) {
+        HttpServletRequest request = (HttpServletRequest) ctx.get("request");
+        VirtualHostHelper.getServerURL(request);
+
+        String nuxeoServerInnerUrl = Framework.getProperty(SettingsConstants.NUXEO_SERVER_INNER_URL, null);
+        if (nuxeoServerInnerUrl == null || nuxeoServerInnerUrl.isEmpty()) {
+            return appendSlash(VirtualHostHelper.getServerURL(request));
+        } else {
+            return appendSlash(nuxeoServerInnerUrl);
+        }
+    }
+
+    @Override
     public String replaceDocEditorURLToInnner(String url) {
         String innerDocEditorUrl = getInnerDocServUrl();
         String publicDocEditorUrl = getDocServUrl();
@@ -67,6 +84,20 @@ public class UrlManagerImpl implements UrlManager {
 
     @Override
     public String getContentUrl(WebContext ctx, DocumentModel model) {
+        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
+
+        return String.format(
+                "%1snuxeo/nxfile/%2s/%3s/file:content/%4s?token=%5s",
+                getBaseNuxeoUrl(ctx),
+                ctx.getCoreSession().getRepositoryName(),
+                model.getId(),
+                model.getAdapter(BlobHolder.class).getBlob().getFilename(),
+                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+        );
+    }
+
+    @Override
+    public String getContentUrl(OperationContext ctx, DocumentModel model) {
         TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
 
         return String.format(

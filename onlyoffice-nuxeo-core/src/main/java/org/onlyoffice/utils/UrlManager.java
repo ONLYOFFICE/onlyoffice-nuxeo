@@ -18,6 +18,7 @@
 
 package org.onlyoffice.utils;
 
+import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.webengine.model.WebContext;
 
@@ -25,7 +26,9 @@ public interface UrlManager {
     public String getDocServUrl();
     public String getInnerDocServUrl();
     public String getBaseNuxeoUrl(WebContext ctx);
+    public String getBaseNuxeoUrl(OperationContext ctx);
     public String replaceDocEditorURLToInnner(String url);
     public String getContentUrl(WebContext ctx, DocumentModel model);
+    public String getContentUrl(OperationContext ctx, DocumentModel model);
     public String getCallbackUrl(WebContext ctx, DocumentModel model);
 }
