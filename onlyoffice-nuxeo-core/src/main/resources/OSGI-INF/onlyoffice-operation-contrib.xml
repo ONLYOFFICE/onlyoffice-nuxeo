@@ -3,6 +3,7 @@
 
   <extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent" point="operations">
     <operation class="org.onlyoffice.operation.CreateOperation"/>
+    <operation class="org.onlyoffice.operation.ConvertOperation"/>
   </extension>
 
 </component>
