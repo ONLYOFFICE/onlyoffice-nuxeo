@@ -20,21 +20,26 @@ package org.onlyoffice.constants;
 
 import org.onlyoffice.model.DocumentType;
 
+import java.util.List;
+
 public class Format {
     public String name;
     public DocumentType type;
     public boolean edit;
+    public List<String> convertTo;
 
-    public Format(String name, DocumentType type) {
+    public Format(String name, DocumentType type, List<String> convertTo) {
         this.name = name;
         this.type = type;
         this.edit = false;
+        this.convertTo = convertTo;
     }
 
-    public Format(String name, DocumentType type, boolean edit) {
+    public Format(String name, DocumentType type, boolean edit, List<String> convertTo) {
         this.name = name;
         this.type = type;
         this.edit = edit;
+        this.convertTo = convertTo;
     }
 
     public String getName() {
@@ -45,11 +50,19 @@ public class Format {
 
     public boolean isEdit() { return edit; }
 
+    public List<String> getConvertTo() {
+        return convertTo;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
     public void setType(DocumentType type) { this.type = type; }
+
+    public void setConvertTo(List<String> convertTo) {
+        this.convertTo = convertTo;
+    }
 
     public void setEdit(boolean edit) { this.edit = edit; }
 }

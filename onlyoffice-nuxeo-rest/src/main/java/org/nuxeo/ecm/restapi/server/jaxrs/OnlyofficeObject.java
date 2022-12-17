@@ -37,6 +37,7 @@ import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.CallbackService;
 import org.onlyoffice.api.SettingsService;
+import org.onlyoffice.constants.ListFormats;
 import org.onlyoffice.utils.JwtManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,16 @@ public class OnlyofficeObject extends DefaultObject {
 
         return Response.status(Status.OK)
                 .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .type("application/json")
+                .build();
+    }
+
+    @GET
+    @Path("formats")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getFormats() {
+        return Response.status(Status.OK)
+                .entity(ListFormats.getSupportedFormatsAsJson().toString(2))
                 .type("application/json")
                 .build();
     }
