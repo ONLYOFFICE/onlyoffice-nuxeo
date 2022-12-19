@@ -19,6 +19,9 @@
 <dom-module id="onlyoffice-settings">
     <template>
         <style include="nuxeo-styles iron-flex">
+            .form-buttons {
+                margin-top: 16px;
+            }
         </style>
         <nuxeo-page>
             <div slot="header">
@@ -47,6 +50,12 @@
                         </nuxeo-input>
 
                         <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-header')]]" value="{{settings.jwtHeader}}" name="jwt-header">
+                        </nuxeo-input>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-inner-url')]]" value="{{settings.docInnerUrl}}" name="doc-inner-url">
+                        </nuxeo-input>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.nuxeo-inner-url')]]" value="{{settings.nuxeoInnerUrl}}" name="nuxeo-inner-url">
                         </nuxeo-input>
 
                         <div class="form-buttons">

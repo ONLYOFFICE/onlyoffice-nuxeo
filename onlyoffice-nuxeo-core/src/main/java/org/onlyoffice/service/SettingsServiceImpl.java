@@ -41,10 +41,14 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
         String docUrl = Framework.getProperty(SettingsConstants.DOC_SERVER_URL, "http://127.0.0.1/");
         String jwtSecret = Framework.getProperty(SettingsConstants.JWT_SECRET, null);
         String jwtHeader = Framework.getProperty(SettingsConstants.JWT_HEADER, null);
+        String docInnerUrl = Framework.getProperty(SettingsConstants.DOC_SERVER_INNER_URL, null);
+        String nuxeoInnerUrl = Framework.getProperty(SettingsConstants.NUXEO_SERVER_INNER_URL, null);
 
         settings.put("docUrl", docUrl);
         settings.put("jwtSecret", jwtSecret);
         settings.put("jwtHeader", jwtHeader);
+        settings.put("docInnerUrl", docInnerUrl);
+        settings.put("nuxeoInnerUrl", nuxeoInnerUrl);
 
         return settings;
     }
@@ -63,6 +67,14 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
 
         if (settings.has("jwtHeader")) {
             properties.put(SettingsConstants.JWT_HEADER, settings.getString("jwtHeader").trim());
+        }
+
+        if (settings.has("docInnerUrl")) {
+            properties.put(SettingsConstants.DOC_SERVER_INNER_URL, settings.getString("docInnerUrl").trim());
+        }
+
+        if (settings.has("nuxeoInnerUrl")) {
+            properties.put(SettingsConstants.NUXEO_SERVER_INNER_URL, settings.getString("nuxeoInnerUrl").trim());
         }
 
         Properties frameworkProperties = Framework.getProperties();

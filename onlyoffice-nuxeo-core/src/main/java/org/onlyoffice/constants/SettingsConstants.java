@@ -24,5 +24,7 @@ public class SettingsConstants {
     public static final String DOC_SERVER_URL = "onlyoffice.docserv.url";
     public static final String JWT_SECRET = "onlyoffice.jwt.secret";
     public static final String JWT_HEADER = "onlyoffice.jwt.header";
+    public static final String DOC_SERVER_INNER_URL = "onlyoffice.docserv.inner.url";
+    public static final String NUXEO_SERVER_INNER_URL = "onlyoffice.nuxeo.inner.url";
 
 }
