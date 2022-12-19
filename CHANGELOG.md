@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- change favicon in editor by document type
 - advanced server settings for specifying internal addresses
 - setting authorization header
 - settings page
