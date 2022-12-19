@@ -16,5 +16,19 @@
     "label.onlyoffice.document.word": "Document",
     "label.onlyoffice.document.cell": "Classeur",
     "label.onlyoffice.document.slide": "Présentation",
-    "label.onlyoffice.document.form": "Modèle de formulaire"
+    "label.onlyoffice.document.form": "Modèle de formulaire",
+    "onlyoffice.convert.action": "Convertir en utilisant ONLYOFFICE",
+    "onlyoffice.convert.submit": "Convertir",
+    "onlyoffice.convert.label": "Convertir {0} en {1}",
+    "onlyoffice.convert.message.success": "",
+    "onlyoffice.convert.message.error.undefined": "",
+    "onlyoffice.convert.message.error.service": "",
+    "onlyoffice.convert.message.error.service.unknown": "Erreur inconnue",
+    "onlyoffice.convert.message.error.service.timeout": "Erreur de délai de conversion",
+    "onlyoffice.convert.message.error.service.conversion": "Erreur de conversion",
+    "onlyoffice.convert.message.error.service.download": "Erreur lors du téléchargement du fichier à convertir",
+    "onlyoffice.convert.message.error.service.password": "Mot de passe incorrect",
+    "onlyoffice.convert.message.error.service.database": "Erreur lors de l'accès à la base de données des résultats de la conversion",
+    "onlyoffice.convert.message.error.service.input": "Erreur de saisie",
+    "onlyoffice.convert.message.error.service.token": "Jeton non valide"
 }

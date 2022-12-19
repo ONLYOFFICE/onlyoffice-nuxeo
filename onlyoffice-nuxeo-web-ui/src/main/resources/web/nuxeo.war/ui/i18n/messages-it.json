@@ -16,5 +16,19 @@
     "label.onlyoffice.document.word": "Documento",
     "label.onlyoffice.document.cell": "Foglio di calcolo",
     "label.onlyoffice.document.slide": "Presentazione",
-    "label.onlyoffice.document.form": "Modello di modulo"
+    "label.onlyoffice.document.form": "Modello di modulo",
+    "onlyoffice.convert.action": "Converti utilizzando ONLYOFFICE",
+    "onlyoffice.convert.submit": "Converti",
+    "onlyoffice.convert.label": "Converti {0} in {1} ..",
+    "onlyoffice.convert.message.success": "",
+    "onlyoffice.convert.message.error.undefined": "",
+    "onlyoffice.convert.message.error.service": "",
+    "onlyoffice.convert.message.error.service.unknown": "Errore sconosciuto",
+    "onlyoffice.convert.message.error.service.timeout": "Errore di timeout di conversione",
+    "onlyoffice.convert.message.error.service.conversion": "Errore di conversione",
+    "onlyoffice.convert.message.error.service.download": "Errore di download del documento da convertire",
+    "onlyoffice.convert.message.error.service.password": "Password errata",
+    "onlyoffice.convert.message.error.service.database": "Errore durante l'accesso al database dei risultati della conversione",
+    "onlyoffice.convert.message.error.service.input": "Errore di input",
+    "onlyoffice.convert.message.error.service.token": "Token non valido"
 }

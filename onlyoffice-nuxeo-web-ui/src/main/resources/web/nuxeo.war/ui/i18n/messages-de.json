@@ -16,5 +16,19 @@
     "label.onlyoffice.document.word": "Dokument",
     "label.onlyoffice.document.cell": "Tabelle",
     "label.onlyoffice.document.slide": "Präsentation",
-    "label.onlyoffice.document.form": "Formularvorlage"
+    "label.onlyoffice.document.form": "Formularvorlage",
+    "onlyoffice.convert.action": "Mit ONLYOFFICE konvertieren",
+    "onlyoffice.convert.submit": "Konvertieren",
+    "onlyoffice.convert.label": "Konvertieren von {0} in {1}",
+    "onlyoffice.convert.message.success": "",
+    "onlyoffice.convert.message.error.undefined": "",
+    "onlyoffice.convert.message.error.service": "",
+    "onlyoffice.convert.message.error.service.unknown": "Unbekannter Fehler",
+    "onlyoffice.convert.message.error.service.timeout": "Fehler bei der Konvertierung: Timeout",
+    "onlyoffice.convert.message.error.service.conversion": "Fehler bei der Umwandlung",
+    "onlyoffice.convert.message.error.service.download": "Fehler beim Herunterladen der Datei, die konvertiert werden muss",
+    "onlyoffice.convert.message.error.service.password": "Ungültiges Passwort",
+    "onlyoffice.convert.message.error.service.database": "Fehler beim Zugriff auf die Datenbank der Ergebnisse der Konvertierung",
+    "onlyoffice.convert.message.error.service.input": "Eingabefehler",
+    "onlyoffice.convert.message.error.service.token": "Ungültiges Token"
 }
