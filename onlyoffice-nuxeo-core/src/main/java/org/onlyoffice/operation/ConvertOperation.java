@@ -106,7 +106,7 @@ public class ConvertOperation {
                 public Void doWork(HttpEntity httpEntity) throws IOException {
                     Blob blob = Blobs.createBlob(httpEntity.getContent());
                     blob.setFilename(title + "." + targetExtension);
-                    blob.setMimeType(getMimeType(targetExtension));
+                    blob.setMimeType(utils.getMimeType(targetExtension));
 
                     model.setPropertyValue("file:content", (Serializable) blob);
 
@@ -119,13 +119,5 @@ public class ConvertOperation {
         }
 
         return response.toString(2);
-    }
-
-    private String getMimeType(String extension) {
-        try {
-            return Framework.getService(MimetypeRegistry.class).getMimetypeFromExtension(extension);
-        } catch (MimetypeNotFoundException | MimetypeDetectionException e) {
-            return "application/octet-stream";
-        }
     }
 }

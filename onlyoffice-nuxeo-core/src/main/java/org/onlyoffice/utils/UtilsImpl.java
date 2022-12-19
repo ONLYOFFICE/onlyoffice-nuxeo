@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.platform.mimetype.MimetypeDetectionException;
+import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
+import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.constants.Format;
 import org.onlyoffice.constants.ListFormats;
@@ -126,5 +130,14 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         }
 
         return null;
+    }
+
+    @Override
+    public String getMimeType(String extension) {
+        try {
+            return Framework.getService(MimetypeRegistry.class).getMimetypeFromExtension(extension);
+        } catch (MimetypeNotFoundException | MimetypeDetectionException e) {
+            return "application/octet-stream";
+        }
     }
 }

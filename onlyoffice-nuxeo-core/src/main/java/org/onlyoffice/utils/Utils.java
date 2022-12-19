@@ -29,4 +29,5 @@ public interface Utils {
     public String getDocumentType(String ext);
     public String getChangeToken(String key);
     public String getDefaultExtensionByType(DocumentType documentType);
+    public String getMimeType(String extension);
 }

@@ -92,7 +92,7 @@ public class CreateOperation {
 
             Blob blob = Blobs.createBlob(inputStream);
             blob.setFilename(title + "." + extension);
-            blob.setMimeType(getMimeType(extension));
+            blob.setMimeType(utils.getMimeType(extension));
 
             newDoc.setPropertyValue("file:content", (Serializable) blob);
 
@@ -101,13 +101,4 @@ public class CreateOperation {
             return result.getId();
         }
     }
-
-    private String getMimeType(String extension) {
-        try {
-            return Framework.getService(MimetypeRegistry.class).getMimetypeFromExtension(extension);
-        } catch (MimetypeNotFoundException | MimetypeDetectionException e) {
-            return "application/octet-stream";
-        }
-    }
-
 }
