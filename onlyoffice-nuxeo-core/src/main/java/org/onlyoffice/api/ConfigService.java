@@ -16,14 +16,12 @@
  *
  */
 
-package org.onlyoffice.utils;
+package org.onlyoffice.api;
 
+import org.json.JSONObject;
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.webengine.model.WebContext;
 
-public interface ConfigManager {
-    public String getJwtSecret();
-    public String getDocServUrl();
-    public String getInnerDocServUrl();
-    public String getBaseNuxeoUrl(WebContext ctx);
-    public String replaceDocEditorURLToInnner(String url);
+public interface ConfigService {
+    public JSONObject createConfig(WebContext ctx, DocumentModel model, String mode) throws Exception;
 }

@@ -27,18 +27,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
-import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 import org.nuxeo.runtime.api.Framework;
-import org.onlyoffice.utils.ConfigManager;
-import org.onlyoffice.utils.JwtManager;
+import org.onlyoffice.api.ConfigService;
+import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +49,9 @@ public class Editor extends ModuleRoot {
 
     private static final Logger logger = LoggerFactory.getLogger(Editor.class);
 
-    private JwtManager jwtManager;
-    private ConfigManager config;
+    private UrlManager urlManager;
     private Utils utils;
+    private ConfigService configService;
 
     private TokenAuthenticationService authService;
 
@@ -61,9 +59,9 @@ public class Editor extends ModuleRoot {
     protected void initialize(Object... args) {
         super.initialize(args);
 
-        jwtManager = Framework.getService(JwtManager.class);
-        config = Framework.getService(ConfigManager.class);
+        urlManager = Framework.getService(UrlManager.class);
         utils = Framework.getService(Utils.class);
+        configService = Framework.getService(ConfigService.class);
         authService = Framework.getService(TokenAuthenticationService.class);
     }
 
@@ -77,63 +75,12 @@ public class Editor extends ModuleRoot {
 
         try {
             return getView("index")
-                .arg("config", getConfig(ctx, model, mode))
-                .arg("docUrl", config.getDocServUrl())
+                .arg("config", configService.createConfig(ctx, model, mode))
+                .arg("docUrl", urlManager.getDocServUrl())
                 .arg("docTitle", model.getTitle());
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
             return Response.serverError().build();
         }
-    }
-
-    private JSONObject getConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
-        String user = ctx.getPrincipal().getName();
-        String token = authService.acquireToken(user, "ONLYOFFICE", "editor", "auth", "rw");
-        String baseUrl = config.getBaseNuxeoUrl(ctx);
-        String repoName = ctx.getCoreSession().getRepositoryName();
-        String locale = ctx.getLocale().toLanguageTag();
-
-        JSONObject responseJson = new JSONObject();
-        JSONObject documentObject = new JSONObject();
-        JSONObject editorConfigObject = new JSONObject();
-        JSONObject userObject = new JSONObject();
-        JSONObject permObject = new JSONObject();
-
-        String docTitle = model.getTitle();
-        String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-        String docExt = utils.getFileExtension(docFilename);
-        String docId = model.getId();
-
-        String contentUrl = String.format("%1snuxeo/nxfile/%2s/%3s/file:content/%4s?token=%5s", baseUrl, repoName, docId, docFilename, token);
-        String callbackUrl = String.format("%1snuxeo/api/v1/onlyoffice/callback/%2s?token=%3s", baseUrl, docId, token);
-
-        Boolean toEdit = mode != null && mode.equals("edit");
-
-        responseJson.put("type", "desktop");
-        responseJson.put("width", "100%");
-        responseJson.put("height", "100%");
-        responseJson.put("documentType", utils.getDocumentType(docExt));
-
-        responseJson.put("document", documentObject);
-        documentObject.put("title", docTitle);
-        documentObject.put("url", contentUrl);
-        documentObject.put("fileType", docExt);
-        documentObject.put("key", utils.getDocumentKey(model));
-        documentObject.put("permissions", permObject);
-        permObject.put("edit", toEdit);
-
-        responseJson.put("editorConfig", editorConfigObject);
-        editorConfigObject.put("lang", locale);
-        editorConfigObject.put("mode", toEdit ? "edit" : "view");
-        editorConfigObject.put("callbackUrl", callbackUrl);
-        editorConfigObject.put("user", userObject);
-        userObject.put("id", user);
-        userObject.put("name", user);
-
-        if (jwtManager.isEnabled()) {
-            responseJson.put("token", jwtManager.createToken(responseJson));
-        }
-
-        return responseJson;
     }
 }
