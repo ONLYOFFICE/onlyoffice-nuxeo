@@ -16,5 +16,19 @@
     "label.onlyoffice.document.word": "Documento",
     "label.onlyoffice.document.cell": "Hoja de cálculo",
     "label.onlyoffice.document.slide": "Presentación",
-    "label.onlyoffice.document.form": "Plantilla de formulario"
+    "label.onlyoffice.document.form": "Plantilla de formulario",
+    "onlyoffice.convert.action": "Convierta usando ONLYOFFICE",
+    "onlyoffice.convert.submit": "Convertir",
+    "onlyoffice.convert.label": "Convertir {0} a {1}",
+    "onlyoffice.convert.message.success": "",
+    "onlyoffice.convert.message.error.undefined": "",
+    "onlyoffice.convert.message.error.service": "",
+    "onlyoffice.convert.message.error.service.unknown": "Error desconocido",
+    "onlyoffice.convert.message.error.service.timeout": "Error de tiempo de conversión",
+    "onlyoffice.convert.message.error.service.conversion": "Error de conversión",
+    "onlyoffice.convert.message.error.service.download": "Error al descargar el archivo para conversión",
+    "onlyoffice.convert.message.error.service.password": "Contraseña incorrecta",
+    "onlyoffice.convert.message.error.service.database": "Error al acceder la base de datos de resultados de conversión",
+    "onlyoffice.convert.message.error.service.input": "Error de entrada",
+    "onlyoffice.convert.message.error.service.token": "Token no válido"
 }

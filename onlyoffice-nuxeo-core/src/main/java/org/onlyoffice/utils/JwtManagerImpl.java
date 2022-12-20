@@ -25,6 +25,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.json.JSONObject;
+import org.nuxeo.common.utils.ExceptionUtils;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.constants.SettingsConstants;
@@ -38,16 +39,24 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
     }
 
     @Override
-    public String createToken(JSONObject payload) throws Exception {
+    public String createToken(JSONObject payload) {
         JSONObject header = new JSONObject();
         header.put("alg", "HS256");
         header.put("typ", "JWT");
 
         Encoder enc = Base64.getUrlEncoder();
 
-        String encHeader = enc.encodeToString(header.toString().getBytes("UTF-8")).replace("=", "");
-        String encPayload = enc.encodeToString(payload.toString().getBytes("UTF-8")).replace("=", "");
-        String hash = calculateHash(encHeader, encPayload);
+        String encHeader = null;
+        String encPayload = null;
+        String hash = null;
+
+        try {
+            encHeader = enc.encodeToString(header.toString().getBytes("UTF-8")).replace("=", "");
+            encPayload = enc.encodeToString(payload.toString().getBytes("UTF-8")).replace("=", "");
+            hash = calculateHash(encHeader, encPayload);
+        } catch (Exception e) {
+            throw ExceptionUtils.runtimeException(e);
+        }
 
         return encHeader + "." + encPayload + "." + hash;
     }

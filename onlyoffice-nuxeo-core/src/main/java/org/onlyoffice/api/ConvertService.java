@@ -16,18 +16,12 @@
  *
  */
 
-package org.onlyoffice.utils;
+package org.onlyoffice.api;
 
-import org.nuxeo.ecm.core.api.DocumentModel;
-import org.onlyoffice.model.DocumentType;
+import org.json.JSONObject;
 
-public interface Utils {
-    public String getPathLocale(String language);
-    public String getDocumentKey(DocumentModel model);
-    public String getTitleWithoutExtension(String filename);
-    public String getFileExtension(String filename);
-    public String getDocumentType(String ext);
-    public String getChangeToken(String key);
-    public String getDefaultExtensionByType(DocumentType documentType);
-    public String getMimeType(String extension);
+
+public interface ConvertService {
+    JSONObject convert(String key, String currentExtension, String targetExtension, String url, String region, boolean async);
+    boolean isConvertible(String extension);
 }

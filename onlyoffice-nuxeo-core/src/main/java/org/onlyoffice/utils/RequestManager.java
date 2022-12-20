@@ -18,16 +18,15 @@
 
 package org.onlyoffice.utils;
 
-import org.nuxeo.ecm.core.api.DocumentModel;
-import org.onlyoffice.model.DocumentType;
+import org.apache.http.HttpEntity;
+import org.json.JSONObject;
 
-public interface Utils {
-    public String getPathLocale(String language);
-    public String getDocumentKey(DocumentModel model);
-    public String getTitleWithoutExtension(String filename);
-    public String getFileExtension(String filename);
-    public String getDocumentType(String ext);
-    public String getChangeToken(String key);
-    public String getDefaultExtensionByType(DocumentType documentType);
-    public String getMimeType(String extension);
+public interface RequestManager {
+    <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback);
+    <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback);
+    <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback);
+
+    interface Callback<Result> {
+        Result doWork(HttpEntity httpEntity) throws Exception;
+    }
 }

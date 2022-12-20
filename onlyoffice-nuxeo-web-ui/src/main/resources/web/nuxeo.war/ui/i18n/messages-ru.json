@@ -16,5 +16,19 @@
     "label.onlyoffice.document.word": "Документ",
     "label.onlyoffice.document.cell": "Таблица",
     "label.onlyoffice.document.slide": "Презентация",
-    "label.onlyoffice.document.form": "Шаблон формы"
+    "label.onlyoffice.document.form": "Шаблон формы",
+    "onlyoffice.convert.action": "Конвертировать в ONLYOFFICE",
+    "onlyoffice.convert.submit": "Конвертировать",
+    "onlyoffice.convert.label": "Конвертировать {0} в {1}",
+    "onlyoffice.convert.message.success": "{0} был успешно конвертирован",
+    "onlyoffice.convert.message.error.undefined": "Не удалось конвертировать документ (Неопределенная ошибка)",
+    "onlyoffice.convert.message.error.service": "Не удалось конвертировать документ, Сервис Конвертации документов вернул ошибку ({0})",
+    "onlyoffice.convert.message.error.service.unknown": "Неизвестная ошибка",
+    "onlyoffice.convert.message.error.service.timeout": "Ошибка тайм-аута конвертации",
+    "onlyoffice.convert.message.error.service.conversion": "Ошибка преобразования",
+    "onlyoffice.convert.message.error.service.download": "Ошибка при загрузке файла документа для преобразования",
+    "onlyoffice.convert.message.error.service.password": "Неверный пароль",
+    "onlyoffice.convert.message.error.service.database": "Ошибка при доступе к базе данных результатов конвертации",
+    "onlyoffice.convert.message.error.service.input": "Ошибка ввода",
+    "onlyoffice.convert.message.error.service.token": "Неверный токен"
 }
