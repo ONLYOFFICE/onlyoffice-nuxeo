@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- button to open file location
 - documents conversion
 - change favicon in editor by document type
 - advanced server settings for specifying internal addresses

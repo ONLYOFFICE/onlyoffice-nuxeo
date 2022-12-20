@@ -69,6 +69,7 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         JSONObject editorConfigObject = new JSONObject();
         JSONObject userObject = new JSONObject();
         JSONObject permObject = new JSONObject();
+        JSONObject customizationObject = new JSONObject();
 
         String docTitle = model.getTitle();
         String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
@@ -99,6 +100,11 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         editorConfigObject.put("user", userObject);
         userObject.put("id", user);
         userObject.put("name", user);
+
+        editorConfigObject.put("customization", customizationObject);
+        JSONObject goBack = new JSONObject();
+        goBack.put("url", urlManager.getGobackUrl(ctx, model));
+        customizationObject.put("goback", goBack);
 
         if (jwtManager.isEnabled()) {
             responseJson.put("token", jwtManager.createToken(responseJson));

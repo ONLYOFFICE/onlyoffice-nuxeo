@@ -122,6 +122,15 @@ public class UrlManagerImpl implements UrlManager {
         );
     }
 
+    @Override
+    public String getGobackUrl(WebContext ctx, DocumentModel model) {
+        return String.format(
+                "%1snuxeo/ui/#!/browse%2s",
+                getBaseNuxeoUrl(ctx),
+                model.getPath().removeLastSegments(1).toString()
+        );
+    }
+
     private String appendSlash(String url) {
         return url.endsWith("/") ? url : url + "/";
     }
