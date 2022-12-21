@@ -23,6 +23,19 @@
          * @polymerBehavior Nuxeo.ONLYOFFICEUtils
          */
         Nuxeo.ONLYOFFICEUtils = {
+            properties: {
+                onlyofficeFormats: {
+                    type: Array,
+                    value: []
+                },
+            },
+
+            ready() {
+                this.$.requestFormats.get().then((response) => {
+                    this.onlyofficeFormats = response;
+                });
+            },
+
             getTitle(document) {
                 var title = null;
                 if (document && document.properties) {
@@ -49,10 +62,10 @@
                 return null;
             },
 
-            getTargetTitle(onlyofficeFormats, document) {
+            getTargetTitle(document) {
                 var currentTitle = this.getTitle(document);
                 var currentExtension = this.getExtension(document);
-                var targetExtension = this.getTargetExtension(onlyofficeFormats, currentExtension);
+                var targetExtension = this.getTargetExtension(currentExtension);
 
                 if (currentTitle != null) {
                     var index = currentTitle.lastIndexOf('.');
@@ -65,19 +78,19 @@
                 return currentTitle;
             },
 
-            getTargetExtension(onlyofficeFormats, ext) {
-                for (i = 0; i < onlyofficeFormats.length; i++) {
-                    if (onlyofficeFormats[i].name == ext) {
-                        if (onlyofficeFormats[i].convertTo != null) {
-                            switch (onlyofficeFormats[i].type) {
+            getTargetExtension(ext) {
+                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                    if (this.onlyofficeFormats[i].name == ext) {
+                        if (this.onlyofficeFormats[i].convertTo != null) {
+                            switch (this.onlyofficeFormats[i].type) {
                                 case "WORD":
-                                    if (onlyofficeFormats[i].convertTo.includes("docx")) return "docx";
+                                    if (this.onlyofficeFormats[i].convertTo.includes("docx")) return "docx";
                                     break;
                                 case "CELL":
-                                    if (onlyofficeFormats[i].convertTo.includes("xlsx")) return "xlsx";
+                                    if (this.onlyofficeFormats[i].convertTo.includes("xlsx")) return "xlsx";
                                     break;
                                 case "SLIDE":
-                                    if (onlyofficeFormats[i].convertTo.includes("pptx")) return "pptx";
+                                    if (this.onlyofficeFormats[i].convertTo.includes("pptx")) return "pptx";
                                     break;
                             }
                         }
@@ -87,10 +100,46 @@
                 return null;
             },
 
-            isСonvertible(onlyofficeFormats, document) {
+            isСonvertible(document) {
                 var extension = this.getExtension(document);
 
-                return this.getTargetExtension(onlyofficeFormats, extension) != null;
+                return this.getTargetExtension(extension) != null;
+            },
+
+            isEditable(document) {
+                var extension = this.getExtension(document);
+
+                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                    if (this.onlyofficeFormats[i].name == extension) {
+                        return this.onlyofficeFormats[i].edit && extension != "oform";
+                    }
+                }
+
+                return false;
+            },
+
+            isViewable(document) {
+                var extension = this.getExtension(document);
+
+                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                    if (this.onlyofficeFormats[i].name == extension) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+
+            isFillForm(document) {
+                var extension = this.getExtension(document);
+
+                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                    if (this.onlyofficeFormats[i].name == extension) {
+                        return this.onlyofficeFormats[i].edit && extension == "oform";
+                    }
+                }
+
+                return false;
             },
 
             _deepFind(obj, props) {

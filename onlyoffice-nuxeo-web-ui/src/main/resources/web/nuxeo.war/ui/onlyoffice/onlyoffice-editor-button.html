@@ -17,10 +17,18 @@
  -->
 
 <link rel="import" href="onlyoffice-editor-button-behavior.html">
+<link rel="import" href="onlyoffice-utils.html">
 
 <dom-module id="onlyoffice-editor-button">
     <template>
-        <template is="dom-if" if="[[_isAvailable(document)]]">
+        <nuxeo-resource
+                id="requestFormats"
+                path="/onlyoffice/formats"
+                headers='{"Content-Type": "application/json"}'
+                response="{{onlyofficeFormats}}"
+        ></nuxeo-resource>
+
+        <template is="dom-if" if="[[_isAvailable(document,onlyofficeFormats)]]">
             <div class="action" on-click="_openEditor">
                 <paper-icon-button src="[[icon]]" noink></paper-icon-button>
                 <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
@@ -31,7 +39,12 @@
     <script>
         Polymer({
             is: 'onlyoffice-editor-button',
-            behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior, Nuxeo.ONLYOFFICE],
+            behaviors: [
+                Nuxeo.I18nBehavior,
+                Nuxeo.FiltersBehavior,
+                Nuxeo.ONLYOFFICE,
+                Nuxeo.ONLYOFFICEUtils
+            ],
             properties: {
                 label: {
                     type: String,
@@ -59,12 +72,12 @@
             },
 
             _isAvailable: function(document) {
-                if (!this.getBlob(document)) return false;
+                if (!this.isViewable(document)) return false;
 
                 this.writable = this.hasPermission(document, 'Write');
-                if (this.writable && this.canEdit()) {
+                if (this.writable && this.isEditable(document)) {
                     this.label = 'label.onlyoffice.edit';
-                } else if (this.writable && this.canFillForm()) {
+                } else if (this.writable && this.isFillForm(document)) {
                     this.label = 'label.onlyoffice.fillForm';
                 } else {
                     this.label ='label.onlyoffice.view';

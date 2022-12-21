@@ -114,11 +114,6 @@
                     value: 'file:content'
                 },
 
-                onlyofficeFormats: {
-                    type: Array,
-                    value: []
-                },
-
                 icon: {
                     type: String,
                     value: 'images/convert-action.svg',
@@ -147,12 +142,6 @@
                 }
             },
 
-            ready() {
-                this.$.requestFormats.get().then((response) => {
-                    this.onlyofficeFormats = response;
-                });
-            },
-
             _toggleDialog() {
                 this.$.convertDialog.toggle();
             },
@@ -171,7 +160,7 @@
                     !(doc.isRecord && this.xpath !== 'file:content') &&
                     !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content') &&
                     !(this.hasFacet(doc, 'ColdStorage') && this.hasContent(doc, 'coldstorage:coldContent')) &&
-                    this.isСonvertible(this.onlyofficeFormats, doc)
+                    this.isСonvertible(doc)
                 );
             },
 
