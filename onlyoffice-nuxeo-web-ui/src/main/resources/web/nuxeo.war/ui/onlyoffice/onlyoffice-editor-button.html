@@ -16,7 +16,6 @@
  *
  -->
 
-<link rel="import" href="onlyoffice-editor-button-behavior.html">
 <link rel="import" href="onlyoffice-utils.html">
 
 <dom-module id="onlyoffice-editor-button">
@@ -71,6 +70,11 @@
                 }
             },
 
+            getEditUrl: function() {
+                var source = "../site/onlyedit/" + this.document.uid;
+                return source;
+            },
+
             _isAvailable: function(document) {
                 if (!this.isViewable(document)) return false;
 
@@ -87,7 +91,7 @@
             },
 
             _openEditor: function() {
-                this.editor = window.open(this.getEditUrl(this.writable && (this.canEdit() || this.canFillForm())), '_blank');
+                this.editor = window.open(this.getEditUrl(), '_blank');
                 this.async(this._editorClosed, 1500);
             },
 

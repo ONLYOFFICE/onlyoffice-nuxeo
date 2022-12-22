@@ -27,6 +27,7 @@ public interface Utils {
     public String getTitleWithoutExtension(String filename);
     public String getFileExtension(String filename);
     public String getDocumentType(String ext);
+    public Boolean isEditable(String extension);
     public String getChangeToken(String key);
     public String getDefaultExtensionByType(DocumentType documentType);
     public String getMimeType(String extension);

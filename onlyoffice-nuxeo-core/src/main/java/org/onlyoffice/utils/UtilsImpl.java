@@ -90,6 +90,19 @@ public class UtilsImpl extends DefaultComponent implements Utils {
     }
 
     @Override
+    public Boolean isEditable(String extension) {
+        List<Format> supportedFormats = ListFormats.getSupportedFormats();
+
+        for (Format format : supportedFormats) {
+            if (format.getName().equals(extension)) {
+                return format.isEdit();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public String getTitleWithoutExtension(String filename) {
         if (filename != null) {
             int index = filename.lastIndexOf('.');

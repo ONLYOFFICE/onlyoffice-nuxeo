@@ -19,8 +19,10 @@
 package org.onlyoffice.service;
 
 import org.json.JSONObject;
+import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
+import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -56,10 +58,11 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         return jwtManager;
     }
     @Override
-    public JSONObject createConfig(WebContext ctx, DocumentModel model, String mode) throws Exception {
+    public JSONObject createConfig(WebContext ctx, DocumentModel model) {
         UrlManager urlManager = getUrlManager();
         Utils utils = getUtils();
         JwtManager jwtManager = getJwtManager();
+        CoreSession session = ctx.getCoreSession();
 
         String user = ctx.getPrincipal().getName();
         String locale = ctx.getLocale().toLanguageTag();
@@ -78,7 +81,10 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         String contentUrl = urlManager.getContentUrl(ctx, model);
         String callbackUrl = urlManager.getCallbackUrl(ctx, model);
 
-        Boolean toEdit = mode != null && mode.equals("edit");
+        Boolean hasWriteProperties = session.hasPermission(model.getRef(), SecurityConstants.WRITE_PROPERTIES);
+        Boolean isEditable = utils.isEditable(docExt);
+
+        String mode = hasWriteProperties && isEditable ? "edit" : "view";
 
         responseJson.put("type", "desktop");
         responseJson.put("width", "100%");
@@ -91,11 +97,11 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         documentObject.put("fileType", docExt);
         documentObject.put("key", utils.getDocumentKey(model));
         documentObject.put("permissions", permObject);
-        permObject.put("edit", toEdit);
+        permObject.put("edit", hasWriteProperties);
 
         responseJson.put("editorConfig", editorConfigObject);
         editorConfigObject.put("lang", locale);
-        editorConfigObject.put("mode", toEdit ? "edit" : "view");
+        editorConfigObject.put("mode", mode);
         editorConfigObject.put("callbackUrl", callbackUrl);
         editorConfigObject.put("user", userObject);
         userObject.put("id", user);
