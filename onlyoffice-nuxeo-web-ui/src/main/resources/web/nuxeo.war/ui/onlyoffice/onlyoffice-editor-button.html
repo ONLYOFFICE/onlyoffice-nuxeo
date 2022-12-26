@@ -16,18 +16,17 @@
  *
  -->
 
-<link rel="import" href="onlyoffice-utils.html">
-
 <dom-module id="onlyoffice-editor-button">
     <template>
         <nuxeo-resource
-                id="requestFormats"
-                path="/onlyoffice/formats"
+                auto
+                id="filterONLYOFFICE"
+                path="[[_getPath(document)]]"
                 headers='{"Content-Type": "application/json"}'
-                response="{{onlyofficeFormats}}"
+                response="{{config}}"
         ></nuxeo-resource>
 
-        <template is="dom-if" if="[[_isAvailable(document,onlyofficeFormats)]]">
+        <template is="dom-if" if="[[_isAvailable(document,config)]]">
             <div class="action" on-click="_openEditor">
                 <paper-icon-button src="[[icon]]" noink></paper-icon-button>
                 <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
@@ -45,6 +44,8 @@
                 Nuxeo.ONLYOFFICEUtils
             ],
             properties: {
+                document: Object,
+
                 label: {
                     type: String,
                     value: ''
@@ -64,10 +65,14 @@
                     type: Object
                 },
 
-                writable: {
-                    type: Boolean,
-                    value: false
-                }
+                config: {
+                    type: Object,
+                    value: {},
+                },
+            },
+
+            _getPath(document) {
+               return `/onlyoffice/filter/${document.uid}`;
             },
 
             getEditUrl: function() {
@@ -76,18 +81,18 @@
             },
 
             _isAvailable: function(document) {
-                if (!this.isViewable(document)) return false;
-
-                this.writable = this.hasPermission(document, 'Write');
-                if (this.writable && this.isEditable(document)) {
+                if (this.config.mode == "view") {
+                    this.label = 'label.onlyoffice.view';
+                    return true;
+                } else if (this.config.mode == "edit") {
                     this.label = 'label.onlyoffice.edit';
-                } else if (this.writable && this.isFillForm(document)) {
+                    return true;
+                } else if (this.config.mode == "fillForm") {
                     this.label = 'label.onlyoffice.fillForm';
-                } else {
-                    this.label ='label.onlyoffice.view';
+                    return true;
                 }
 
-                return true;
+                return false;
             },
 
             _openEditor: function() {
