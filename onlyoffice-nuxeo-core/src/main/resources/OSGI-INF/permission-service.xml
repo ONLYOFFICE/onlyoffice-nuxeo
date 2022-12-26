@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.api.PermissionService" version="1.0">
+
+    <implementation class="org.onlyoffice.service.PermissionServiceImpl" />
+
+    <service>
+        <provide interface="org.onlyoffice.api.PermissionService" />
+    </service>
+</component>

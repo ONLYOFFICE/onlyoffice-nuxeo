@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.model.Document;
+import org.nuxeo.ecm.core.model.Session;
 import org.nuxeo.ecm.platform.mimetype.MimetypeDetectionException;
 import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
@@ -151,6 +154,30 @@ public class UtilsImpl extends DefaultComponent implements Utils {
             return Framework.getService(MimetypeRegistry.class).getMimetypeFromExtension(extension);
         } catch (MimetypeNotFoundException | MimetypeDetectionException e) {
             return "application/octet-stream";
+        }
+    }
+
+    @Override
+    public Document resolveReference(Session session, DocumentRef docRef) {
+        if (docRef == null) {
+            throw new IllegalArgumentException("null docRref");
+        } else {
+            Object ref = docRef.reference();
+            if (ref == null) {
+                throw new IllegalArgumentException("null reference");
+            } else {
+                int type = docRef.type();
+                switch(type) {
+                    case 1:
+                        return session.getDocumentByUUID((String)ref);
+                    case 2:
+                        return session.resolvePath((String)ref);
+                    case 3:
+                        return session.getDocumentByUUID(((DocumentModel)ref).getId());
+                    default:
+                        throw new IllegalArgumentException("Invalid type: " + type);
+                }
+            }
         }
     }
 }

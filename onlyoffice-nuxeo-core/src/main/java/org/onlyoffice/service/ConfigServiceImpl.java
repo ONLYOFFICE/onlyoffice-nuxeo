@@ -19,7 +19,6 @@
 package org.onlyoffice.service;
 
 import org.json.JSONObject;
-import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
@@ -27,6 +26,7 @@ import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.api.ConfigService;
+import org.onlyoffice.api.PermissionService;
 import org.onlyoffice.utils.JwtManager;
 import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
@@ -36,6 +36,7 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
     private UrlManager urlManager;
     private Utils utils;
     private JwtManager jwtManager;
+    private PermissionService permissionService;
 
     protected UrlManager getUrlManager() {
         if (urlManager == null) {
@@ -57,12 +58,20 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         }
         return jwtManager;
     }
+
+    protected PermissionService getPermissionService() {
+        if (permissionService == null) {
+            permissionService = Framework.getService(PermissionService.class);
+        }
+        return permissionService;
+    }
+
     @Override
     public JSONObject createConfig(WebContext ctx, DocumentModel model) {
         UrlManager urlManager = getUrlManager();
         Utils utils = getUtils();
         JwtManager jwtManager = getJwtManager();
-        CoreSession session = ctx.getCoreSession();
+        PermissionService permissionService = getPermissionService();
 
         String user = ctx.getPrincipal().getName();
         String locale = ctx.getLocale().toLanguageTag();
@@ -81,7 +90,7 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         String contentUrl = urlManager.getContentUrl(ctx, model);
         String callbackUrl = urlManager.getCallbackUrl(ctx, model);
 
-        Boolean hasWriteProperties = session.hasPermission(model.getRef(), SecurityConstants.WRITE_PROPERTIES);
+        Boolean hasWriteProperties = permissionService.checkPermission(model, ctx.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
         Boolean isEditable = utils.isEditable(docExt);
 
         String mode = hasWriteProperties && isEditable ? "edit" : "view";
