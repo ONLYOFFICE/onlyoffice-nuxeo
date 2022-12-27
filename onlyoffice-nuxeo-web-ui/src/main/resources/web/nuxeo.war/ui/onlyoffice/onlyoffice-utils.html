@@ -106,42 +106,6 @@
                 return this.getTargetExtension(extension) != null;
             },
 
-            isEditable(document) {
-                var extension = this.getExtension(document);
-
-                for (i = 0; i < this.onlyofficeFormats.length; i++) {
-                    if (this.onlyofficeFormats[i].name == extension) {
-                        return this.onlyofficeFormats[i].edit && extension != "oform";
-                    }
-                }
-
-                return false;
-            },
-
-            isViewable(document) {
-                var extension = this.getExtension(document);
-
-                for (i = 0; i < this.onlyofficeFormats.length; i++) {
-                    if (this.onlyofficeFormats[i].name == extension) {
-                        return true;
-                    }
-                }
-
-                return false;
-            },
-
-            isFillForm(document) {
-                var extension = this.getExtension(document);
-
-                for (i = 0; i < this.onlyofficeFormats.length; i++) {
-                    if (this.onlyofficeFormats[i].name == extension) {
-                        return this.onlyofficeFormats[i].edit && extension == "oform";
-                    }
-                }
-
-                return false;
-            },
-
             _deepFind(obj, props) {
                 for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
                     if (!obj || obj === []) {
