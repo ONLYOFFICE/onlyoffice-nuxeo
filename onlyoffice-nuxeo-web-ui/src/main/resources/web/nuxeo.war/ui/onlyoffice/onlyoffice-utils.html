@@ -31,6 +31,10 @@
             },
 
             ready() {
+                if (!this.$.requestFormats) {
+                    throw new Error('Missing ONLYOFFICEFormats resource');
+                }
+
                 this.$.requestFormats.get().then((response) => {
                     this.onlyofficeFormats = response;
                 });
