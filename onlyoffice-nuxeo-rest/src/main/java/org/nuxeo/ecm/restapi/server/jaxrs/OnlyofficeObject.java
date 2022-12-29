@@ -90,9 +90,18 @@ public class OnlyofficeObject extends DefaultObject {
         JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
 
         settingsService.updateSettings(json);
+        String resultValidation = settingsService.validateSettings(getContext());
+
+        JSONObject response = new JSONObject();
+        response.put("success", true);
+
+        if (resultValidation != null) {
+            response.put("success", false);
+            response.put("message", resultValidation);
+        }
 
         return Response.status(Status.OK)
-                .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .entity(response.toString(2))
                 .type("application/json")
                 .build();
     }

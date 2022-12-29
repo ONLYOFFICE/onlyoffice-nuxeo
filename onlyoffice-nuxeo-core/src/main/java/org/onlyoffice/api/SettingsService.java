@@ -19,6 +19,7 @@
 package org.onlyoffice.api;
 
 import org.json.JSONObject;
+import org.nuxeo.ecm.webengine.model.WebContext;
 
 import java.io.IOException;
 import java.util.Map;
@@ -26,4 +27,5 @@ import java.util.Map;
 public interface SettingsService {
     public Map<String, Object> getSettings();
     public void updateSettings(JSONObject settings) throws IOException;
+    public String validateSettings(WebContext ctx);
 }

@@ -30,11 +30,18 @@
 
             <nuxeo-card>
                 <nuxeo-resource
-                        id="request"
+                        id="settings"
                         path="/onlyoffice/settings"
                         headers='{"Content-Type": "application/json"}'
                         response="{{settings}}"
                         auto
+                ></nuxeo-resource>
+
+
+                <nuxeo-resource
+                        id="updateSettings"
+                        path="/onlyoffice/settings"
+                        headers='{"Content-Type": "application/json"}'
                 ></nuxeo-resource>
 
                 <div class="header">
@@ -98,9 +105,13 @@
                 const valid = this.$.form.validate();
                 if (!valid) { return; }
 
-                this.$.request.data = this.settings;
-                this.$.request.post().then((res) => {
-                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") })
+                this.$.updateSettings.data = this.settings;
+                this.$.updateSettings.post().then((res) => {
+                    if(res.success) {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") });
+                    } else {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation." + res.message) });
+                    }
                 }).catch((err) => {
                     this.fire(
                         "notify",
