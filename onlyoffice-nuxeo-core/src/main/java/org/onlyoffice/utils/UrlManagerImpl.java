@@ -131,6 +131,17 @@ public class UrlManagerImpl implements UrlManager {
         );
     }
 
+    @Override
+    public String getTestTxtUrl(WebContext ctx) {
+        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
+
+        return String.format(
+                "%1snuxeo/api/v1/onlyoffice/test-txt?token=%3s",
+                getBaseNuxeoUrl(ctx),
+                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+        );
+    }
+
     private String appendSlash(String url) {
         return url.endsWith("/") ? url : url + "/";
     }

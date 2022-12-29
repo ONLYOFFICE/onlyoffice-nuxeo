@@ -20,6 +20,7 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -206,6 +207,21 @@ public class OnlyofficeObject extends DefaultObject {
             logger.error("Error while processing callback for " + id, e);
             return Response.status(code).build();
         }
+    }
+
+    @GET
+    @Path("test-txt")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getTestFile() throws UnsupportedEncodingException {
+        checkAdministrator();
+
+        String message = "Test file for conversion";
+
+        return Response.status(Status.OK)
+                .header("Content-Disposition", "attachment; filename=test.txt")
+                .header("Content-Length", message.getBytes("UTF-8").length)
+                .type("text/plain")
+                .entity(message).build();
     }
 
     private void checkAdministrator() {
