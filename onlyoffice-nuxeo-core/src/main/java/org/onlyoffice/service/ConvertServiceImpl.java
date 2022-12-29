@@ -38,7 +38,7 @@ public class ConvertServiceImpl extends DefaultComponent implements ConvertServi
     }
 
     @Override
-    public JSONObject convert(String key, String currentExtension, String targetExtension, String url, String region, boolean async) {
+    public JSONObject convert(String key, String currentExtension, String targetExtension, String url, String region, boolean async) throws Exception {
         JSONObject body = new JSONObject();
         body.put("async", async);
         body.put("embeddedfonts", true);

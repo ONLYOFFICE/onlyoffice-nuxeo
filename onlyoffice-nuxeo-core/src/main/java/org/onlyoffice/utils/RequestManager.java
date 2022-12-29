@@ -22,9 +22,9 @@ import org.apache.http.HttpEntity;
 import org.json.JSONObject;
 
 public interface RequestManager {
-    <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback);
-    <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback);
-    <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback);
+    <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback) throws Exception;
+    <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback) throws Exception;
+    <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback) throws Exception;
 
     interface Callback<Result> {
         Result doWork(HttpEntity httpEntity) throws Exception;
