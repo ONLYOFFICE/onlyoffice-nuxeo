@@ -23,6 +23,12 @@ import org.nuxeo.ecm.automation.core.util.DocumentHelper;
 import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.versioning.VersioningService;
+import org.nuxeo.ecm.core.event.Event;
+import org.nuxeo.ecm.core.event.EventService;
+import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
+import org.nuxeo.ecm.core.model.Document;
+import org.nuxeo.ecm.core.model.Session;
+import org.nuxeo.ecm.core.repository.RepositoryService;
 import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -32,7 +38,10 @@ import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CallbackServiceImpl extends DefaultComponent implements CallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
@@ -59,7 +68,7 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
         switch (json.getInt("status")) {
             case 0:
                 logger.error("ONLYOFFICE has reported that no doc with the specified key can be found");
-                model.removeLock();
+                this.removeLock(session, model);
                 break;
             case 1:
                 if (!model.isLocked()) {
@@ -71,7 +80,7 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
                 break;
             case 2:
                 logger.info("Document Updated, changing content");
-                model.removeLock();
+                this.removeLock(session, model);
 
                 urlManager = getUrlManager();
                 String documentUrl = urlManager.replaceDocEditorURLToInnner(json.getString("url"));
@@ -80,11 +89,11 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
                 break;
             case 3:
                 logger.error("ONLYOFFICE has reported that saving the document has failed");
-                model.removeLock();
+                this.removeLock(session, model);
                 break;
             case 4:
                 logger.info("No document updates, unlocking node");
-                model.removeLock();
+                this.removeLock(session, model);
                 break;
         }
     }
@@ -108,6 +117,25 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
         session.save();
     }
 
+    private void removeLock(CoreSession session, DocumentModel model) throws Exception {
+        RepositoryService repositoryService = Framework.getService(RepositoryService.class);
+        Session repoSession = repositoryService.getSession(model.getRepositoryName());
+
+        Document doc = this.getUtils().resolveReference(repoSession, model.getRef());
+        String owner = model.getLockInfo().getOwner();
+
+        Lock lock = doc.removeLock(owner);
+        if (lock == null) {
+
+        } else if (lock.getFailed()) {
+            throw new LockException("Document already locked by " + lock.getOwner() + ": " + model.getRef(), 409);
+        } else {
+            Map<String, Serializable> options = new HashMap();
+            options.put("lock", lock);
+            this.notifyEvent("documentUnlocked", model, options, (String)null, (String)null, true, false, session);
+        }
+    }
+
     private Blob getBlob(DocumentModel model, String xpath) {
         Blob blob = (Blob) model.getPropertyValue(xpath);
         if (blob == null) {
@@ -117,6 +145,36 @@ public class CallbackServiceImpl extends DefaultComponent implements CallbackSer
             }
         }
         return blob;
+    }
+
+    private void notifyEvent(String eventId, DocumentModel source, Map<String, Serializable> options, String category,
+                               String comment, boolean withLifeCycle, boolean inline, CoreSession session) {
+        DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), source);
+        if (options != null) {
+            ctx.setProperties(options);
+        }
+
+        ctx.setProperty("repositoryName", source.getRepositoryName());
+        if (source != null && withLifeCycle) {
+            String currentLifeCycleState = source.getCurrentLifeCycleState();
+            ctx.setProperty("documentLifeCycle", currentLifeCycleState);
+        }
+
+        if (comment != null) {
+            ctx.setProperty("comment", comment);
+        }
+
+        ctx.setProperty("category", category == null ? "eventDocumentCategory" : category);
+        Event event = ctx.newEvent(eventId);
+        if ("sessionSaved".equals(eventId)) {
+            event.setIsCommitEvent(true);
+        }
+
+        if (inline) {
+            event.setInline(true);
+        }
+
+        ((EventService)Framework.getService(EventService.class)).fireEvent(event);
     }
 
 }

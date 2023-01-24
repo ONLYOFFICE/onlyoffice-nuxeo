@@ -23,7 +23,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -31,7 +30,6 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
-import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
@@ -54,8 +52,6 @@ public class Editor extends ModuleRoot {
     private Utils utils;
     private ConfigService configService;
 
-    private TokenAuthenticationService authService;
-
     @Override
     protected void initialize(Object... args) {
         super.initialize(args);
@@ -63,13 +59,12 @@ public class Editor extends ModuleRoot {
         urlManager = Framework.getService(UrlManager.class);
         utils = Framework.getService(Utils.class);
         configService = Framework.getService(ConfigService.class);
-        authService = Framework.getService(TokenAuthenticationService.class);
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.TEXT_HTML)
-    public Object getEdit(@PathParam("id") String id, @QueryParam("mode") String mode) {
+    public Object getEdit(@PathParam("id") String id) {
         WebContext ctx = getContext();
         CoreSession session = ctx.getCoreSession();
         DocumentModel model = session.getDocument(new IdRef(id));
@@ -80,7 +75,7 @@ public class Editor extends ModuleRoot {
 
         try {
             return getView("index")
-                .arg("config", configService.createConfig(ctx, model, mode))
+                .arg("config", configService.createConfig(ctx, model))
                 .arg("docUrl", urlManager.getDocServUrl())
                 .arg("docTitle", model.getTitle())
                 .arg("docType", docType);

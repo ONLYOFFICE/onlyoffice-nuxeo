@@ -16,11 +16,17 @@
  *
  -->
 
-<link rel="import" href="onlyoffice-editor-button-behavior.html">
-
 <dom-module id="onlyoffice-editor-button">
     <template>
-        <template is="dom-if" if="[[_isAvailable(document)]]">
+        <nuxeo-resource
+                auto
+                id="filterONLYOFFICE"
+                path="[[_getPath(document)]]"
+                headers='{"Content-Type": "application/json"}'
+                response="{{config}}"
+        ></nuxeo-resource>
+
+        <template is="dom-if" if="[[_isAvailable(document,config)]]">
             <div class="action" on-click="_openEditor">
                 <paper-icon-button src="[[icon]]" noink></paper-icon-button>
                 <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
@@ -31,8 +37,15 @@
     <script>
         Polymer({
             is: 'onlyoffice-editor-button',
-            behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior, Nuxeo.ONLYOFFICE],
+            behaviors: [
+                Nuxeo.I18nBehavior,
+                Nuxeo.FiltersBehavior,
+                Nuxeo.ONLYOFFICE,
+                Nuxeo.ONLYOFFICEUtils
+            ],
             properties: {
+                document: Object,
+
                 label: {
                     type: String,
                     value: ''
@@ -52,29 +65,38 @@
                     type: Object
                 },
 
-                writable: {
-                    type: Boolean,
-                    value: false
-                }
+                config: {
+                    type: Object,
+                    value: {},
+                },
+            },
+
+            _getPath(document) {
+               return `/onlyoffice/filter/${document.uid}`;
+            },
+
+            getEditUrl: function() {
+                var source = "../site/onlyedit/" + this.document.uid;
+                return source;
             },
 
             _isAvailable: function(document) {
-                if (!this.getBlob(document)) return false;
-
-                this.writable = this.hasPermission(document, 'Write');
-                if (this.writable && this.canEdit()) {
+                if (this.config.mode == "view") {
+                    this.label = 'label.onlyoffice.view';
+                    return true;
+                } else if (this.config.mode == "edit") {
                     this.label = 'label.onlyoffice.edit';
-                } else if (this.writable && this.canFillForm()) {
+                    return true;
+                } else if (this.config.mode == "fillForm") {
                     this.label = 'label.onlyoffice.fillForm';
-                } else {
-                    this.label ='label.onlyoffice.view';
+                    return true;
                 }
 
-                return true;
+                return false;
             },
 
             _openEditor: function() {
-                this.editor = window.open(this.getEditUrl(this.writable && (this.canEdit() || this.canFillForm())), '_blank');
+                this.editor = window.open(this.getEditUrl(), '_blank');
                 this.async(this._editorClosed, 1500);
             },
 

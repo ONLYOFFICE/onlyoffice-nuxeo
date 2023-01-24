@@ -18,10 +18,9 @@
 
 package org.onlyoffice.api;
 
-import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.webengine.model.WebContext;
+import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 
-public interface ConfigService {
-    JSONObject createConfig(WebContext ctx, DocumentModel model);
+public interface PermissionService {
+    Boolean checkPermission(DocumentModel model, NuxeoPrincipal principal, String permission);
 }

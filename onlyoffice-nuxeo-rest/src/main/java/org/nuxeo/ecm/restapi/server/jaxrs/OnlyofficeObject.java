@@ -31,14 +31,18 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.*;
+import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
+import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.CallbackService;
+import org.onlyoffice.api.PermissionService;
 import org.onlyoffice.api.SettingsService;
 import org.onlyoffice.constants.ListFormats;
 import org.onlyoffice.utils.JwtManager;
+import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +54,8 @@ public class OnlyofficeObject extends DefaultObject {
     private JwtManager jwtManager;
     private SettingsService settingsService;
     private CallbackService callbackService;
+    private PermissionService permissionService;
+    private Utils utils;
 
     @Override
     protected void initialize(Object... args) {
@@ -58,6 +64,8 @@ public class OnlyofficeObject extends DefaultObject {
         jwtManager = Framework.getService(JwtManager.class);
         settingsService = Framework.getService(SettingsService.class);
         callbackService = Framework.getService(CallbackService.class);
+        permissionService = Framework.getService(PermissionService.class);
+        utils = Framework.getService(Utils.class);
     }
 
     @GET
@@ -94,6 +102,36 @@ public class OnlyofficeObject extends DefaultObject {
     public Object getFormats() {
         return Response.status(Status.OK)
                 .entity(ListFormats.getSupportedFormatsAsJson().toString(2))
+                .type("application/json")
+                .build();
+    }
+
+    @GET
+    @Path("filter/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getFilter(@PathParam("id") String id) {
+        JSONObject response = new JSONObject();
+
+        CoreSession session = getContext().getCoreSession();
+        DocumentModel model = session.getDocument(new IdRef(id));
+
+        String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
+        String extension = utils.getFileExtension(fileName);
+
+        if (utils.getDocumentType(extension) != null) {
+            response.put("mode", "view");
+        }
+
+        if (utils.isEditable(extension) && permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES)) {
+            response.put("mode", "edit");
+
+            if (extension.equals("oform")) {
+                response.put("mode", "fillForm");
+            }
+        }
+
+         return Response.status(Status.OK)
+                .entity(response.toString(2))
                 .type("application/json")
                 .build();
     }
