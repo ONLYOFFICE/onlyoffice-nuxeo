@@ -19,21 +19,33 @@
 package org.onlyoffice.service;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.nuxeo.common.Environment;
+import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.api.ConvertService;
 import org.onlyoffice.api.SettingsService;
 import org.onlyoffice.constants.SettingsConstants;
+import org.onlyoffice.utils.RequestManager;
+import org.onlyoffice.utils.UrlManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
 public class SettingsServiceImpl extends DefaultComponent implements SettingsService {
+    private static final Logger logger = LoggerFactory.getLogger(SettingsServiceImpl.class);
+
     @Override
     public Map<String, Object> getSettings() {
         Map<String, Object> settings = new HashMap<>();
@@ -94,4 +106,101 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
         FileUtils.writeLines(sittingsFile, listProperties);
     }
 
+    @Override
+    public String validateSettings(WebContext ctx) {
+        if (!this.checkDocServUrl()) {
+            return "docservunreachable";
+        }
+
+        try {
+            if (!this.checkDocServCommandService()) {
+                return "docservcommand";
+            }
+
+            if (!this.checkDocServConvert(ctx)) {
+                return "docservconvert";
+            }
+        } catch (SecurityException e) {
+            return "jwterror";
+        }
+
+        return null;
+    }
+
+    private Boolean checkDocServUrl() {
+        UrlManager urlManager = Framework.getService(UrlManager.class);
+        RequestManager requestManager = Framework.getService(RequestManager.class);
+
+        String url = urlManager.getDocServUrl() + "healthcheck";
+
+        try {
+            return requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8").trim();
+                    return content.equalsIgnoreCase("true");
+                }
+            });
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private Boolean checkDocServCommandService() {
+        RequestManager requestManager = Framework.getService(RequestManager.class);
+
+        JSONObject body = new JSONObject();
+        body.put("c", "version");
+
+        try {
+            return requestManager.executeRequestToCommandService(body, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException, JSONException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8");
+
+                    JSONObject response = new JSONObject(content);
+
+                    if (response.isNull("error")) {
+                        return false;
+                    }
+
+                    Integer errorCode = response.getInt("error");
+
+                    if (errorCode == 6) {
+                        throw new SecurityException();
+                    } else if (errorCode != 0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            });
+        }catch (SecurityException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private Boolean checkDocServConvert(WebContext ctx) {
+        ConvertService convertService = Framework.getService(ConvertService.class);
+        UrlManager urlManager = Framework.getService(UrlManager.class);
+        String key = new SimpleDateFormat("MMddyyyyHHmmss").format(new Date());
+
+        try {
+            JSONObject response = convertService.convert(key, "txt", "docx", urlManager.getTestTxtUrl(ctx), "en-US", false);
+
+            if (!response.has("fileUrl") && response.getString("fileUrl").isEmpty()) {
+                return false;
+            }
+        } catch (Exception e) {
+            if (e instanceof SecurityException) {
+                throw (SecurityException) e;
+            }
+            logger.error(e.getMessage(), e);
+            return false;
+        }
+
+        return true;
+    }
 }

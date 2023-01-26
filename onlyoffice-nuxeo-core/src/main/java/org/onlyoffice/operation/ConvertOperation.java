@@ -65,7 +65,7 @@ public class ConvertOperation {
     protected String language;
 
     @OperationMethod
-    public String run() throws OperationException {
+    public String run() throws Exception {
         ConvertService convertService = Framework.getService(ConvertService.class);
         Utils utils = Framework.getService(Utils.class);
         UrlManager urlManager = Framework.getService(UrlManager.class);

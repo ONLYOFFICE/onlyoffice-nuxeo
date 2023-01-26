@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- settings validation
 - button to open file location
 - documents conversion
 - change favicon in editor by document type

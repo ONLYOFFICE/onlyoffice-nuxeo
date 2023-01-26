@@ -20,6 +20,7 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -89,9 +90,18 @@ public class OnlyofficeObject extends DefaultObject {
         JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
 
         settingsService.updateSettings(json);
+        String resultValidation = settingsService.validateSettings(getContext());
+
+        JSONObject response = new JSONObject();
+        response.put("success", true);
+
+        if (resultValidation != null) {
+            response.put("success", false);
+            response.put("message", resultValidation);
+        }
 
         return Response.status(Status.OK)
-                .entity(new JSONObject(settingsService.getSettings()).toString(2))
+                .entity(response.toString(2))
                 .type("application/json")
                 .build();
     }
@@ -206,6 +216,21 @@ public class OnlyofficeObject extends DefaultObject {
             logger.error("Error while processing callback for " + id, e);
             return Response.status(code).build();
         }
+    }
+
+    @GET
+    @Path("test-txt")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getTestFile() throws UnsupportedEncodingException {
+        checkAdministrator();
+
+        String message = "Test file for conversion";
+
+        return Response.status(Status.OK)
+                .header("Content-Disposition", "attachment; filename=test.txt")
+                .header("Content-Length", message.getBytes("UTF-8").length)
+                .type("text/plain")
+                .entity(message).build();
     }
 
     private void checkAdministrator() {

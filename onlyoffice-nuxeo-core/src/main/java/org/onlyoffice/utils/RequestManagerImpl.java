@@ -49,26 +49,26 @@ public class RequestManagerImpl extends DefaultComponent implements RequestManag
     }
 
     @Override
-    public <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback) {
+    public <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback) throws Exception {
         HttpGet request = new HttpGet(getUrlManager().replaceDocEditorURLToInnner(url));
 
         return executeRequest(request, "Document Server", callback);
     }
 
     @Override
-    public <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback) {
+    public <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback) throws Exception {
         HttpPost request = new HttpPost(getUrlManager().getInnerDocServUrl() + "coauthoring/CommandService.ashx");
 
         return executeRequestPost(request, body, "Command Service", callback);
     }
 
     @Override
-    public <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback) {
+    public <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback) throws Exception {
         HttpPost request = new HttpPost(getUrlManager().getInnerDocServUrl() + "ConvertService.ashx");
         return executeRequestPost(request, body, "Conversion Service", callback);
     }
 
-    private <R> R executeRequestPost(HttpPost request, JSONObject body, String name, RequestManager.Callback<R> callback) {
+    private <R> R executeRequestPost(HttpPost request, JSONObject body, String name, RequestManager.Callback<R> callback) throws Exception {
         if (getJwtManager().isEnabled()) {
             String token = getJwtManager().createToken(body);
 
@@ -88,7 +88,7 @@ public class RequestManagerImpl extends DefaultComponent implements RequestManag
         return executeRequest(request, name, callback);
     }
 
-    private <R> R executeRequest(HttpUriRequest request, String name, RequestManager.Callback<R> callback) {
+    private <R> R executeRequest(HttpUriRequest request, String name, RequestManager.Callback<R> callback) throws Exception {
         try (CloseableHttpClient httpClient = getHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 StatusLine statusLine = response.getStatusLine();
@@ -110,11 +110,7 @@ public class RequestManagerImpl extends DefaultComponent implements RequestManag
                 EntityUtils.consume(resEntity);
 
                 return result;
-            } catch (IOException e) {
-                throw new RuntimeException(name + " failed to connect or to read the response", e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(name + " failed to create an HttpClient", e);
         }
     }
 

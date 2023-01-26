@@ -32,4 +32,5 @@ public interface UrlManager {
     public String getContentUrl(OperationContext ctx, DocumentModel model);
     public String getCallbackUrl(WebContext ctx, DocumentModel model);
     public String getGobackUrl(WebContext ctx, DocumentModel model);
+    public String getTestTxtUrl(WebContext ctx);
 }

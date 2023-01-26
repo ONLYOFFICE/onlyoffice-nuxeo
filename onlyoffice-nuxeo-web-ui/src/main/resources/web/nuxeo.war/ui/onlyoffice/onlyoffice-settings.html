@@ -30,11 +30,17 @@
 
             <nuxeo-card>
                 <nuxeo-resource
-                        id="request"
+                        id="settings"
                         path="/onlyoffice/settings"
                         headers='{"Content-Type": "application/json"}'
                         response="{{settings}}"
                         auto
+                ></nuxeo-resource>
+
+                <nuxeo-resource
+                        id="updateSettings"
+                        path="/onlyoffice/settings"
+                        headers='{"Content-Type": "application/json"}'
                 ></nuxeo-resource>
 
                 <div class="header">
@@ -98,9 +104,17 @@
                 const valid = this.$.form.validate();
                 if (!valid) { return; }
 
-                this.$.request.data = this.settings;
-                this.$.request.post().then((res) => {
-                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") })
+                this._testDocServiceApi();
+            },
+
+            _updateSettings() {
+                this.$.updateSettings.data = this.settings;
+                this.$.updateSettings.post().then((res) => {
+                    if(res.success) {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") });
+                    } else {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation." + res.message) });
+                    }
                 }).catch((err) => {
                     this.fire(
                         "notify",
@@ -109,6 +123,47 @@
                         }
                     );
                 });
+            },
+
+            _testDocServiceApi() {
+                if (window.location.href.startsWith("https://") && this.settings.docUrl.toLowerCase().startsWith("http://")) {
+                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.mixedcontent") });
+                    return;
+                }
+
+                delete DocsAPI;
+
+                var scriptAddress = document.getElementById("scripDocServiceAddress");
+                if (scriptAddress) scriptAddress.parentNode.removeChild(scriptAddress);
+
+                var js = document.createElement("script");
+                js.setAttribute("type", "text/javascript");
+                js.setAttribute("id", "scripDocServiceAddress");
+                document.getElementsByTagName("head")[0].appendChild(js);
+
+                scriptAddress = document.getElementById("scripDocServiceAddress");
+
+                scriptAddress.onload = () => this._testApiResult();
+                scriptAddress.onerror = () => this._testApiResult();;
+
+                var docServiceUrlApi = this.settings.docUrl;
+
+                if (!docServiceUrlApi.endsWith("/")) {
+                      docServiceUrlApi += "/";
+                }
+                docServiceUrlApi += "web-apps/apps/api/documents/api.js";
+
+                scriptAddress.src = docServiceUrlApi;
+            },
+
+            _testApiResult() {
+                var result = typeof DocsAPI != "undefined";
+
+                if (result) {
+                    this._updateSettings();
+                } else {
+                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.docservunreachable") });
+                }
             }
         });
     </script>
