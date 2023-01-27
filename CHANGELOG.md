@@ -1,6 +1,6 @@
 # Change Log
 
-## 
+## 2.1.0
 ## Added
 - settings validation
 - button to open file location
