@@ -87,7 +87,7 @@ public class CreateOperation {
         DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
         String extension = utils.getDefaultExtensionByType(documentType);
 
-        try (InputStream inputStream = getClass().getResourceAsStream("/app_data/" + pathLocale  + "/new." + extension)){
+        try (InputStream inputStream = getClass().getResourceAsStream("/app_data/document-templates/" + pathLocale  + "/new." + extension)){
             DocumentModel newDoc = session.createDocumentModel(path, title, "File");
 
             Blob blob = Blobs.createBlob(inputStream);
