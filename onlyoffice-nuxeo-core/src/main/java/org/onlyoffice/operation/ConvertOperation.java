@@ -30,12 +30,8 @@ import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
-import org.nuxeo.ecm.platform.mimetype.MimetypeDetectionException;
-import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
-import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.api.ConvertService;
-import org.onlyoffice.model.DocumentType;
 import org.onlyoffice.utils.RequestManager;
 import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
@@ -83,12 +79,11 @@ public class ConvertOperation {
         String title = utils.getTitleWithoutExtension(fileName);
         String currentExtension = utils.getFileExtension(fileName);
 
-        if (!convertService.isConvertible(currentExtension)) {
+        if (convertService.getTargetExtension(currentExtension) == null) {
             throw new OperationException("Document type is not supported!");
         }
 
-        String documentType = utils.getDocumentType(currentExtension);
-        String targetExtension = utils.getDefaultExtensionByType(DocumentType.valueOf(documentType.toUpperCase()));
+        String targetExtension = convertService.getTargetExtension(currentExtension);
         String contentUrl = urlManager.getContentUrl(context, model);
 
         Locale locale = Locale.ENGLISH;

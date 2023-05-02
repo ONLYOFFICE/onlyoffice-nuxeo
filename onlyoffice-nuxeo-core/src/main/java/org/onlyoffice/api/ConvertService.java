@@ -23,5 +23,5 @@ import org.json.JSONObject;
 
 public interface ConvertService {
     JSONObject convert(String key, String currentExtension, String targetExtension, String url, String region, boolean async) throws Exception;
-    boolean isConvertible(String extension);
+    String getTargetExtension(String extension);
 }
