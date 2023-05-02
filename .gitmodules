@@ -2,3 +2,7 @@
 	path = onlyoffice-nuxeo-core/src/main/resources/app_data/document-templates
 	url = https://github.com/ONLYOFFICE/document-templates
 	branch = main/new
+[submodule "onlyoffice-nuxeo-core/src/main/resources/app_data/document-formats"]
+	path = onlyoffice-nuxeo-core/src/main/resources/app_data/document-formats
+	url = https://github.com/ONLYOFFICE/document-formats
+	branch = master
