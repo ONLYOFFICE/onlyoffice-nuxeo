@@ -28,8 +28,6 @@
       to="nuxeo.war/ui/i18n/messages-fr.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-it.json"
       to="nuxeo.war/ui/i18n/messages-it.json"/>
-    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-ru.json"
-      to="nuxeo.war/ui/i18n/messages-ru.json"/>
 
     <delete path="${bundle.fileName}.tmp"/>
   </install>
