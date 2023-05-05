@@ -57,6 +57,7 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         put("pt-BR", "pt-BR");
         put("pt", "pt-PT");
         put("ru", "ru-RU");
+        put("si", "si-LK");
         put("sk", "sk-SK");
         put("sv", "sv-SE");
         put("uk", "uk-UA");
