@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentNotFoundException;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
@@ -87,6 +88,8 @@ public class Editor extends ModuleRoot {
                 .arg("docType", docType);
         } catch (DocumentSecurityException e) {
             return Response.status(403).build();
+        } catch (DocumentNotFoundException e) {
+            return Response.status(404).build();
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
             throw new NuxeoException(e);
