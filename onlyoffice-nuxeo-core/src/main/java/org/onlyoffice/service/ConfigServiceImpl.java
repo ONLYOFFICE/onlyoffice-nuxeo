@@ -92,8 +92,9 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
 
         Boolean hasWriteProperties = permissionService.checkPermission(model, ctx.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
         Boolean isEditable = utils.isEditable(docExt);
+        Boolean isFillForm = utils.isFillForm(docExt);
 
-        String mode = hasWriteProperties && isEditable ? "edit" : "view";
+        String mode = hasWriteProperties && (isEditable || isFillForm) ? "edit" : "view";
 
         responseJson.put("type", "desktop");
         responseJson.put("width", "100%");
@@ -111,7 +112,9 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
         responseJson.put("editorConfig", editorConfigObject);
         editorConfigObject.put("lang", locale);
         editorConfigObject.put("mode", mode);
-        editorConfigObject.put("callbackUrl", callbackUrl);
+        if (mode.equals("edit")) {
+            editorConfigObject.put("callbackUrl", callbackUrl);
+        }
         editorConfigObject.put("user", userObject);
         userObject.put("id", user);
         userObject.put("name", user);

@@ -33,7 +33,9 @@ public interface Utils {
     public String getTitleWithoutExtension(String filename);
     public String getFileExtension(String filename);
     public String getDocumentType(String ext);
+    public Boolean isViewable(String extension);
     public Boolean isEditable(String extension);
+    public Boolean isFillForm(String extension);
     public String getChangeToken(String key);
     public String getMimeType(String extension);
     public Document resolveReference(Session session, DocumentRef docRef);

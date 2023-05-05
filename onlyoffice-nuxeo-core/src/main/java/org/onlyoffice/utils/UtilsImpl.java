@@ -113,10 +113,31 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         return null;
     }
 
+    public Boolean isViewable(String extension) {
+        for (Format format : this.supportedFormats) {
+            if (format.getName().equals(extension) && format.getActions().contains("view")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public Boolean isEditable(String extension) {
         for (Format format : this.supportedFormats) {
             if (format.getName().equals(extension) && format.getActions().contains("edit")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public Boolean isFillForm(String extension) {
+        for (Format format : this.supportedFormats) {
+            if (format.getName().equals(extension) && format.getActions().contains("fill")) {
                 return true;
             }
         }

@@ -127,16 +127,18 @@ public class OnlyofficeObject extends DefaultObject {
         String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
         String extension = utils.getFileExtension(fileName);
 
-        if (utils.getDocumentType(extension) != null) {
+        if (utils.isViewable(extension)) {
             response.put("mode", "view");
         }
 
-        if (utils.isEditable(extension) && permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES)) {
-            response.put("mode", "edit");
+        Boolean hasWriteProperties = permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
 
-            if (extension.equals("oform")) {
-                response.put("mode", "fillForm");
-            }
+        if (utils.isEditable(extension) && hasWriteProperties) {
+            response.put("mode", "edit");
+        }
+
+        if (utils.isFillForm(extension) && hasWriteProperties) {
+            response.put("mode", "fillForm");
         }
 
          return Response.status(Status.OK)
