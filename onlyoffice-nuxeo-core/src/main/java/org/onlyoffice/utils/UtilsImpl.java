@@ -136,10 +136,6 @@ public class UtilsImpl extends DefaultComponent implements Utils {
 
     @Override
     public Boolean isFillForm(String extension) {
-        if (extension.equals("docx")) {
-            return false;
-        }
-
         for (Format format : this.supportedFormats) {
             if (format.getName().equals(extension) && format.getActions().contains("fill")) {
                 return true;
