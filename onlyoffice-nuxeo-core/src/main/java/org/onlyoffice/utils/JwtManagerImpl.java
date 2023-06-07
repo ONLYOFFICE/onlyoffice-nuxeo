@@ -76,6 +76,8 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
             Map.Entry<String, ?> entry = (Map.Entry)var2.next();
             if (entry.getValue() instanceof Map) {
                 builder.withClaim(entry.getKey(), (Map) entry.getValue());
+            } else if (entry.getValue() instanceof Boolean) {
+                builder.withClaim(entry.getKey(), (Boolean) entry.getValue());
             } else {
                 builder.withClaim(entry.getKey(), (String) entry.getValue());
             }
