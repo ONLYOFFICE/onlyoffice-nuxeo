@@ -166,7 +166,7 @@ public class OnlyofficeObject extends DefaultObject {
                 String token = json.optString("token");
                 String payload = null;
                 Boolean inBody = true;
-                
+
                 if (token == null || token == "") {
                     String jwtHeader = jwtManager.getJwtHeader();
                     List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
@@ -235,6 +235,23 @@ public class OnlyofficeObject extends DefaultObject {
         try {
             if (!TransactionHelper.isTransactionActive()) {
                 isTransactionActive = TransactionHelper.startTransaction();
+            }
+
+            if (jwtManager.isEnabled()) {
+                String jwtHeader = jwtManager.getJwtHeader();
+                List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
+                String header = values.isEmpty() ? null : values.get(0);
+                String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+
+                if (token == null || token == "") {
+                    throw new DocumentSecurityException("Expected JWT");
+                }
+
+                try {
+                    String payload = jwtManager.verify(token);
+                } catch (Exception e) {
+                    throw new DocumentSecurityException("JWT verification failed");
+                }
             }
 
             IdRef docRef = new IdRef(id);
