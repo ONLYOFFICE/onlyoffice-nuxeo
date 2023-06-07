@@ -21,8 +21,6 @@ package org.onlyoffice.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
-import org.nuxeo.ecm.core.io.download.DownloadService;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebContext;
@@ -31,6 +29,10 @@ import org.onlyoffice.constants.SettingsConstants;
 import javax.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl implements UrlManager {
+
+    private static final String APPLICATION_NAME = "onlyoffice-nuxeo";
+    private static final String DEVICE_ID = "document-server";
+
     @Override
     public String getDocServUrl() {
         String docServUrl = Framework.getProperty(SettingsConstants.DOC_SERVER_URL, "http://127.0.0.1/");
@@ -94,49 +96,31 @@ public class UrlManagerImpl implements UrlManager {
 
     @Override
     public String getContentUrl(WebContext ctx, DocumentModel model) {
-        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
-        DownloadService downloadService = Framework.getService(DownloadService.class);
-
         return String.format(
-                "%1s%2s?token=%3s",
+                "%1sapi/v1/onlyoffice/download/%2s?token=%3s",
                 getBaseNuxeoUrl(ctx),
-                downloadService.getDownloadUrl(
-                        ctx.getCoreSession().getRepositoryName(),
-                        model.getId(),
-                        "file:content",
-                        model.getAdapter(BlobHolder.class).getBlob().getFilename()
-                ),
-                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+                model.getId(),
+                generateToken(ctx.getPrincipal().getName())
         );
     }
 
     @Override
     public String getContentUrl(OperationContext ctx, DocumentModel model) {
-        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
-        DownloadService downloadService = Framework.getService(DownloadService.class);
-
         return String.format(
-                "%1s%2s?token=%3s",
+                "%1sapi/v1/onlyoffice/download/%2s?token=%3s",
                 getBaseNuxeoUrl(ctx),
-                downloadService.getDownloadUrl(
-                        ctx.getCoreSession().getRepositoryName(),
-                        model.getId(),
-                        "file:content",
-                        model.getAdapter(BlobHolder.class).getBlob().getFilename()
-                ),
-                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+                model.getId(),
+                generateToken(ctx.getPrincipal().getName())
         );
     }
 
     @Override
     public String getCallbackUrl(WebContext ctx, DocumentModel model) {
-        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
-
         return String.format(
                 "%1sapi/v1/onlyoffice/callback/%2s?token=%3s",
                 getBaseNuxeoUrl(ctx),
                 model.getId(),
-                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+                generateToken(ctx.getPrincipal().getName())
         );
     }
 
@@ -151,16 +135,26 @@ public class UrlManagerImpl implements UrlManager {
 
     @Override
     public String getTestTxtUrl(WebContext ctx) {
-        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
-
         return String.format(
                 "%1sapi/v1/onlyoffice/test-txt?token=%2s",
                 getBaseNuxeoUrl(ctx),
-                tokenAuthenticationService.acquireToken(ctx.getPrincipal().getName(), "ONLYOFFICE", "editor", "auth", "rw")
+                generateToken(ctx.getPrincipal().getName())
         );
     }
 
     private String appendSlash(String url) {
         return url.endsWith("/") ? url : url + "/";
+    }
+
+    private String generateToken(String userName) {
+        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
+
+        return  tokenAuthenticationService.acquireToken(
+                userName,
+                APPLICATION_NAME,
+                DEVICE_ID,
+                "",
+                "rw"
+        );
     }
 }

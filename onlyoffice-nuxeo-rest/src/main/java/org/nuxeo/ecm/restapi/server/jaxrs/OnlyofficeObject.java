@@ -24,7 +24,10 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -34,10 +37,12 @@ import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
+import org.nuxeo.ecm.core.io.download.DownloadService;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.onlyoffice.api.CallbackService;
 import org.onlyoffice.api.PermissionService;
 import org.onlyoffice.api.SettingsService;
@@ -221,6 +226,56 @@ public class OnlyofficeObject extends DefaultObject {
     }
 
     @GET
+    @Path("download/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getDownload(@PathParam("id") String id, @Context HttpServletRequest request,
+                              @Context HttpServletResponse response) throws IOException {
+        boolean isTransactionActive = false;
+
+        try {
+            if (!TransactionHelper.isTransactionActive()) {
+                isTransactionActive = TransactionHelper.startTransaction();
+            }
+
+            IdRef docRef = new IdRef(id);
+            CoreSession session = getContext().getCoreSession();
+
+            if (!session.exists(docRef)) {
+                NuxeoPrincipal principal = NuxeoPrincipal.getCurrent();
+                if (principal != null && principal.isAnonymous()) {
+                    throw new DocumentSecurityException("Authentication is needed for downloading the blob");
+                }
+
+                return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
+            }
+
+            DocumentModel model = session.getDocument(docRef);
+            Blob blob = getBlob(model, "file:content");
+
+            DownloadService.DownloadContext context = DownloadService.DownloadContext.builder(request, response)
+                    .doc(model)
+                    .xpath("file:content")
+                    .filename(blob.getFilename())
+                    .reason("download")
+                    .build();
+
+            DownloadService downloadService = Framework.getService(DownloadService.class);
+            downloadService.downloadBlob(context);
+
+            return Response.ok().build();
+        } catch (NuxeoException e) {
+            if (isTransactionActive) {
+                TransactionHelper.setTransactionRollbackOnly();
+            }
+            throw new IOException(e);
+        } finally {
+            if (isTransactionActive) {
+                TransactionHelper.commitOrRollbackTransaction();
+            }
+        }
+    }
+
+    @GET
     @Path("test-txt")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getTestFile() throws UnsupportedEncodingException {
@@ -240,5 +295,16 @@ public class OnlyofficeObject extends DefaultObject {
         if (!currentUser.isAdministrator()) {
             throw new WebSecurityException("You don't have the permission to ONLYOFFICE settings!");
         }
+    }
+
+    private Blob getBlob(DocumentModel model, String xpath) {
+        Blob blob = (Blob) model.getPropertyValue(xpath);
+        if (blob == null) {
+            BlobHolder bh = model.getAdapter(BlobHolder.class);
+            if (bh != null) {
+                blob = bh.getBlob();
+            }
+        }
+        return blob;
     }
 }
