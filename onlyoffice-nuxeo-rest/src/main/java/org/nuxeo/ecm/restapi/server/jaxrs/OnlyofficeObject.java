@@ -298,6 +298,23 @@ public class OnlyofficeObject extends DefaultObject {
     public Object getTestFile() throws UnsupportedEncodingException {
         checkAdministrator();
 
+        if (jwtManager.isEnabled()) {
+            String jwtHeader = jwtManager.getJwtHeader();
+            List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
+            String header = values.isEmpty() ? null : values.get(0);
+            String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+
+            if (token == null || token == "") {
+                return Response.status(Status.UNAUTHORIZED).build();
+            }
+
+            try {
+                String payload = jwtManager.verify(token);
+            } catch (Exception e) {
+                return Response.status(Status.UNAUTHORIZED).build();
+            }
+        }
+
         String message = "Test file for conversion";
 
         return Response.status(Status.OK)
