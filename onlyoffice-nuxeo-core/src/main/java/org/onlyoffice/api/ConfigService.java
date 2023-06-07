@@ -18,10 +18,11 @@
 
 package org.onlyoffice.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.webengine.model.WebContext;
 
 public interface ConfigService {
-    JSONObject createConfig(WebContext ctx, DocumentModel model);
+    JSONObject createConfig(WebContext ctx, DocumentModel model) throws JsonProcessingException;
 }

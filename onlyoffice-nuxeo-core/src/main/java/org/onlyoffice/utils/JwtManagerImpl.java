@@ -19,18 +19,23 @@
 package org.onlyoffice.utils;
 
 import java.util.Base64;
-import java.util.Base64.Encoder;
+import java.util.Iterator;
+import java.util.Map;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
-import org.nuxeo.common.utils.ExceptionUtils;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.constants.SettingsConstants;
 
 public class JwtManagerImpl extends DefaultComponent implements JwtManager {
+
+    private static final long ACCEPT_LEEWAY = 3;
 
     @Override
     public Boolean isEnabled() {
@@ -39,45 +44,16 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
     }
 
     @Override
-    public String createToken(JSONObject payload) {
-        JSONObject header = new JSONObject();
-        header.put("alg", "HS256");
-        header.put("typ", "JWT");
+    public String createToken(JSONObject payload) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, ?> payloadMap = objectMapper.readValue(payload.toString(), Map.class);
 
-        Encoder enc = Base64.getUrlEncoder();
-
-        String encHeader = null;
-        String encPayload = null;
-        String hash = null;
-
-        try {
-            encHeader = enc.encodeToString(header.toString().getBytes("UTF-8")).replace("=", "");
-            encPayload = enc.encodeToString(payload.toString().getBytes("UTF-8")).replace("=", "");
-            hash = calculateHash(encHeader, encPayload);
-        } catch (Exception e) {
-            throw ExceptionUtils.runtimeException(e);
-        }
-
-        return encHeader + "." + encPayload + "." + hash;
+        return createToken(payloadMap, getJwtSecret());
     }
 
     @Override
-    public Boolean verify(String token) {
-        if (!isEnabled()) return false;
-
-        String[] jwt = token.split("\\.");
-        if (jwt.length != 3) {
-            return false;
-        }
-
-        try {
-            String hash = calculateHash(jwt[0], jwt[1]);
-            if (!hash.equals(jwt[2])) return false;
-        } catch(Exception ex) {
-            return false;
-        }
-
-        return true;
+    public String verify(String token) {
+        return verifyToken(token, getJwtSecret());
     }
 
     public String getJwtHeader() {
@@ -89,19 +65,36 @@ public class JwtManagerImpl extends DefaultComponent implements JwtManager {
         return Framework.getProperty(SettingsConstants.JWT_SECRET, null);
     }
 
-    private String calculateHash(String header, String payload) throws Exception {
-        Mac hasher;
-        hasher = getHasher();
-        return Base64.getUrlEncoder().encodeToString(hasher.doFinal((header + "." + payload).getBytes("UTF-8"))).replace("=", "");
+    private String createToken(final Map<String, ?> payloadMap, final String key) {
+        Algorithm algorithm = Algorithm.HMAC256(key);
+
+        JWTCreator.Builder builder = JWT.create();
+
+        Iterator var2 = payloadMap.entrySet().iterator();
+
+        while(var2.hasNext()) {
+            Map.Entry<String, ?> entry = (Map.Entry)var2.next();
+            if (entry.getValue() instanceof Map) {
+                builder.withClaim(entry.getKey(), (Map) entry.getValue());
+            } else {
+                builder.withClaim(entry.getKey(), (String) entry.getValue());
+            }
+        }
+
+        String token = builder.sign(algorithm);
+
+        return token;
     }
 
-    private Mac getHasher() throws Exception {
-        String jwts = getJwtSecret();
+    private String verifyToken(final String token, final String key) {
+        Algorithm algorithm = Algorithm.HMAC256(key);
+        Base64.Decoder decoder = Base64.getUrlDecoder();
 
-        Mac sha256 = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(jwts.getBytes("UTF-8"), "HmacSHA256");
-        sha256.init(secret_key);
+        DecodedJWT jwt = JWT.require(algorithm)
+                .acceptLeeway(ACCEPT_LEEWAY)
+                .build()
+                .verify(token);
 
-        return sha256;
+        return new String(decoder.decode(jwt.getPayload()));
     }
 }

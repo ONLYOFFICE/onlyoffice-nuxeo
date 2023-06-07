@@ -159,6 +159,7 @@ public class OnlyofficeObject extends DefaultObject {
 
             if (jwtManager.isEnabled()) {
                 String token = json.optString("token");
+                String payload = null;
                 Boolean inBody = true;
                 
                 if (token == null || token == "") {
@@ -173,12 +174,13 @@ public class OnlyofficeObject extends DefaultObject {
                     throw new SecurityException("Expected JWT");
                 }
 
-                if (!jwtManager.verify(token)) {
+                try {
+                    payload = jwtManager.verify(token);
+                } catch (Exception e) {
                     throw new SecurityException("JWT verification failed");
                 }
 
-                JSONObject bodyFromToken = new JSONObject(
-                        new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]), "UTF-8"));
+                JSONObject bodyFromToken = new JSONObject(payload);
 
                 if (inBody) {
                     json = bodyFromToken;
