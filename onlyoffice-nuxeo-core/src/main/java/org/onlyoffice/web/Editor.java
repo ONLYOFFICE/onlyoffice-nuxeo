@@ -18,6 +18,7 @@
 
 package org.onlyoffice.web;
 
+import javax.mail.MessagingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,7 +29,10 @@ import javax.ws.rs.core.Response;
 
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentNotFoundException;
+import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
@@ -39,6 +43,8 @@ import org.onlyoffice.utils.UrlManager;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 @Path("/onlyedit")
 @WebObject(type = "onlyedit")
@@ -65,23 +71,28 @@ public class Editor extends ModuleRoot {
     @Path("{id}")
     @Produces(MediaType.TEXT_HTML)
     public Object getEdit(@PathParam("id") String id) {
-        WebContext ctx = getContext();
-        CoreSession session = ctx.getCoreSession();
-        DocumentModel model = session.getDocument(new IdRef(id));
-
-        String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-        String docExt = utils.getFileExtension(docFilename);
-        String docType = utils.getDocumentType(docExt);
-
         try {
+            WebContext ctx = getContext();
+            CoreSession session = ctx.getCoreSession();
+
+            DocumentModel model = session.getDocument(new IdRef(id));
+
+            String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
+            String docExt = utils.getFileExtension(docFilename);
+            String docType = utils.getDocumentType(docExt);
+
             return getView("index")
                 .arg("config", configService.createConfig(ctx, model))
                 .arg("docUrl", urlManager.getDocServUrl())
                 .arg("docTitle", model.getTitle())
                 .arg("docType", docType);
+        } catch (DocumentSecurityException e) {
+            return Response.status(403).build();
+        } catch (DocumentNotFoundException e) {
+            return Response.status(404).build();
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
-            return Response.serverError().build();
+            throw new NuxeoException(e);
         }
     }
 }

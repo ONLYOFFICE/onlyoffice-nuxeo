@@ -18,6 +18,7 @@
 
 package org.onlyoffice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
@@ -67,7 +68,7 @@ public class ConfigServiceImpl extends DefaultComponent implements ConfigService
     }
 
     @Override
-    public JSONObject createConfig(WebContext ctx, DocumentModel model) {
+    public JSONObject createConfig(WebContext ctx, DocumentModel model) throws JsonProcessingException {
         UrlManager urlManager = getUrlManager();
         Utils utils = getUtils();
         JwtManager jwtManager = getJwtManager();

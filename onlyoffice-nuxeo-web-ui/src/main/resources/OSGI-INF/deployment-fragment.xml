@@ -20,16 +20,36 @@
     <!-- append the translations -->
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages.json"
       to="nuxeo.war/ui/i18n/messages.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-ar.json"
+            to="nuxeo.war/ui/i18n/messages-ar.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-cs.json"
+            to="nuxeo.war/ui/i18n/messages-cs.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-de.json"
       to="nuxeo.war/ui/i18n/messages-de.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-es.json"
       to="nuxeo.war/ui/i18n/messages-es.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-es-ES.json"
+            to="nuxeo.war/ui/i18n/messages-es-ES.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-fr.json"
       to="nuxeo.war/ui/i18n/messages-fr.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-he.json"
+            to="nuxeo.war/ui/i18n/messages-he.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-id.json"
+            to="nuxeo.war/ui/i18n/messages-id.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-it.json"
       to="nuxeo.war/ui/i18n/messages-it.json"/>
-    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-ru.json"
-      to="nuxeo.war/ui/i18n/messages-ru.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-ja.json"
+            to="nuxeo.war/ui/i18n/messages-ja.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-nl.json"
+            to="nuxeo.war/ui/i18n/messages-nl.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-pl.json"
+            to="nuxeo.war/ui/i18n/messages-pl.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-pt-PT.json"
+            to="nuxeo.war/ui/i18n/messages-pt-PT.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-sv-SE.json"
+            to="nuxeo.war/ui/i18n/messages-sv-SE.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-zh-CN.json"
+            to="nuxeo.war/ui/i18n/messages-zh-CN.json"/>
 
     <delete path="${bundle.fileName}.tmp"/>
   </install>

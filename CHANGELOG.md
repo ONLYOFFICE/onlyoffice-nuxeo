@@ -2,6 +2,7 @@
 
 ## 2.1.0
 ## Added
+- improvement of jwt signature
 - settings validation
 - button to open file location
 - documents conversion
@@ -13,6 +14,7 @@
 
 ## Changed
 - document server v6.0 and earlier is no longer supported
+- fixed plugin compatibility issue with SAML
 
 ## 2.0.0
 ## Added

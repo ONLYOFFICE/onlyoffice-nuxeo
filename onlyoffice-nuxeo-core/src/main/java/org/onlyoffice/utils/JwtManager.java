@@ -18,11 +18,12 @@
 
 package org.onlyoffice.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONObject;
 
 public interface JwtManager {
     public Boolean isEnabled();
-    public String createToken(JSONObject payload);
-    public Boolean verify(String token);
+    public String createToken(final JSONObject payload) throws JsonProcessingException;
+    public String verify(String token);
     public String getJwtHeader();
 }

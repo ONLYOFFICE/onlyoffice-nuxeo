@@ -190,7 +190,7 @@ public class SettingsServiceImpl extends DefaultComponent implements SettingsSer
         try {
             JSONObject response = convertService.convert(key, "txt", "docx", urlManager.getTestTxtUrl(ctx), "en-US", false);
 
-            if (!response.has("fileUrl") && response.getString("fileUrl").isEmpty()) {
+            if (!response.has("fileUrl") || response.getString("fileUrl").isEmpty()) {
                 return false;
             }
         } catch (Exception e) {
