@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.web.ui.resources.contrib">
+
+  <extension target="org.nuxeo.ecm.platform.WebResources" point="resources">
+    <resource name="onlyoffice.html" type="import" shrinkable="false">
+      <uri>/ui/onlyoffice/onlyoffice.html</uri>
+    </resource>
+  </extension>
+
+  <extension target="org.nuxeo.ecm.platform.WebResources" point="bundles">
+    <bundle name="web-ui">
+      <resources append="true">
+        <resource>onlyoffice.html</resource>
+      </resources>
+    </bundle>
+  </extension>
+</component>

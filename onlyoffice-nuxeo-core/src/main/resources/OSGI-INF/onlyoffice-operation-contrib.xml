@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.operation" version="1.0">
+
+  <extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent" point="operations">
+    <operation class="org.onlyoffice.operation.CreateOperation"/>
+    <operation class="org.onlyoffice.operation.ConvertOperation"/>
+  </extension>
+
+</component>

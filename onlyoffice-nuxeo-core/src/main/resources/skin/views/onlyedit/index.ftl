@@ -5,7 +5,7 @@
 
     <!--
     *
-    * (c) Copyright Ascensio System SIA 2022
+    * (c) Copyright Ascensio System SIA 2023
     *
     * Licensed under the Apache License, Version 2.0 (the "License");
     * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@
     *
      -->
 
-    <link rel="icon" sizes="32x32" href="images/touch/favicon-32x32.png" type="image/png">
-    <link rel="icon" sizes="16x16" href="images/touch/favicon-16x16.png" type="image/png">
+    <link rel="shortcut icon" href="${skinPath}/images/${docType}.ico"/>
     <title>${docTitle} - ONLYOFFICE</title>
     <style>
         html, body {
@@ -43,7 +42,7 @@
             text-decoration: none;
         }
     </style>
-    <script id="scriptApi" type="text/javascript" src="${docUrl}OfficeWeb/apps/api/documents/api.js"></script>
+    <script id="scriptApi" type="text/javascript" src="${docUrl}web-apps/apps/api/documents/api.js"></script>
 </head>
 <body>
     <div id="placeholder"></div>

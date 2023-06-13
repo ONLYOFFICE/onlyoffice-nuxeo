@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.api.SettingsService" version="1.0">
+
+  <implementation class="org.onlyoffice.service.SettingsServiceImpl" />
+
+  <service>
+    <provide interface="org.onlyoffice.api.SettingsService" />
+  </service>
+</component>

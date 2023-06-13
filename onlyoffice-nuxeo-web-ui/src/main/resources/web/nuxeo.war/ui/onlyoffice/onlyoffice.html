@@ -1,0 +1,80 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2023
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<link rel="import" href="onlyoffice-settings.html">
+<link rel="import" href="onlyoffice-editor-button.html">
+<link rel="import" href="onlyoffice-create.html">
+<link rel="import" href="onlyoffice-convert-button.html">
+
+<nuxeo-slot-content name="onlyofficeSettingsMenuItem" slot="ADMINISTRATION_MENU" order="70">
+    <template>
+        <nuxeo-filter user="[[user]]" expression="user.isAdministrator">
+            <template>
+                <nuxeo-menu-item
+                        label="label.onlyoffice.settings"
+                        name="onlyoffice-settings"
+                        route="administration:onlyoffice-settings"
+                ></nuxeo-menu-item>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="onlyofficeSettingsPage" slot="ADMINISTRATION_PAGES">
+    <template>
+        <nuxeo-filter user="[[user]]" expression="user.isAdministrator">
+            <template>
+                <onlyoffice-settings name="onlyoffice-settings" id="onlyoffice-settings"></onlyoffice-settings>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="onlyoffice-edit" slot="DOCUMENT_ACTIONS" order="-100">
+    <template>
+        <nuxeo-filter document="[[document]]" type="File" permission="Read">
+            <template>
+                <onlyoffice-editor-button document="[[document]]"></onlyoffice-editor-button>
+            </template>
+        </nuxeo-filter>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="documentCreateItemOnlyoffice" slot="CREATE_POPUP_ITEMS" order="40">
+    <template>
+        <paper-tab name="onlyofficeCreate">[[i18n("label.onlyoffice.create")]]</paper-tab>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="documentCreateItemOnlyoffice" slot="CREATE_POPUP_PAGES">
+    <template>
+        <onlyoffice-create
+                id="onlyofficeCreate"
+                name="onlyofficeCreate"
+                parent="[[parent]]"
+                target-path="{{parentPath}}"
+                suggester-children="{{suggesterChildren}}"
+        ></onlyoffice-create>
+    </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="convertOnlyofficeBlobAction" slot="BLOB_ACTIONS" order="33">
+    <template>
+        <onlyoffice-convert-button document="[[document]]" xpath="[[xpath]]"></onlyoffice-convert-button>
+    </template>
+</nuxeo-slot-content>

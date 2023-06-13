@@ -1,0 +1,126 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2023
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<script>
+    var Nuxeo = Nuxeo || {};
+    (function() {
+        /**
+         * @polymerBehavior Nuxeo.ONLYOFFICEUtils
+         */
+        Nuxeo.ONLYOFFICEUtils = {
+            properties: {
+                onlyofficeFormats: {
+                    type: Array,
+                    value: []
+                },
+            },
+
+            ready() {
+                if (!this.$.requestFormats) {
+                    throw new Error('Missing ONLYOFFICEFormats resource');
+                }
+
+                this.$.requestFormats.get().then((response) => {
+                    this.onlyofficeFormats = response;
+                });
+            },
+
+            getTitle(document) {
+                var title = null;
+                if (document && document.properties) {
+                    var blob = this._deepFind(this.document.properties, 'file:content');
+
+                    if (blob) {
+                        title = blob["name"];
+                    }
+                }
+
+                return title;
+            },
+
+            getExtension(document) {
+                var title = this.getTitle(document);
+
+                if (title != null) {
+                    var index = title.lastIndexOf('.');
+                    if (index > -1 && (index < title.length - 1)) {
+                        return title.substring(index + 1);
+                    }
+                }
+
+                return null;
+            },
+
+            getTargetTitle(document) {
+                var currentTitle = this.getTitle(document);
+                var currentExtension = this.getExtension(document);
+                var targetExtension = this.getTargetExtension(currentExtension);
+
+                if (currentTitle != null) {
+                    var index = currentTitle.lastIndexOf('.');
+                    if (index > -1) {
+                        var titleWithoutExtension = currentTitle.substring(0, currentTitle.lastIndexOf("."));
+                        return titleWithoutExtension + "." + targetExtension;
+                    }
+                }
+
+                return currentTitle;
+            },
+
+            getTargetExtension(ext) {
+                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                    if (this.onlyofficeFormats[i].name == ext) {
+                        if (this.onlyofficeFormats[i].convert != null) {
+                            switch (this.onlyofficeFormats[i].type) {
+                                case "WORD":
+                                    if (this.onlyofficeFormats[i] == "docxf" && this.onlyofficeFormats[i].convert.includes("oform")) return "oform";
+                                    if (this.onlyofficeFormats[i].convert.includes("docx")) return "docx";
+                                    break;
+                                case "CELL":
+                                    if (this.onlyofficeFormats[i].convert.includes("xlsx")) return "xlsx";
+                                    break;
+                                case "SLIDE":
+                                    if (this.onlyofficeFormats[i].convert.includes("pptx")) return "pptx";
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            },
+
+            isСonvertible(document) {
+                var extension = this.getExtension(document);
+
+                return this.getTargetExtension(extension) != null;
+            },
+
+            _deepFind(obj, props) {
+                for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
+                    if (!obj || obj === []) {
+                        break;
+                    }
+                    obj = obj[path[i]];
+                }
+
+                return obj;
+            }
+        };
+    })();
+</script>

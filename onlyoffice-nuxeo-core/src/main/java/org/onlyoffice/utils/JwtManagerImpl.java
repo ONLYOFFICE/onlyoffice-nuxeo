@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2022
+ * (c) Copyright Ascensio System SIA 2023
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,80 +19,84 @@
 package org.onlyoffice.utils;
 
 import java.util.Base64;
-import java.util.Base64.Encoder;
+import java.util.Iterator;
+import java.util.Map;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.constants.SettingsConstants;
 
 public class JwtManagerImpl extends DefaultComponent implements JwtManager {
 
-    private ConfigManager config;
+    private static final long ACCEPT_LEEWAY = 3;
 
     @Override
     public Boolean isEnabled() {
-        getConfig();
-        String secret = getConfig().getJwtSecret();
+        String secret = getJwtSecret();
         return secret != null && !secret.isEmpty();
     }
 
     @Override
-    public String createToken(JSONObject payload) throws Exception {
-        JSONObject header = new JSONObject();
-        header.put("alg", "HS256");
-        header.put("typ", "JWT");
+    public String createToken(JSONObject payload) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, ?> payloadMap = objectMapper.readValue(payload.toString(), Map.class);
 
-        Encoder enc = Base64.getUrlEncoder();
-
-        String encHeader = enc.encodeToString(header.toString().getBytes("UTF-8")).replace("=", "");
-        String encPayload = enc.encodeToString(payload.toString().getBytes("UTF-8")).replace("=", "");
-        String hash = calculateHash(encHeader, encPayload);
-
-        return encHeader + "." + encPayload + "." + hash;
+        return createToken(payloadMap, getJwtSecret());
     }
 
     @Override
-    public Boolean verify(String token) {
-        if (!isEnabled()) return false;
-
-        String[] jwt = token.split("\\.");
-        if (jwt.length != 3) {
-            return false;
-        }
-
-        try {
-            String hash = calculateHash(jwt[0], jwt[1]);
-            if (!hash.equals(jwt[2])) return false;
-        } catch(Exception ex) {
-            return false;
-        }
-
-        return true;
+    public String verify(String token) {
+        return verifyToken(token, getJwtSecret());
     }
 
-    private String calculateHash(String header, String payload) throws Exception {
-        Mac hasher;
-        hasher = getHasher();
-        return Base64.getUrlEncoder().encodeToString(hasher.doFinal((header + "." + payload).getBytes("UTF-8"))).replace("=", "");
+    public String getJwtHeader() {
+        String jwtHeader = Framework.getProperty(SettingsConstants.JWT_HEADER, null);
+        return jwtHeader == null || jwtHeader.isEmpty() ? "Authorization" : jwtHeader;
     }
 
-    private Mac getHasher() throws Exception {
-        String jwts = getConfig().getJwtSecret();
-
-        Mac sha256 = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(jwts.getBytes("UTF-8"), "HmacSHA256");
-        sha256.init(secret_key);
-
-        return sha256;
+    private String getJwtSecret() {
+        return Framework.getProperty(SettingsConstants.JWT_SECRET, null);
     }
 
-    private ConfigManager getConfig() {
-        if (config == null) {
-            config = Framework.getService(ConfigManager.class);
+    private String createToken(final Map<String, ?> payloadMap, final String key) {
+        Algorithm algorithm = Algorithm.HMAC256(key);
+
+        JWTCreator.Builder builder = JWT.create();
+
+        Iterator var2 = payloadMap.entrySet().iterator();
+
+        while(var2.hasNext()) {
+            Map.Entry<String, ?> entry = (Map.Entry)var2.next();
+            if (entry.getValue() instanceof Map) {
+                builder.withClaim(entry.getKey(), (Map) entry.getValue());
+            } else if (entry.getValue() instanceof Boolean) {
+                builder.withClaim(entry.getKey(), (Boolean) entry.getValue());
+            } else {
+                builder.withClaim(entry.getKey(), (String) entry.getValue());
+            }
         }
-        return config;
+
+        String token = builder.sign(algorithm);
+
+        return token;
+    }
+
+    private String verifyToken(final String token, final String key) {
+        Algorithm algorithm = Algorithm.HMAC256(key);
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+
+        DecodedJWT jwt = JWT.require(algorithm)
+                .acceptLeeway(ACCEPT_LEEWAY)
+                .build()
+                .verify(token);
+
+        return new String(decoder.decode(jwt.getPayload()));
     }
 }

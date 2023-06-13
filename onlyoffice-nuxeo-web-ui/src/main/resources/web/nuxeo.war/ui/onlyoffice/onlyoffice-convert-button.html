@@ -1,0 +1,252 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2023
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<link rel="import" href="onlyoffice-utils.html">
+
+<dom-module id="onlyoffice-convert-button">
+    <template>
+        <style include="nuxeo-action-button-styles nuxeo-styles">
+            #dropzone {
+                display: block;
+            }
+
+            .convert {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+            }
+
+            .convert .main {
+                @apply --layout-vertical;
+                @apply --layout-flex;
+                overflow: hidden;
+            }
+
+            .convert .main .info {
+                font-weight: 500;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .convert .main .progress {
+                width: 100%;
+                padding: 8px 0;
+            }
+        </style>
+
+        <nuxeo-operation
+                id="opOnlyofficeConvert"
+                op="ONLYOFFICE.Convert"
+                sync-indexing
+        ></nuxeo-operation>
+
+        <nuxeo-resource
+                id="requestFormats"
+                path="/onlyoffice/formats"
+                headers='{"Content-Type": "application/json"}'
+                response="{{onlyofficeFormats}}"
+        ></nuxeo-resource>
+
+        <nuxeo-document id="doc" doc-id="[[document.uid]]" response="{{document}}" sync-indexing></nuxeo-document>
+
+        <dom-if if="[[_isAvailable(document,onlyofficeFormats)]]">
+            <template>
+                <div class="action" on-tap="_toggleDialog">
+                    <paper-icon-button id="convertBtn" src="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
+                    <span class="label" hidden$="[[!showLabel]]" id="label">[[i18n('onlyoffice.convert.action')]]</span>
+                    <nuxeo-tooltip>[[i18n('onlyoffice.convert.action')]]</nuxeo-tooltip>
+                </div>
+            </template>
+        </dom-if>
+
+        <nuxeo-dialog id="convertDialog" with-backdrop>
+            <h2>[[i18n('onlyoffice.convert.action')]]</h2>
+
+            <div class="convert">
+                <div class="main">
+                    <div class="info">[[_info]]</div>
+                    <template is="dom-if" if="[[converting]]">
+                        <paper-progress
+                                class="progress"
+                                indeterminate="true"
+                                value="[[convertingProgress]]"
+                        ></paper-progress>
+                    </template>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <paper-button class="secondary" on-tap="_cancel" dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+                <paper-button class="primary" on-tap="_convert" disabled="[[converting]]" noink>[[i18n('onlyoffice.convert.submit')]]</paper-button>
+            </div>
+        </nuxeo-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'onlyoffice-convert-button',
+            behaviors: [
+                Nuxeo.I18nBehavior,
+                Nuxeo.FiltersBehavior,
+                Nuxeo.ONLYOFFICEUtils
+            ],
+
+            properties: {
+                document: Object,
+
+                xpath: {
+                    type: String,
+                    value: 'file:content'
+                },
+
+                icon: {
+                    type: String,
+                    value: 'images/convert-action.svg',
+                },
+
+                showLabel: {
+                    type: Boolean,
+                    value: false,
+                },
+
+                _info: {
+                    type: String,
+                    computed: '_computeInfo(document,onlyofficeFormats)',
+                },
+
+                converting: {
+                    type: Boolean,
+                    value: false,
+                    readOnly: true
+                },
+
+                convertingProgress: {
+                    type: Number,
+                    value: 0,
+                    readOnly: true
+                }
+            },
+
+            _toggleDialog() {
+                this.$.convertDialog.toggle();
+            },
+
+            _computeInfo() {
+                return this.i18n('onlyoffice.convert.label', this.getTitle(this.document), this.getTargetTitle(this.document));
+            },
+
+            _isAvailable(doc) {
+                return (
+                    doc &&
+                    this.hasPermission(doc, 'WriteProperties') &&
+                    !this.isImmutable(doc) &&
+                    !this.hasType(doc, 'Root') &&
+                    !this.isTrashed(doc) &&
+                    !(doc.isRecord && this.xpath !== 'file:content') &&
+                    !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content') &&
+                    !(this.hasFacet(doc, 'ColdStorage') && this.hasContent(doc, 'coldstorage:coldContent')) &&
+                    this.isСonvertible(doc)
+                );
+            },
+
+            _convert() {
+                this.$.opOnlyofficeConvert.params = {
+                    id: this.document.uid,
+                    language: window.nuxeo.I18n.language || 'en'
+                };
+
+                this._setConverting(true);
+                this._executeConvert();
+            },
+
+            _cancel() {
+                this._clear();
+            },
+
+            _executeConvert() {
+                if(!this.converting) {
+                    return;
+                }
+
+                this.$.opOnlyofficeConvert.execute().then((response) => {
+                    var data = JSON.parse(response.value);
+
+                    if (data.error) {
+                        this.fire("notify", { message: this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage(data.error)) });
+                        this.$.convertDialog.toggle();
+                        this._clear();
+                        return;
+                    }
+
+                    if (data.percent != null) {
+                      this._setConvertingProgress(data.percent);
+                    }
+
+                    if (!data.endConvert) {
+                        setTimeout(function() { this._executeConvert() }.bind(this), 1000);
+                    } else {
+                        this.fire("notify", { message: this.i18n("onlyoffice.convert.message.success", this.getTitle(this.document)) });
+                        this.$.convertDialog.toggle();
+                        this.fire('document-updated');
+                        this._clear();
+                    }
+                }).catch((err) => {
+                    this.fire("notify", { message: this.i18n("onlyoffice.convert.message.error.undefined") });
+                    this.$.convertDialog.toggle();
+                    this._clear();
+                    console.error(err);
+                })
+            },
+
+            _clear() {
+                this._setConverting(false);
+                this._setConvertingProgress(0);
+            },
+
+            _getServiceErrorMessage(errorCode) {
+                switch(errorCode) {
+                    case -1:
+                        return this.i18n("onlyoffice.convert.message.error.service.unknown");
+                    case -2:
+                        return this.i18n("onlyoffice.convert.message.error.service.timeout");
+
+                    case -3:
+                        return this.i18n("onlyoffice.convert.message.error.service.conversion");
+                        break;
+                    case -4:
+                        return this.i18n("onlyoffice.convert.message.error.service.download");
+                        break;
+                    case -5:
+                        return this.i18n("onlyoffice.convert.message.error.service.password");
+                        break;
+                    case -6:
+                        return this.i18n("onlyoffice.convert.message.error.service.database");
+                        break;
+                    case -7:
+                        return this.i18n("onlyoffice.convert.message.error.service.input");
+                        break;
+                    case -8:
+                        return this.i18n("onlyoffice.convert.message.error.service.token");
+                        break;
+                    default:
+                        return this.i18n("onlyoffice.convert.message.error.service.unknown");
+                }
+            }
+        });
+    </script>
+</dom-module>

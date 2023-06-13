@@ -1,0 +1,170 @@
+<!--
+ *
+ * (c) Copyright Ascensio System SIA 2023
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<dom-module id="onlyoffice-settings">
+    <template>
+        <style include="nuxeo-styles iron-flex">
+            .form-buttons {
+                margin-top: 16px;
+            }
+        </style>
+        <nuxeo-page>
+            <div slot="header">
+                <span class="flex">[[i18n('label.onlyoffice.settings')]]</span>
+            </div>
+
+            <nuxeo-card>
+                <nuxeo-resource
+                        id="settings"
+                        path="/onlyoffice/settings"
+                        headers='{"Content-Type": "application/json"}'
+                        response="{{settings}}"
+                        auto
+                ></nuxeo-resource>
+
+                <nuxeo-resource
+                        id="updateSettings"
+                        path="/onlyoffice/settings"
+                        headers='{"Content-Type": "application/json"}'
+                ></nuxeo-resource>
+
+                <div class="header">
+                    <h3>[[i18n('label.onlyoffice.settings.server')]]</h3>
+                </div>
+
+                <iron-form id="form">
+                    <form>
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-url')]]" value="{{settings.docUrl}}" name="doc-url" required>
+                        </nuxeo-input>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-secret')]]" value="{{settings.jwtSecret}}" name="jwt-secret">
+                        </nuxeo-input>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-header')]]" value="{{settings.jwtHeader}}" name="jwt-header">
+                        </nuxeo-input>
+
+                        <div class="header">
+                            <h3>[[i18n('label.onlyoffice.settings.server.advanced')]]</h3>
+                        </div>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-inner-url')]]" value="{{settings.docInnerUrl}}" name="doc-inner-url">
+                        </nuxeo-input>
+
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.nuxeo-inner-url')]]" value="{{settings.nuxeoInnerUrl}}" name="nuxeo-inner-url">
+                        </nuxeo-input>
+
+                        <div class="form-buttons">
+                            <paper-button noink id="saveButton" class="primary" on-click="_submit">
+                                [[i18n('command.save')]]
+                            </paper-button>
+                        </div>
+                    </form>
+                </iron-form>
+            </nuxeo-card>
+        </nuxeo-page>
+    </template>
+    <script>
+        Polymer({
+            is: 'onlyoffice-settings',
+            behaviors: [
+                Nuxeo.I18nBehavior
+            ],
+
+            properties: {
+                visible: {
+                    type: Boolean,
+                },
+
+                page: {
+                    type: Object,
+                },
+
+                settings: {
+                    type: Object,
+                    value: {},
+                }
+            },
+
+            _submit() {
+                const valid = this.$.form.validate();
+                if (!valid) { return; }
+
+                this._testDocServiceApi();
+            },
+
+            _updateSettings() {
+                this.$.updateSettings.data = this.settings;
+                this.$.updateSettings.post().then((res) => {
+                    if(res.success) {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") });
+                    } else {
+                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation." + res.message) });
+                    }
+                }).catch((err) => {
+                    this.fire(
+                        "notify",
+                        {
+                            message: `${this.i18n('label.error').toUpperCase()}: ${this.i18n('label.onlyoffice.settings.error')}`
+                        }
+                    );
+                });
+            },
+
+            _testDocServiceApi() {
+                if (window.location.href.startsWith("https://") && this.settings.docUrl.toLowerCase().startsWith("http://")) {
+                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.mixedcontent") });
+                    return;
+                }
+
+                delete DocsAPI;
+
+                var scriptAddress = document.getElementById("scripDocServiceAddress");
+                if (scriptAddress) scriptAddress.parentNode.removeChild(scriptAddress);
+
+                var js = document.createElement("script");
+                js.setAttribute("type", "text/javascript");
+                js.setAttribute("id", "scripDocServiceAddress");
+                document.getElementsByTagName("head")[0].appendChild(js);
+
+                scriptAddress = document.getElementById("scripDocServiceAddress");
+
+                scriptAddress.onload = () => this._testApiResult();
+                scriptAddress.onerror = () => this._testApiResult();;
+
+                var docServiceUrlApi = this.settings.docUrl;
+
+                if (!docServiceUrlApi.endsWith("/")) {
+                      docServiceUrlApi += "/";
+                }
+                docServiceUrlApi += "web-apps/apps/api/documents/api.js";
+
+                scriptAddress.src = docServiceUrlApi;
+            },
+
+            _testApiResult() {
+                var result = typeof DocsAPI != "undefined";
+
+                if (result) {
+                    this._updateSettings();
+                } else {
+                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.docservunreachable") });
+                }
+            }
+        });
+    </script>
+</dom-module>

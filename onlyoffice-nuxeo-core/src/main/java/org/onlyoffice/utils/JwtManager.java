@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2022
+ * (c) Copyright Ascensio System SIA 2023
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@
 
 package org.onlyoffice.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONObject;
 
 public interface JwtManager {
     public Boolean isEnabled();
-    public String createToken(JSONObject payload) throws Exception;
-    public Boolean verify(String token);
+    public String createToken(final JSONObject payload) throws JsonProcessingException;
+    public String verify(String token);
+    public String getJwtHeader();
 }
