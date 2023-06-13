@@ -18,9 +18,13 @@
 
 package org.onlyoffice.model;
 
-public enum DocumentType {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public enum Type {
+    @JsonProperty("word")
     WORD,
+    @JsonProperty("cell")
     CELL,
-    SLIDE,
-    FORM
+    @JsonProperty("slide")
+    SLIDE
 }

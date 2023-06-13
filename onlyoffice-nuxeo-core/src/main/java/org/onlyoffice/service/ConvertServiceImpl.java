@@ -25,9 +25,9 @@ import org.json.JSONObject;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.onlyoffice.api.ConvertService;
-import org.onlyoffice.constants.Format;
-import org.onlyoffice.constants.ListFormats;
+import org.onlyoffice.model.Format;
 import org.onlyoffice.utils.RequestManager;
+import org.onlyoffice.utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +35,9 @@ import java.util.List;
 public class ConvertServiceImpl extends DefaultComponent implements ConvertService {
     private RequestManager getRequestManager() {
         return Framework.getService(RequestManager.class);
+    }
+    private Utils getUtils() {
+        return Framework.getService(Utils.class);
     }
 
     @Override
@@ -65,22 +68,37 @@ public class ConvertServiceImpl extends DefaultComponent implements ConvertServi
     }
 
     @Override
-    public boolean isConvertible(String extension) {
-        List<Format> supportedFormats = ListFormats.getSupportedFormats();
+    public String getTargetExtension(final String extension) {
+        List<Format> supportedFormats = getUtils().getSupportedFormats();
 
         for (Format format : supportedFormats) {
             if (format.getName().equals(extension)) {
-                switch (format.type) {
+                switch (format.getType()) {
                     case WORD:
-                        return format.convertTo.contains("docx");
+                        if (format.getName().equals("docxf") && format.getConvert().contains("oform")) {
+                            return "oform";
+                        }
+                        if (format.getConvert().contains("docx")) {
+                            return "docx";
+                        }
+                        break;
                     case CELL:
-                        return format.convertTo.contains("xlsx");
+                        if (format.getConvert().contains("xlsx")) {
+                            return "xlsx";
+                        }
+                        break;
                     case SLIDE:
-                        return format.convertTo.contains("pptx");
+                        if (format.getConvert().contains("pptx")) {
+                            return "pptx";
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
 
-        return false;
+        return null;
     }
+
 }

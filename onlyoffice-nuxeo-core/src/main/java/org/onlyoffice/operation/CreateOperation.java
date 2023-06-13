@@ -27,11 +27,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.platform.mimetype.MimetypeDetectionException;
-import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
-import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.runtime.api.Framework;
-import org.onlyoffice.model.DocumentType;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,10 +80,9 @@ public class CreateOperation {
             if (pathLocale == null) pathLocale = utils.getPathLocale("en");
         }
 
-        DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
-        String extension = utils.getDefaultExtensionByType(documentType);
+        String extension = getExtension(type);
 
-        try (InputStream inputStream = getClass().getResourceAsStream("/app_data/" + pathLocale  + "/new." + extension)){
+        try (InputStream inputStream = getClass().getResourceAsStream("/app_data/document-templates/" + pathLocale  + "/new." + extension)){
             DocumentModel newDoc = session.createDocumentModel(path, title, "File");
 
             Blob blob = Blobs.createBlob(inputStream);
@@ -100,6 +95,21 @@ public class CreateOperation {
             session.save();
 
             return result.getId();
+        }
+    }
+
+    private String getExtension(String type) {
+        switch (type.toLowerCase()) {
+            case "word":
+                return "docx";
+            case "cell":
+                return "xlsx";
+            case "slide":
+                return "pptx";
+            case "form":
+                return "docxf";
+            default:
+                return "docx";
         }
     }
 }

@@ -18,11 +18,15 @@
 
 package org.onlyoffice.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.model.Document;
@@ -32,11 +36,27 @@ import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
-import org.onlyoffice.constants.Format;
-import org.onlyoffice.constants.ListFormats;
-import org.onlyoffice.model.DocumentType;
+import org.onlyoffice.model.Format;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.json.JSONArray;
 
 public class UtilsImpl extends DefaultComponent implements Utils {
+    private static final Logger logger = LoggerFactory.getLogger(UtilsImpl.class);
+    private final String formatsPath = "app_data/document-formats/onlyoffice-docs-formats.json";
+    private List<Format> supportedFormats;
+
+    public UtilsImpl() {
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(formatsPath);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            supportedFormats = objectMapper.readValue(inputStream, new TypeReference<List<Format>>() { });
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
 
     private static final Map<String, String> PathLocale = new HashMap<String, String>(){{
         put("az", "az-Latn-AZ");
@@ -82,28 +102,48 @@ public class UtilsImpl extends DefaultComponent implements Utils {
 
     @Override
     public String getDocumentType(String extension) {
-        List<Format> supportedFormats = ListFormats.getSupportedFormats();
-
-        for (Format format : supportedFormats) {
+        for (Format format : this.supportedFormats) {
             if (format.getName().equals(extension)) {
-                return format.getType().name().toLowerCase();
+
+                String type = format.getType().name().toLowerCase();
+
+                return type;
             }
         }
 
         return null;
     }
 
-    @Override
-    public Boolean isEditable(String extension) {
-        List<Format> supportedFormats = ListFormats.getSupportedFormats();
-
-        for (Format format : supportedFormats) {
-            if (format.getName().equals(extension)) {
-                return format.isEdit();
+    public Boolean isViewable(String extension) {
+        for (Format format : this.supportedFormats) {
+            if (format.getName().equals(extension) && format.getActions().contains("view")) {
+                return true;
             }
         }
 
-        return null;
+        return false;
+    }
+
+    @Override
+    public Boolean isEditable(String extension) {
+        for (Format format : this.supportedFormats) {
+            if (format.getName().equals(extension) && format.getActions().contains("edit")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public Boolean isFillForm(String extension) {
+        for (Format format : this.supportedFormats) {
+            if (format.getName().equals(extension) && format.getActions().contains("fill")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -131,22 +171,6 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    @Override
-    public String getDefaultExtensionByType(DocumentType documentType) {
-        switch (documentType) {
-            case WORD:
-                return "docx";
-            case CELL:
-                return "xlsx";
-            case SLIDE:
-                return "pptx";
-            case FORM:
-                return "docxf";
-        }
-
-        return null;
     }
 
     @Override
@@ -180,5 +204,13 @@ public class UtilsImpl extends DefaultComponent implements Utils {
                 }
             }
         }
+    }
+
+    public List<Format> getSupportedFormats() {
+        return this.supportedFormats;
+    }
+
+    public JSONArray getSupportedFormatsAsJson() {
+        return new JSONArray(this.supportedFormats);
     }
 }
