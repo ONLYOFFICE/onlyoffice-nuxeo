@@ -12,8 +12,26 @@ The plugin allows to:
 
 Supported formats:
 
-* For viewing and editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
-* For viewing only: PDF, ODT, ODS, ODP, DOC, XLS, PPT.
+**For viewing:**
+* **WORD:** DJVU, DOC, DOCM, DOCX, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OFORM, OTT, OXPS, PDF, RTF, TXT, XML, XPS
+* **CELL:** CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX
+* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
+
+**For editing:**
+
+* **WORD:** DOCM, DOCX, DOCXF, DOTM, DOTX, HTM, XML
+* **CELL:** XLSM, XLSX, XLTM, XLTX
+* **SLIDE:** POTM, POTX, PPSM, PPSX, PPTM, PPTX
+
+**For filling:**
+
+* **WORD:** OFORM
+
+**For converting to Office Open XML formats:**
+
+* **WORD:** DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OTT, OXPS, PDF, RTF, XML, XPS
+* **CELL:** FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX
+* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM
 
 ## Installing ONLYOFFICE Docs
 
