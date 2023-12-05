@@ -18,3 +18,8 @@ Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/onlyoffice-operation-contrib.xml,
  OSGI-INF/convert-service.xml,
  OSGI-INF/requestmanager-service.xml
+ OSGI-INF/sdk-settings-manager.xml,
+ OSGI-INF/sdk-document-manager.xml,
+ OSGI-INF/sdk-jwt-manager.xml,
+ OSGI-INF/sdk-url-manager.xml,
+ OSGI-INF/sdk-request-manager.xml,

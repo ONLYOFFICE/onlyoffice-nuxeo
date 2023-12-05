@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.manager.security.JwtManager" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.manager.security.JwtManagerImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.manager.security.JwtManager" />
+    </service>
+</component>
