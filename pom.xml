@@ -44,6 +44,16 @@
         <artifactId>onlyoffice-nuxeo-package</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.auth0</groupId>
+        <artifactId>java-jwt</artifactId>
+        <version>4.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.onlyoffice</groupId>
+        <artifactId>docs-integration-sdk</artifactId>
+        <version>0.0.1</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -129,6 +139,10 @@
         <updatePolicy>always</updatePolicy>
         <enabled>true</enabled>
       </snapshots>
+    </repository>
+    <repository>
+      <id>ossrh</id>
+      <url>http://192.168.4.26:8081/repository/maven-public</url>
     </repository>
   </repositories>
 
