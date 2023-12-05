@@ -16,7 +16,7 @@
  *
  */
 
-package org.onlyoffice.api;
+package org.onlyoffice.service;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
