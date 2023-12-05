@@ -87,14 +87,14 @@
                     if (this.onlyofficeFormats[i].name == ext) {
                         if (this.onlyofficeFormats[i].convert != null) {
                             switch (this.onlyofficeFormats[i].type) {
-                                case "WORD":
-                                    if (this.onlyofficeFormats[i] == "docxf" && this.onlyofficeFormats[i].convert.includes("oform")) return "oform";
+                                case "word":
+                                    if (this.onlyofficeFormats[i].name == "docxf" && this.onlyofficeFormats[i].convert.includes("oform")) return "oform";
                                     if (this.onlyofficeFormats[i].convert.includes("docx")) return "docx";
                                     break;
-                                case "CELL":
+                                case "cell":
                                     if (this.onlyofficeFormats[i].convert.includes("xlsx")) return "xlsx";
                                     break;
-                                case "SLIDE":
+                                case "slide":
                                     if (this.onlyofficeFormats[i].convert.includes("pptx")) return "pptx";
                                     break;
                             }
