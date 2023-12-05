@@ -18,10 +18,11 @@
 
 package org.nuxeo.ecm.restapi.server.jaxrs;
 
+import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +33,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.io.IOUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.security.JwtManager;
+
+import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.model.common.Format;
+import com.onlyoffice.model.documenteditor.Callback;
+import com.onlyoffice.model.settings.Settings;
+import com.onlyoffice.model.settings.SettingsConstants;
+import com.onlyoffice.model.settings.security.Security;
+import com.onlyoffice.model.settings.validation.ValidationResult;
+import com.onlyoffice.service.documenteditor.callback.CallbackService;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
@@ -43,11 +57,8 @@ import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.transaction.TransactionHelper;
-import org.onlyoffice.api.CallbackService;
-import org.onlyoffice.api.PermissionService;
-import org.onlyoffice.api.SettingsService;
-import org.onlyoffice.utils.JwtManager;
-import org.onlyoffice.utils.Utils;
+import org.onlyoffice.sdk.service.settings.SettingsValidationService;
+import org.onlyoffice.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,33 +67,72 @@ public class OnlyofficeObject extends DefaultObject {
 
     private static final Logger logger = LoggerFactory.getLogger(OnlyofficeObject.class);
 
-    private JwtManager jwtManager;
-    private SettingsService settingsService;
-    private CallbackService callbackService;
     private PermissionService permissionService;
-    private Utils utils;
+    private SettingsValidationService settingsValidationService;
+    private CallbackService callbackService;
+    private SettingsManager settingsManager;
+    private JwtManager jwtManager;
+    private DocumentManager documentManager;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void initialize(Object... args) {
         super.initialize(args);
 
-        jwtManager = Framework.getService(JwtManager.class);
-        settingsService = Framework.getService(SettingsService.class);
-        callbackService = Framework.getService(CallbackService.class);
         permissionService = Framework.getService(PermissionService.class);
-        utils = Framework.getService(Utils.class);
+        settingsValidationService = Framework.getService(SettingsValidationService.class);
+        callbackService = Framework.getService(CallbackService.class);
+        settingsManager = Framework.getService(SettingsManager.class);
+        jwtManager = Framework.getService(JwtManager.class);
+        documentManager = Framework.getService(DocumentManager.class);
     }
 
     @GET
     @Path("settings")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getSettings() {
+    public Object getSettings() throws JsonProcessingException {
         checkAdministrator();
 
-        return Response.status(Status.OK)
-                .entity(new JSONObject(settingsService.getSettings()).toString(2))
-                .type("application/json")
+        String url = StringUtils.defaultIfEmpty(settingsManager.getSetting(SettingsConstants.URL), "");
+        String securityKey = StringUtils.defaultIfEmpty(
+                settingsManager.getSetting(SettingsConstants.SECURITY_KEY),
+                ""
+        );
+        String securityHeader = StringUtils.defaultIfEmpty(
+                settingsManager.getSetting(SettingsConstants.SECURITY_HEADER),
+                ""
+        );
+        String innerUrl = StringUtils.defaultIfEmpty(
+                settingsManager.getSetting(SettingsConstants.INNER_URL),
+                ""
+        );
+        String productInnerUrl = StringUtils.defaultIfEmpty(
+                settingsManager.getSetting(SettingsConstants.PRODUCT_INNER_URL),
+                ""
+        );
+
+        Map<String, Object> extraSettings = new HashMap<String, Object>(){{
+            put("pathApiUrl", settingsManager.getSDKSetting("integration-sdk.api.url"));
+        }};
+
+        Settings settings = Settings.builder()
+                .url(url)
+                .innerUrl(innerUrl)
+                .productInnerUrl(productInnerUrl)
+                .security(Security.builder()
+                        .key(securityKey)
+                        .header(securityHeader)
+                        .build())
+                .extra(extraSettings)
                 .build();
+
+
+        return Response.status(Status.OK)
+                    .entity(objectMapper.writeValueAsString(settings))
+                    .type("application/json")
+                    .build();
+
     }
 
     @POST
@@ -91,21 +141,25 @@ public class OnlyofficeObject extends DefaultObject {
     public Object setSettings(InputStream input) throws IOException {
         checkAdministrator();
 
-        JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
+        Settings settings = objectMapper.readValue(input, Settings.class);
 
-        settingsService.updateSettings(json);
-        String resultValidation = settingsService.validateSettings(getContext());
-
-        JSONObject response = new JSONObject();
-        response.put("success", true);
-
-        if (resultValidation != null) {
-            response.put("success", false);
-            response.put("message", resultValidation);
+        try {
+            settingsManager.setSettings(settings);
+        } catch (IntrospectionException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
 
+        Map<String, ValidationResult> validationResults = settingsValidationService.validateSettings();
+
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("validationResults", validationResults);
+
         return Response.status(Status.OK)
-                .entity(response.toString(2))
+                .entity(objectMapper.writeValueAsString(responseMap))
                 .type("application/json")
                 .build();
     }
@@ -113,9 +167,12 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("formats")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getFormats() {
+    public Object getFormats() throws JsonProcessingException {
+        List<Format> formats = documentManager.getFormats();
+        ObjectMapper mapper = new ObjectMapper();
+
         return Response.status(Status.OK)
-                .entity(utils.getSupportedFormatsAsJson().toString(2))
+                .entity(mapper.writeValueAsString(formats))
                 .type("application/json")
                 .build();
     }
@@ -130,19 +187,18 @@ public class OnlyofficeObject extends DefaultObject {
         DocumentModel model = session.getDocument(new IdRef(id));
 
         String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-        String extension = utils.getFileExtension(fileName);
 
-        if (utils.isViewable(extension)) {
+        if (documentManager.isViewable(fileName)) {
             response.put("mode", "view");
         }
 
         Boolean hasWriteProperties = permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
 
-        if (utils.isEditable(extension) && hasWriteProperties) {
+        if (documentManager.isEditable(fileName) && hasWriteProperties) {
             response.put("mode", "edit");
         }
 
-        if (utils.isFillForm(extension) && hasWriteProperties) {
+        if (documentManager.isFillable(fileName) && hasWriteProperties) {
             response.put("mode", "fillForm");
         }
 
@@ -156,50 +212,20 @@ public class OnlyofficeObject extends DefaultObject {
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postCallback(@PathParam("id") String id, InputStream input) {
+    public Object postCallback(@PathParam("id") String id, InputStream input) throws IOException {
         Status code = Status.OK;
         Exception error = null;
 
+        Callback callback = objectMapper.readValue(input, Callback.class);
+
         try {
-            JSONObject json = new JSONObject(IOUtils.toString(input, Charset.defaultCharset()));
+            String securityHeader = settingsManager.getSecurityHeader();
+            List<String> values = getContext().getHttpHeaders().getRequestHeader(securityHeader);
+            String authorizationHeader = values == null || values.isEmpty() ? null : values.get(0);
 
-            if (jwtManager.isEnabled()) {
-                String token = json.optString("token");
-                String payload = null;
-                Boolean inBody = true;
+            callback = callbackService.verifyCallback(callback, authorizationHeader);
 
-                if (token == null || token == "") {
-                    String jwtHeader = jwtManager.getJwtHeader();
-                    List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-                    String header = values.isEmpty() ? null : values.get(0);
-                    token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
-                    inBody = false;
-                }
-
-                if (token == null || token == "") {
-                    throw new SecurityException("Expected JWT");
-                }
-
-                try {
-                    payload = jwtManager.verify(token);
-                } catch (Exception e) {
-                    throw new SecurityException("JWT verification failed");
-                }
-
-                JSONObject bodyFromToken = new JSONObject(payload);
-
-                if (inBody) {
-                    json = bodyFromToken;
-                } else {
-                    json = bodyFromToken.getJSONObject("payload");
-                }
-            }
-
-            CoreSession session = getContext().getCoreSession();
-            DocumentModel model = session.getDocument(new IdRef(id));
-
-            callbackService.processCallback(session, model, json);
-
+            callbackService.processCallback(callback, id);
         } catch (SecurityException ex) {
             code = Status.UNAUTHORIZED;
             error = ex;
@@ -238,11 +264,13 @@ public class OnlyofficeObject extends DefaultObject {
                 isTransactionActive = TransactionHelper.startTransaction();
             }
 
-            if (jwtManager.isEnabled()) {
-                String jwtHeader = jwtManager.getJwtHeader();
+            if (settingsManager.isSecurityEnabled()) {
+                String jwtHeader = settingsManager.getSecurityHeader();
                 List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
                 String header = values.isEmpty() ? null : values.get(0);
-                String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+                String authorizationPrefix = settingsManager.getSecurityPrefix();
+                String token = (header != null && header.startsWith(authorizationPrefix))
+                        ? header.substring(authorizationPrefix.length()) : header;
 
                 if (token == null || token == "") {
                     throw new DocumentSecurityException("Expected JWT");
@@ -299,11 +327,13 @@ public class OnlyofficeObject extends DefaultObject {
     public Object getTestFile() throws UnsupportedEncodingException {
         checkAdministrator();
 
-        if (jwtManager.isEnabled()) {
-            String jwtHeader = jwtManager.getJwtHeader();
+        if (settingsManager.isSecurityEnabled()) {
+            String jwtHeader = settingsManager.getSecurityHeader();
             List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
             String header = values.isEmpty() ? null : values.get(0);
-            String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+            String authorizationPrefix = settingsManager.getSecurityPrefix();
+            String token = (header != null && header.startsWith(authorizationPrefix))
+                    ? header.substring(authorizationPrefix.length()) : header;
 
             if (token == null || token == "") {
                 return Response.status(Status.UNAUTHORIZED).build();
