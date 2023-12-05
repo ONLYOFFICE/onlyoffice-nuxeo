@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.service.callback.CallbackService" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.service.callback.CallbackServiceImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.service.documenteditor.callback.CallbackService" />
+    </service>
+</component>

@@ -23,3 +23,7 @@ Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/sdk-jwt-manager.xml,
  OSGI-INF/sdk-url-manager.xml,
  OSGI-INF/sdk-request-manager.xml,
+ OSGI-INF/sdk-config-service.xml,
+ OSGI-INF/sdk-settings-validation-service.xml,
+ OSGI-INF/sdk-callback-service.xml,
+ OSGI-INF/sdk-convert-service.xml
