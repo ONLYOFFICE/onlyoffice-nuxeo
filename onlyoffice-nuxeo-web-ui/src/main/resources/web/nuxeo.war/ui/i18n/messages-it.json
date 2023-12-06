@@ -25,7 +25,7 @@
     "label.onlyoffice.document.form": "Modello di modulo",
     "onlyoffice.convert.action": "Converti utilizzando ONLYOFFICE",
     "onlyoffice.convert.submit": "Converti",
-    "onlyoffice.convert.label": "Converti {0} in {1} ..",
+    "onlyoffice.convert.label": "Converti {0} in {1}",
     "onlyoffice.convert.message.success": "{0} è stato convertito correttamente",
     "onlyoffice.convert.message.error.undefined": "Impossibile convertire il documento (errore sconosciuto)",
     "onlyoffice.convert.message.error.service": "Impossibile convertire il documento, il Servizio di conversione dei documenti ha restituito un errore ({0})",
