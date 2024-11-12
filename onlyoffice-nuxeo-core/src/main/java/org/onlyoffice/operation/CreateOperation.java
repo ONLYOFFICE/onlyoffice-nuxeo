@@ -19,6 +19,7 @@
 package org.onlyoffice.operation;
 
 import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -74,7 +75,8 @@ public class CreateOperation {
             locale = Locale.forLanguageTag(language);
         }
 
-        String extension = getExtension(type);
+        DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
+        String extension = documentManager.getDefaultExtension(documentType);
 
         try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)){
             DocumentModel newDoc = session.createDocumentModel(path, title, "File");
@@ -89,21 +91,6 @@ public class CreateOperation {
             session.save();
 
             return result.getId();
-        }
-    }
-
-    private String getExtension(String type) {
-        switch (type.toLowerCase()) {
-            case "word":
-                return "docx";
-            case "cell":
-                return "xlsx";
-            case "slide":
-                return "pptx";
-            case "form":
-                return "docxf";
-            default:
-                return "docx";
         }
     }
 }

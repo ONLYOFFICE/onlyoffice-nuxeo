@@ -18,7 +18,7 @@
     "label.onlyoffice.document.word": "Document",
     "label.onlyoffice.document.cell": "Spreadsheet",
     "label.onlyoffice.document.slide": "Presentation",
-    "label.onlyoffice.document.form": "Form template",
+    "label.onlyoffice.document.pdf": "PDF Form",
     "onlyoffice.convert.action": "Convert using ONLYOFFICE",
     "onlyoffice.convert.submit": "Convert",
     "onlyoffice.convert.label": "Convert {0} to {1}",
