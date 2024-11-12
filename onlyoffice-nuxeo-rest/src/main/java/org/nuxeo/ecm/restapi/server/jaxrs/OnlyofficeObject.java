@@ -113,7 +113,7 @@ public class OnlyofficeObject extends DefaultObject {
         );
 
         Map<String, Object> extraSettings = new HashMap<String, Object>(){{
-            put("pathApiUrl", settingsManager.getSDKSetting("integration-sdk.api.url"));
+            put("pathApiUrl", settingsManager.getDocsIntegrationSdkProperties().getDocumentServer().getApiUrl());
         }};
 
         Settings settings = Settings.builder()
