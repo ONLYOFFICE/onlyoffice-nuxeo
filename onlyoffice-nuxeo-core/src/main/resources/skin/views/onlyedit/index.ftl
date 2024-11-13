@@ -42,7 +42,7 @@
             text-decoration: none;
         }
     </style>
-    <script id="scriptApi" type="text/javascript" src="${docUrl}web-apps/apps/api/documents/api.js"></script>
+    <script id="scriptApi" type="text/javascript" src="${docUrl}"></script>
 </head>
 <body>
     <div id="placeholder"></div>

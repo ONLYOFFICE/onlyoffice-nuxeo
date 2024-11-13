@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title.admin.onlyoffice-settings": "Nastavení ONLYOFFICE",
   "label.onlyoffice.settings": "Nastavení ONLYOFFICE",
   "label.onlyoffice.settings.server": "Nastavení serveru",
@@ -10,11 +10,7 @@
   "label.onlyoffice.settings.server.nuxeo-inner-url": "Adresa serveru pro interní požadavky z ONLYOFFICE Docs",
   "label.onlyoffice.settings.success": "Nastavení byla úspěšně uložena",
   "label.onlyoffice.settings.error": "Při ukládání nastavení došlo k chybě",
-  "label.onlyoffice.settings.validation.docservunreachable": "Na server ONLYOFFICE se nelze dovolat",
-  "label.onlyoffice.settings.validation.docservconvert": "Chyba při pokusu o kontrolu služby ConvertService",
-  "label.onlyoffice.settings.validation.docservcommand": "Chyba při pokusu o kontrolu služby CommandService",
   "label.onlyoffice.settings.validation.jwterror": "Chyba autorizace",
-  "label.onlyoffice.settings.validation.mixedcontent": "Smíšený aktivní obsah není povolen. Je vyžadována adresa HTTPS pro Document Server",
   "label.onlyoffice.edit": "Upravit v ONLYOFFICE",
   "label.onlyoffice.view": "Zobrazit v ONLYOFFICE",
   "label.onlyoffice.fillForm": "Vyplnění formuláře v ONLYOFFICE",
@@ -29,12 +25,31 @@
   "onlyoffice.convert.message.success": "{0} byl úspěšně převeden",
   "onlyoffice.convert.message.error.undefined": "Nepodařilo se převést dokument (nedefinovaná chyba)",
   "onlyoffice.convert.message.error.service": "Nepodařilo se převést dokument, služba převodu dokumentů oznámila chybu ({0})",
-  "onlyoffice.convert.message.error.service.unknown": "Neznámá chyba",
-  "onlyoffice.convert.message.error.service.timeout": "Chyba časového limitu převodu",
-  "onlyoffice.convert.message.error.service.conversion": "Chyba převodu",
-  "onlyoffice.convert.message.error.service.download": "Chyba při stahování převáděného souboru dokumentu",
-  "onlyoffice.convert.message.error.service.password": "Nesprávné heslo",
-  "onlyoffice.convert.message.error.service.database": "Chyba při přístupu do databáze výsledků převodu",
-  "onlyoffice.convert.message.error.service.input": "Chyba při zadávání",
-  "onlyoffice.convert.message.error.service.token": "Neplatný token"
+
+  "onlyoffice.server.common.error.connection": "",
+  "onlyoffice.server.common.error.api-js": "",
+  "onlyoffice.server.common.error.mixed-content": "",
+  "onlyoffice.server.common.error.healthcheck": "",
+
+  "onlyoffice.service.convert.check.error-prefix": "",
+  "onlyoffice.service.convert.error.unknown": "Neznámá chyba",
+  "onlyoffice.service.convert.error.timeout": "Chyba časového limitu převodu",
+  "onlyoffice.service.convert.error.conversion": "Chyba převodu",
+  "onlyoffice.service.convert.error.downloading": "Chyba při stahování převáděného souboru dokumentu",
+  "onlyoffice.service.convert.error.password": "Nesprávné heslo",
+  "onlyoffice.service.convert.error.database": "Chyba při přístupu do databáze výsledků převodu",
+  "onlyoffice.service.convert.error.input": "Chyba při zadávání",
+  "onlyoffice.service.convert.error.token": "Neplatný token",
+  "onlyoffice.service.convert.error.connection": "",
+  "onlyoffice.service.convert.error.download_result": "",
+
+  "onlyoffice.service.command.check.error-prefix": "",
+  "onlyoffice.service.command.error.no": "",
+  "onlyoffice.service.command.error.key": "",
+  "onlyoffice.service.command.error.callback_url": "",
+  "onlyoffice.service.command.error.internal_server": "",
+  "onlyoffice.service.command.error.forcesave": "",
+  "onlyoffice.service.command.error.command": "",
+  "onlyoffice.service.command.error.token": "",
+  "onlyoffice.service.command.error.connection": ""
 }

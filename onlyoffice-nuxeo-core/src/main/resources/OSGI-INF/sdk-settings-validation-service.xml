@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.sdk.service.settings.ValidationSettingsService" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.service.settings.SettingsValidationServiceImpl" />
+
+    <service>
+        <provide interface="org.onlyoffice.sdk.service.settings.SettingsValidationService" />
+    </service>
+</component>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.service.convert.ConvertService" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.service.convert.ConvertServiceImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.service.convert.ConvertService" />
+    </service>
+</component>

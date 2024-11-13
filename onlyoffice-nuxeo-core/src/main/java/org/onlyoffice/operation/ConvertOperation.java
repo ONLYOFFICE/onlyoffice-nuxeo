@@ -18,9 +18,13 @@
 
 package org.onlyoffice.operation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.model.convertservice.ConvertRequest;
+import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.service.convert.ConvertService;
 import org.apache.http.HttpEntity;
 import org.json.JSONObject;
-import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
@@ -31,9 +35,7 @@ import org.nuxeo.ecm.core.api.*;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.runtime.api.Framework;
-import org.onlyoffice.api.ConvertService;
-import org.onlyoffice.utils.RequestManager;
-import org.onlyoffice.utils.UrlManager;
+import com.onlyoffice.manager.request.RequestManager;
 import org.onlyoffice.utils.Utils;
 
 import java.io.IOException;
@@ -51,9 +53,6 @@ public class ConvertOperation {
     @Context
     protected CoreSession session;
 
-    @Context
-    protected OperationContext context;
-
     @Param(name = "id")
     protected String id;
 
@@ -63,9 +62,9 @@ public class ConvertOperation {
     @OperationMethod
     public String run() throws Exception {
         ConvertService convertService = Framework.getService(ConvertService.class);
-        Utils utils = Framework.getService(Utils.class);
-        UrlManager urlManager = Framework.getService(UrlManager.class);
+        DocumentManager documentManager = Framework.getService(DocumentManager.class);
         RequestManager requestManager = Framework.getService(RequestManager.class);
+        Utils utils = Framework.getService(Utils.class);
 
         DocumentModel model = session.getDocument(new IdRef(id));
 
@@ -74,17 +73,14 @@ public class ConvertOperation {
                     SecurityConstants.WRITE_PROPERTIES, session.getPrincipal().getName()));
         }
 
-        String key = utils.getDocumentKey(model);
         String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-        String title = utils.getTitleWithoutExtension(fileName);
-        String currentExtension = utils.getFileExtension(fileName);
+        String title = documentManager.getBaseName(fileName);
 
-        if (convertService.getTargetExtension(currentExtension) == null) {
+        if (documentManager.getDefaultConvertExtension(fileName) == null) {
             throw new OperationException("Document type is not supported!");
         }
 
-        String targetExtension = convertService.getTargetExtension(currentExtension);
-        String contentUrl = urlManager.getContentUrl(context, model);
+        String targetExtension = documentManager.getDefaultConvertExtension(fileName);
 
         Locale locale = Locale.ENGLISH;
 
@@ -92,16 +88,20 @@ public class ConvertOperation {
             locale = Locale.forLanguageTag(language);
         }
 
-        JSONObject response;
+        ConvertRequest convertRequest = ConvertRequest.builder()
+                .region(locale.toLanguageTag())
+                .outputtype(targetExtension)
+                .async(true)
+                .build();
 
-        response = convertService.convert(key, currentExtension, targetExtension, contentUrl, locale.toLanguageTag(), true);
+        ConvertResponse convertResponse = convertService.processConvert(convertRequest, id);
 
-        if (response.has("endConvert") && response.getBoolean("endConvert")) {
-            requestManager.executeRequestToDocumentServer(response.getString("fileUrl"), new RequestManager.Callback<Void>() {
-                public Void doWork(HttpEntity httpEntity) throws IOException {
-                    Blob blob = Blobs.createBlob(httpEntity.getContent());
+        if (convertResponse.getEndConvert() != null && convertResponse.getEndConvert()) {
+            requestManager.executeGetRequest(convertResponse.getFileUrl(), new RequestManager.Callback<Void>() {
+                public Void doWork(Object response) throws IOException {
+                    Blob blob = Blobs.createBlob(((HttpEntity)response).getContent());
                     blob.setFilename(title + "." + targetExtension);
-                    blob.setMimeType(utils.getMimeType(targetExtension));
+                    blob.setMimeType(utils.getMimeType(title + "." + targetExtension));
 
                     model.setPropertyValue("file:content", (Serializable) blob);
 
@@ -113,6 +113,8 @@ public class ConvertOperation {
             });
         }
 
-        return response.toString(2);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.writeValueAsString(convertResponse);
     }
 }

@@ -18,7 +18,6 @@
 
 package org.onlyoffice.web;
 
-import javax.mail.MessagingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -27,6 +26,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.model.documenteditor.Config;
+import com.onlyoffice.model.documenteditor.config.document.DocumentType;
+import com.onlyoffice.model.documenteditor.config.document.Type;
+import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
+import com.onlyoffice.service.documenteditor.config.ConfigService;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentNotFoundException;
@@ -38,13 +45,9 @@ import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 import org.nuxeo.runtime.api.Framework;
-import org.onlyoffice.api.ConfigService;
-import org.onlyoffice.utils.UrlManager;
-import org.onlyoffice.utils.Utils;
+import com.onlyoffice.manager.url.UrlManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 @Path("/onlyedit")
 @WebObject(type = "onlyedit")
@@ -55,37 +58,46 @@ public class Editor extends ModuleRoot {
     private static final Logger logger = LoggerFactory.getLogger(Editor.class);
 
     private UrlManager urlManager;
-    private Utils utils;
+    private DocumentManager documentManager;
     private ConfigService configService;
+
 
     @Override
     protected void initialize(Object... args) {
         super.initialize(args);
-
         urlManager = Framework.getService(UrlManager.class);
-        utils = Framework.getService(Utils.class);
+        documentManager = Framework.getService(DocumentManager.class);
         configService = Framework.getService(ConfigService.class);
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.TEXT_HTML)
-    public Object getEdit(@PathParam("id") String id) {
+    public Object getEdit(@PathParam("id") String id) throws JsonProcessingException {
         try {
             WebContext ctx = getContext();
             CoreSession session = ctx.getCoreSession();
 
             DocumentModel model = session.getDocument(new IdRef(id));
 
+            Config config = configService.createConfig(
+                    id,
+                    Mode.EDIT,
+                    Type.DESKTOP
+            );
+
+            config.getEditorConfig().setLang(ctx.getLocale().toLanguageTag());
+
             String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-            String docExt = utils.getFileExtension(docFilename);
-            String docType = utils.getDocumentType(docExt);
+            DocumentType docType = documentManager.getDocumentType(docFilename);
+
+            ObjectMapper objectMapper = new ObjectMapper();
 
             return getView("index")
-                .arg("config", configService.createConfig(ctx, model))
-                .arg("docUrl", urlManager.getDocServUrl())
+                .arg("config", objectMapper.writeValueAsString(config))
+                .arg("docUrl", urlManager.getDocumentServerApiUrl())
                 .arg("docTitle", model.getTitle())
-                .arg("docType", docType);
+                .arg("docType", docType.name().toLowerCase());
         } catch (DocumentSecurityException e) {
             return Response.status(403).build();
         } catch (DocumentNotFoundException e) {

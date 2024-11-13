@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.manager.url.UrlManager" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.manager.url.UrlManagerImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.manager.url.UrlManager" />
+    </service>
+</component>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.manager.request.RequestManager" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.manager.request.RequestManagerImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.manager.request.RequestManager" />
+    </service>
+</component>

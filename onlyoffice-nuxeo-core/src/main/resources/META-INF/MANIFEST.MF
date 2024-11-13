@@ -8,13 +8,15 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-core;singleton=true
 Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=onlyedit
 Nuxeo-Component: OSGI-INF/utils-service.xml,
- OSGI-INF/jwtmanager-service.xml,
- OSGI-INF/urlmanager-service.xml,
- OSGI-INF/settings-service.xml,
- OSGI-INF/callback-service.xml,
  OSGI-INF/permission-service.xml,
- OSGI-INF/config-service.xml,
  OSGI-INF/onlyoffice-mimetype-contrib.xml,
  OSGI-INF/onlyoffice-operation-contrib.xml,
- OSGI-INF/convert-service.xml,
- OSGI-INF/requestmanager-service.xml
+ OSGI-INF/sdk-settings-manager.xml,
+ OSGI-INF/sdk-document-manager.xml,
+ OSGI-INF/sdk-jwt-manager.xml,
+ OSGI-INF/sdk-url-manager.xml,
+ OSGI-INF/sdk-request-manager.xml,
+ OSGI-INF/sdk-config-service.xml,
+ OSGI-INF/sdk-settings-validation-service.xml,
+ OSGI-INF/sdk-callback-service.xml,
+ OSGI-INF/sdk-convert-service.xml
