@@ -4,6 +4,13 @@
 ## Added
 - core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - improved connection settings validation
+- shardkey parameter
+- default empty file templates
+
+## Changed
+- apache httpclient 5
+- default token lifetime is 5 minutes
+- address of the convert service, /converter instead /ConvertService.ashx
 
 ## 2.1.0
 ## Added
