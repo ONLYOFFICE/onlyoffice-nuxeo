@@ -17,7 +17,6 @@
   "label.onlyoffice.settings.validation.mixedcontent": "Contenido Mixto Activo no está permitido. Se requiere la dirección HTTPS para Servidor de Documentos.",
   "label.onlyoffice.edit": "Editar en ONLYOFFICE",
   "label.onlyoffice.view": "Ver en ONLYOFFICE",
-  "label.onlyoffice.fillForm": "Rellenar el formulario en ONLYOFFICE",
   "label.onlyoffice.create": "Crear con ONLYOFFICE",
   "label.onlyoffice.document.word": "Documento",
   "label.onlyoffice.document.cell": "Hoja de cálculo",

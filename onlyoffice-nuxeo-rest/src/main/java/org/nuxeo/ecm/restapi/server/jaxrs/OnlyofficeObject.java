@@ -198,10 +198,6 @@ public class OnlyofficeObject extends DefaultObject {
             response.put("mode", "edit");
         }
 
-        if (documentManager.isFillable(fileName) && hasWriteProperties) {
-            response.put("mode", "fillForm");
-        }
-
          return Response.status(Status.OK)
                 .entity(response.toString(2))
                 .type("application/json")

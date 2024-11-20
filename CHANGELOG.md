@@ -6,11 +6,14 @@
 - improved connection settings validation
 - shardkey parameter
 - default empty file templates
+- editing pdf
 
 ## Changed
 - apache httpclient 5
 - default token lifetime is 5 minutes
 - address of the convert service, /converter instead /ConvertService.ashx
+- create pdf instead docxf
+- remove support docxf and oform
 
 ## 2.1.0
 ## Added
