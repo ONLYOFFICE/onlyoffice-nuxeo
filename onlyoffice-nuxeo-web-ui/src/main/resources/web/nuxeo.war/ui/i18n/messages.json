@@ -45,7 +45,7 @@
     "onlyoffice.service.command.check.error-prefix": "Error when trying to check CommandService ($).",
     "onlyoffice.service.command.error.no": "No errors",
     "onlyoffice.service.command.error.key": "Document key is missing or no document with such key could be found",
-    "onlyoffice.service.command.error.callback_url": "Callback url not correct",
+    "onlyoffice.service.command.error.callback_url": "Callback URL not correct",
     "onlyoffice.service.command.error.internal_server": "Internal server error",
     "onlyoffice.service.command.error.forcesave": "No changes were applied to the document before the forcesave command was received",
     "onlyoffice.service.command.error.command": "Command not correct",
