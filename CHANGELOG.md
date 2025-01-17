@@ -2,7 +2,7 @@
 
 ##
 ## Added
-- core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
+- core of the package has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - improved connection settings validation
 - shardkey parameter
 - default empty file templates
@@ -29,7 +29,7 @@
 
 ## Changed
 - document server v6.0 and earlier is no longer supported
-- fixed plugin compatibility issue with SAML
+- fixed package compatibility issue with SAML
 
 ## 2.0.0
 ## Added
