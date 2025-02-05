@@ -25,10 +25,10 @@
   "onlyoffice.convert.message.error.undefined": "Akats bat egon da dokumentua bihurtzean (zehaztugabeko errorea)",
   "onlyoffice.convert.message.error.service": "Akats bat egon da dokumentua bihurtzean, Dokumentuaren Bihurketa Zerbitzuak errore baten berri eman du ({0})",
 
-  "onlyoffice.server.common.error.connection": "",
-  "onlyoffice.server.common.error.api-js": "",
+  "onlyoffice.server.common.error.connection": "Ezin da dokumentu-zerbitzariarekin konektatu.",
+  "onlyoffice.server.common.error.api-js": "Ezin da API JavaScript fitxategiarekin konektatu.",
   "onlyoffice.server.common.error.mixed-content": "Eduki aktibo mistoa ez da onartzen. Dokumentu-zerbitzariarentzako HTTPS helbidea beharrezkoa da.",
-  "onlyoffice.server.common.error.healthcheck": "",
+  "onlyoffice.server.common.error.healthcheck": "Dokumentu-zerbitzariak osasun egiaztapen negatiboa itzuli du.",
 
   "onlyoffice.service.convert.check.error-prefix": "Errorea ConvertService egiaztatzen saiatzean",
   "onlyoffice.service.convert.error.unknown": "Errore ezezaguna",
@@ -39,16 +39,16 @@
   "onlyoffice.service.convert.error.database": "Errorea bihurketaren emaitzen datu-basera sartzean",
   "onlyoffice.service.convert.error.input": "Sarrera-errorea",
   "onlyoffice.service.convert.error.token": "Marka-ikurra ez da zuzena",
-  "onlyoffice.service.convert.error.connection": "",
-  "onlyoffice.service.convert.error.download_result": "",
+  "onlyoffice.service.convert.error.connection": "Konexio-errorea",
+  "onlyoffice.service.convert.error.download_result": "Errorea emaitzen fitxategiaren deskargan",
 
   "onlyoffice.service.command.check.error-prefix": "Errorea CommandService egiaztatzen saiatzean ($).",
-  "onlyoffice.service.command.error.no": "",
-  "onlyoffice.service.command.error.key": "",
-  "onlyoffice.service.command.error.callback_url": "",
-  "onlyoffice.service.command.error.internal_server": "",
-  "onlyoffice.service.command.error.forcesave": "",
-  "onlyoffice.service.command.error.command": "",
+  "onlyoffice.service.command.error.no": "Akatsik ez",
+  "onlyoffice.service.command.error.key": "Dokumentu-gakoa falta da edo ez da gako hori duen dokumenturik aurkitu",
+  "onlyoffice.service.command.error.callback_url": "Callback URL helbidea ez da zuzena",
+  "onlyoffice.service.command.error.internal_server": "Barne-zerbitzariaren errorea",
+  "onlyoffice.service.command.error.forcesave": "Dokumentuan ez da aldaketarik egin indarrez ixteko agindua jaso aurretik",
+  "onlyoffice.service.command.error.command": "Agindua ez da zuzena",
   "onlyoffice.service.command.error.token": "Marka-ikurra ez da zuzena",
-  "onlyoffice.service.command.error.connection": ""
+  "onlyoffice.service.command.error.connection": "Konexio-errorea"
 }
