@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "מסמך",
     "label.onlyoffice.document.cell": "גיליון אלקטרוני",
     "label.onlyoffice.document.slide": "מצגת",
-    "label.onlyoffice.document.form": "תבנית טופס",
+    "label.onlyoffice.document.pdf": "טופס PDF",
     "onlyoffice.convert.action": "המר באמצעות ONLYOFFICE",
     "onlyoffice.convert.submit": "המר",
     "onlyoffice.convert.label": "המר את {0} ל-{1}",

@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "Documento",
     "label.onlyoffice.document.cell": "Foglio di calcolo",
     "label.onlyoffice.document.slide": "Presentazione",
-    "label.onlyoffice.document.form": "Modello di modulo",
+    "label.onlyoffice.document.pdf": "Modulo PDF",
     "onlyoffice.convert.action": "Converti utilizzando ONLYOFFICE",
     "onlyoffice.convert.submit": "Converti",
     "onlyoffice.convert.label": "Converti {0} in {1}",

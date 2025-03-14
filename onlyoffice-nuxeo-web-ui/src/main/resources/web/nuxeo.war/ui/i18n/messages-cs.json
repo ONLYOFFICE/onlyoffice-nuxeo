@@ -17,7 +17,7 @@
   "label.onlyoffice.document.word": "Dokument",
   "label.onlyoffice.document.cell": "Tabulkový procesor",
   "label.onlyoffice.document.slide": "Prezentace",
-  "label.onlyoffice.document.form": "Šablona formuláře",
+  "label.onlyoffice.document.pdf": "PDF formulář",
   "onlyoffice.convert.action": "Převést pomocí ONLYOFFICE",
   "onlyoffice.convert.submit": "Převést",
   "onlyoffice.convert.label": "Převést {0} na {1}",

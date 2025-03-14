@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "Dokument",
     "label.onlyoffice.document.cell": "Tabelle",
     "label.onlyoffice.document.slide": "Präsentation",
-    "label.onlyoffice.document.form": "Formularvorlage",
+    "label.onlyoffice.document.pdf": "PDF-Formular",
     "onlyoffice.convert.action": "Mit ONLYOFFICE konvertieren",
     "onlyoffice.convert.submit": "Konvertieren",
     "onlyoffice.convert.label": "Konvertieren von {0} in {1}",

@@ -17,7 +17,7 @@
   "label.onlyoffice.document.word": "Dokument",
   "label.onlyoffice.document.cell": "Kalkylblad",
   "label.onlyoffice.document.slide": "Presentation",
-  "label.onlyoffice.document.form": "Formulärmall",
+  "label.onlyoffice.document.pdf": "PDF-Formulär",
   "onlyoffice.convert.action": "Konvertera med ONLYOFFICE",
   "onlyoffice.convert.submit": "Konvertera",
   "onlyoffice.convert.label": "Konvertera {0} till {1}",

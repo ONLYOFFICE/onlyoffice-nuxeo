@@ -17,7 +17,7 @@
   "label.onlyoffice.document.word": "Document",
   "label.onlyoffice.document.cell": "Spreadsheet",
   "label.onlyoffice.document.slide": "Presentatie",
-  "label.onlyoffice.document.form": "Formulier sjabloon",
+  "label.onlyoffice.document.pdf": "PDF-formulier",
   "onlyoffice.convert.action": "Converteer met ONLYOFFICE",
   "onlyoffice.convert.submit": "Omzetten",
   "onlyoffice.convert.label": "Converteer {0} naar {1}",

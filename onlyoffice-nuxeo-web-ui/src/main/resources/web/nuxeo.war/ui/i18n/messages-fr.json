@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "Document",
     "label.onlyoffice.document.cell": "Classeur",
     "label.onlyoffice.document.slide": "Présentation",
-    "label.onlyoffice.document.form": "Modèle de formulaire",
+    "label.onlyoffice.document.pdf": "Formulaire PDF",
     "onlyoffice.convert.action": "Convertir en utilisant ONLYOFFICE",
     "onlyoffice.convert.submit": "Convertir",
     "onlyoffice.convert.label": "Convertir {0} en {1}",

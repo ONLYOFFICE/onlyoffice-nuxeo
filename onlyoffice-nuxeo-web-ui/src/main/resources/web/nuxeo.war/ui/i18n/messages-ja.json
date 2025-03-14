@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "ドキュメント",
     "label.onlyoffice.document.cell": "スプレッドシート",
     "label.onlyoffice.document.slide": "プレゼンテーション",
-    "label.onlyoffice.document.form": "フォームのテンプレート",
+    "label.onlyoffice.document.pdf": "PDFフォーム",
     "onlyoffice.convert.action": "ONLYOFFICEで変換する",
     "onlyoffice.convert.submit": "変換",
     "onlyoffice.convert.label": "{0}を{1}に変換する",

@@ -17,7 +17,7 @@
   "label.onlyoffice.document.word": "Dokumen",
   "label.onlyoffice.document.cell": "Spreadsheet",
   "label.onlyoffice.document.slide": "Presentasi",
-  "label.onlyoffice.document.form": "Template Form",
+  "label.onlyoffice.document.pdf": "Formulir PDF",
   "onlyoffice.convert.action": "Konversi dengan ONLYOFFICE",
   "onlyoffice.convert.submit": "Konversi",
   "onlyoffice.convert.label": "Konversi {0} ke {1}",

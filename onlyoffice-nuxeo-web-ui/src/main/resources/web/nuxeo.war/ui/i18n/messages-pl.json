@@ -17,7 +17,7 @@
   "label.onlyoffice.document.word": "Dokument",
   "label.onlyoffice.document.cell": "Arkusz kalkulacyjny",
   "label.onlyoffice.document.slide": "Prezentacja",
-  "label.onlyoffice.document.form": "Szablon formularza",
+  "label.onlyoffice.document.pdf": "Formularz PDF",
   "onlyoffice.convert.action": "Konwertuj za pomocą ONLYOFFICE",
   "onlyoffice.convert.submit": "Konwertuj",
   "onlyoffice.convert.label": "Konwertuj {0} do {1}",

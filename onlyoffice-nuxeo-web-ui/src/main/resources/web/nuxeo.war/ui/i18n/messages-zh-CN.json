@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "文档",
     "label.onlyoffice.document.cell": "表格",
     "label.onlyoffice.document.slide": "演示文稿",
-    "label.onlyoffice.document.form": "表单",
+    "label.onlyoffice.document.pdf": "PDF 表单",
     "onlyoffice.convert.action": "通过 ONLYOFFICE 转换",
     "onlyoffice.convert.submit": "转换",
     "onlyoffice.convert.label": "把 {0} 转换为 {1}",

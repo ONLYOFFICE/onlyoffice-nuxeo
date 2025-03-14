@@ -17,7 +17,7 @@
     "label.onlyoffice.document.word": "مستند",
     "label.onlyoffice.document.cell": "جدول بيانات",
     "label.onlyoffice.document.slide": "عرض تقديمي",
-    "label.onlyoffice.document.form": "نموذج استمارة",
+    "label.onlyoffice.document.pdf": "نموذج PDF",
     "onlyoffice.convert.action": "تحويل باستخدام ONLYOFFICE",
     "onlyoffice.convert.submit": "تحويل",
     "onlyoffice.convert.label": "تحويل {0} إلى {1}",
