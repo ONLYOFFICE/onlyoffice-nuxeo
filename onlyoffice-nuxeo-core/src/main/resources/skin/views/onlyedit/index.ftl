@@ -50,6 +50,11 @@
         var connectEditor = function () {
             var config = ${config};
 
+            if (typeof DocsAPI === "undefined") {
+                alert("ONLYOFFICE is not available. Please contact us at support@onlyoffice.com");
+                return;
+            }
+
             if ((config.document.fileType === "docxf" || config.document.fileType === "oform")
                 && DocsAPI.DocEditor.version().split(".")[0] < 7) {
                 alert("Please update ONLYOFFICE Docs to version 7.0 to work on fillable forms online.");
