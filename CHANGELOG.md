@@ -1,6 +1,6 @@
 # Change Log
 
-##
+## 3.0.0
 ## Added
 - core of the package has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - improved connection settings validation
