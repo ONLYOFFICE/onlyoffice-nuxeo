@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<component name="org.onlyoffice.api.CallbackService" version="1.0">
-
-    <implementation class="org.onlyoffice.service.CallbackServiceImpl" />
-
-    <service>
-        <provide interface="org.onlyoffice.api.CallbackService" />
-    </service>
-</component>

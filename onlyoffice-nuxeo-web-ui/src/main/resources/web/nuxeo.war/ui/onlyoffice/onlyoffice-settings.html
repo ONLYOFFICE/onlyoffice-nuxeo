@@ -49,23 +49,23 @@
 
                 <iron-form id="form">
                     <form>
-                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-url')]]" value="{{settings.docUrl}}" name="doc-url" required>
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-url')]]" value="{{settings.url}}" name="doc-url" required>
                         </nuxeo-input>
 
-                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-secret')]]" value="{{settings.jwtSecret}}" name="jwt-secret">
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-secret')]]" value="{{settings.security.key}}" name="jwt-secret">
                         </nuxeo-input>
 
-                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-header')]]" value="{{settings.jwtHeader}}" name="jwt-header">
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.jwt-header')]]" value="{{settings.security.header}}" name="jwt-header">
                         </nuxeo-input>
 
                         <div class="header">
                             <h3>[[i18n('label.onlyoffice.settings.server.advanced')]]</h3>
                         </div>
 
-                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-inner-url')]]" value="{{settings.docInnerUrl}}" name="doc-inner-url">
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.doc-inner-url')]]" value="{{settings.innerUrl}}" name="doc-inner-url">
                         </nuxeo-input>
 
-                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.nuxeo-inner-url')]]" value="{{settings.nuxeoInnerUrl}}" name="nuxeo-inner-url">
+                        <nuxeo-input label="[[i18n('label.onlyoffice.settings.server.nuxeo-inner-url')]]" value="{{settings.productInnerUrl}}" name="nuxeo-inner-url">
                         </nuxeo-input>
 
                         <div class="form-buttons">
@@ -110,24 +110,89 @@
             _updateSettings() {
                 this.$.updateSettings.data = this.settings;
                 this.$.updateSettings.post().then((res) => {
-                    if(res.success) {
-                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.success") });
+                    if (res) {
+                        const validationResults = res.validationResults;
+
+                        if (validationResults.documentServer) {
+                            if (validationResults.documentServer.status == "failed") {
+                                this.fire(
+                                    "notify",
+                                    {
+                                        message: `${this.i18n('onlyoffice.server.common.error.' + validationResults.documentServer.error.toLowerCase())}`,
+                                        commandId: "documentServer"
+                                    }
+                                );
+                            }
+                        }
+
+                        if (validationResults.commandService) {
+                            if (validationResults.commandService.status == "failed") {
+                                this.fire(
+                                    "notify",
+                                    {
+                                        message: `${this.i18n('onlyoffice.service.command.check.error-prefix')}`.
+                                             replace(
+                                                "$",
+                                                `${this.i18n('onlyoffice.service.command.error.' + validationResults.commandService.error.toLowerCase())}`
+                                             ),
+                                        commandId: "commandService"
+                                    }
+                                );
+                            }
+                        }
+
+                        if (validationResults.convertService) {
+                            if (validationResults.convertService.status == "failed") {
+                                this.fire(
+                                    "notify",
+                                    {
+                                        message: `${this.i18n('onlyoffice.service.convert.check.error-prefix')}`.
+                                            replace(
+                                                "$",
+                                                `${this.i18n('onlyoffice.service.convert.error.' + validationResults.convertService.error.toLowerCase())}`
+                                            ),
+                                        commandId: "convertService"
+                                    }
+                                );
+                            }
+                        }
+
+                        this.fire(
+                            "notify",
+                            {
+                                message: this.i18n("label.onlyoffice.settings.success"),
+                                commandId: "settings"
+                            }
+                        );
                     } else {
-                        this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation." + res.message) });
+                        this.fire(
+                            "notify",
+                            {
+                                message: `${this.i18n('label.error').toUpperCase()}: ${this.i18n('label.onlyoffice.settings.error')}`,
+                                commandId: "settings"
+                            }
+                        );
                     }
                 }).catch((err) => {
                     this.fire(
                         "notify",
                         {
-                            message: `${this.i18n('label.error').toUpperCase()}: ${this.i18n('label.onlyoffice.settings.error')}`
+                            message: `${this.i18n('label.error').toUpperCase()}: ${this.i18n('label.onlyoffice.settings.error')}`,
+                            commandId: "common"
                         }
                     );
                 });
             },
 
             _testDocServiceApi() {
-                if (window.location.href.startsWith("https://") && this.settings.docUrl.toLowerCase().startsWith("http://")) {
-                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.mixedcontent") });
+                if (window.location.href.startsWith("https://") && this.settings.url.toLowerCase().startsWith("http://")) {
+                    this.fire(
+                        "notify",
+                        {
+                            message: this.i18n("onlyoffice.server.common.error.mixed-content"),
+                            commandId: "testDocServiceApi"
+                        }
+                    );
                     return;
                 }
 
@@ -146,12 +211,12 @@
                 scriptAddress.onload = () => this._testApiResult();
                 scriptAddress.onerror = () => this._testApiResult();;
 
-                var docServiceUrlApi = this.settings.docUrl;
+                var docServiceUrlApi = this.settings.url;
 
                 if (!docServiceUrlApi.endsWith("/")) {
                       docServiceUrlApi += "/";
                 }
-                docServiceUrlApi += "web-apps/apps/api/documents/api.js";
+                docServiceUrlApi += this.settings.extra.pathApiUrl;
 
                 scriptAddress.src = docServiceUrlApi;
             },
@@ -159,11 +224,17 @@
             _testApiResult() {
                 var result = typeof DocsAPI != "undefined";
 
-                if (result) {
-                    this._updateSettings();
-                } else {
-                    this.fire("notify", { message: this.i18n("label.onlyoffice.settings.validation.docservunreachable") });
+                if (!result) {
+                    this.fire(
+                        "notify",
+                        {
+                            message: this.i18n("onlyoffice.server.common.error.api-js"),
+                            commandId: "testApiResult"
+                        }
+                    );
                 }
+
+                this._updateSettings();
             }
         });
     </script>

@@ -4,5 +4,5 @@ Bundle-Name: onlyoffice-nuxeo-rest
 Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-rest;singleton:=true
 Fragment-Host: org.nuxeo.ecm.platform.restapi.server
 Bundle-Vendor: Nuxeo
-Bundle-Version: 2.1.0
+Bundle-Version: 3.0.0
 

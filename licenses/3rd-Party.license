@@ -1,4 +1,4 @@
-Nuxeo ONLYOFFICE integration plugin uses code from the following 3rd party projects:
+ONLYOFFICE addon package for Nuxeo uses code from the following 3rd party projects:
 
 
 com.auth0.java-jwt  - Java implementation of JSON Web Token (JWT) (https://github.com/auth0/java-jwt/blob/master/LICENSE)

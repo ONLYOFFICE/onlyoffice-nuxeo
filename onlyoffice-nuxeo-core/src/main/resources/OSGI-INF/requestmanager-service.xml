@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<component name="org.onlyoffice.utils.RequestManager" version="1.0">
-
-  <implementation class="org.onlyoffice.utils.RequestManagerImpl" />
-
-  <service>
-    <provide interface="org.onlyoffice.utils.RequestManager" />
-  </service>
-</component>

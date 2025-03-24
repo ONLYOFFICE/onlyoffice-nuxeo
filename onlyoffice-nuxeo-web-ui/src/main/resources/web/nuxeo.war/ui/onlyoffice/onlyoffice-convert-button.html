@@ -220,31 +220,36 @@
 
             _getServiceErrorMessage(errorCode) {
                 switch(errorCode) {
-                    case -1:
-                        return this.i18n("onlyoffice.convert.message.error.service.unknown");
-                    case -2:
-                        return this.i18n("onlyoffice.convert.message.error.service.timeout");
-
-                    case -3:
-                        return this.i18n("onlyoffice.convert.message.error.service.conversion");
+                    case "UNKNOWN":
+                        return this.i18n("onlyoffice.service.convert.error.unknown");
+                    case "TIMEOUT":
+                        return this.i18n("onlyoffice.service.convert.error.timeout");
+                    case "CONVERSION":
+                        return this.i18n("onlyoffice.service.convert.error.conversion");
                         break;
-                    case -4:
-                        return this.i18n("onlyoffice.convert.message.error.service.download");
+                    case "DOWNLOADING":
+                        return this.i18n("onlyoffice.service.convert.error.downloading");
                         break;
-                    case -5:
-                        return this.i18n("onlyoffice.convert.message.error.service.password");
+                    case "PASSWORD":
+                        return this.i18n("onlyoffice.service.convert.error.password");
                         break;
-                    case -6:
-                        return this.i18n("onlyoffice.convert.message.error.service.database");
+                    case "DATABASE":
+                        return this.i18n("onlyoffice.service.convert.error.database");
                         break;
-                    case -7:
-                        return this.i18n("onlyoffice.convert.message.error.service.input");
+                    case "INPUT":
+                        return this.i18n("onlyoffice.service.convert.error.input");
                         break;
-                    case -8:
-                        return this.i18n("onlyoffice.convert.message.error.service.token");
+                    case "TOKEN":
+                        return this.i18n("onlyoffice.service.convert.error.token");
+                        break;
+                    case "CONNECTION":
+                        return this.i18n("onlyoffice.service.convert.error.connection");
+                        break;
+                    case "DOWNLOAD_RESULT":
+                        return this.i18n("onlyoffice.service.convert.error.download_result");
                         break;
                     default:
-                        return this.i18n("onlyoffice.convert.message.error.service.unknown");
+                        return this.i18n("onlyoffice.service.convert.error.unknown");
                 }
             }
         });

@@ -31,7 +31,6 @@ import org.nuxeo.ecm.core.security.SecurityService;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
-import org.onlyoffice.api.PermissionService;
 import org.onlyoffice.utils.Utils;
 
 public class PermissionServiceImpl extends DefaultComponent implements PermissionService {

@@ -1,10 +1,10 @@
-# Nuxeo ONLYOFFICE integration plugin
+# ONLYOFFICE addon package for Nuxeo
 
-This plugin enables users to edit office documents from [Nuxeo](https://www.nuxeo.com/) using ONLYOFFICE Docs packaged as Document Server - [Community or Enterprise Edition](#onlyoffice-docs-editions).
+This package enables users to edit office documents from [Nuxeo](https://www.nuxeo.com/) using ONLYOFFICE Docs packaged as Document Server - [Community or Enterprise Edition](#onlyoffice-docs-editions).
 
 ## Features
 
-The plugin allows to:
+The package allows to:
 
 * Create and edit text documents, spreadsheets, and presentations.
 * Share documents with other users.
@@ -12,8 +12,26 @@ The plugin allows to:
 
 Supported formats:
 
-* For viewing and editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
-* For viewing only: PDF, ODT, ODS, ODP, DOC, XLS, PPT.
+**For viewing:**
+* **WORD:** DJVU, DOC, DOCM, DOCX, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OFORM, OTT, OXPS, PDF, RTF, TXT, XML, XPS
+* **CELL:** CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX
+* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
+
+**For editing:**
+
+* **WORD:** DOCM, DOCX, DOCXF, DOTM, DOTX, HTM, XML
+* **CELL:** XLSM, XLSX, XLTM, XLTX
+* **SLIDE:** POTM, POTX, PPSM, PPSX, PPTM, PPTX
+
+**For filling:**
+
+* **WORD:** OFORM
+
+**For converting to Office Open XML formats:**
+
+* **WORD:** DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OTT, OXPS, PDF, RTF, XML, XPS
+* **CELL:** FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX
+* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM
 
 ## Installing ONLYOFFICE Docs
 
@@ -27,7 +45,7 @@ To install Enterprise Edition, follow instructions [here](https://helpcenter.onl
 
 Community Edition vs Enterprise Edition comparison can be found [here](#onlyoffice-docs-editions).
 
-## Installing Nuxeo ONLYOFFICE integration plugin
+## Installing ONLYOFFICE addon package for Nuxeo
 
 Install it from [marketplace](https://connect.nuxeo.com/nuxeo/site/marketplace).
 
@@ -36,7 +54,7 @@ You can also install it using [nuxeoctl](https://doc.nuxeo.com/nxdoc/installing-
 nuxeoctl mp-install /path/to/onlyoffice-nuxeo-package-x.x.zip
 ```
 
-## Configuring Nuxeo ONLYOFFICE integration plugin
+## Configuring ONLYOFFICE addon package for Nuxeo
 
 Open the [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index-nuxeoconf/) file and enter the name of the server with ONLYOFFICE Docs installed:
 
@@ -51,9 +69,9 @@ Starting from version 7.2, JWT is enabled by default and the secret key is gener
 Specify your own secret key by adding the `onlyoffice.jwt.secret=yoursecret` line to the **nuxeo.conf** file. 
 In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
 
-## Compiling Nuxeo ONLYOFFICE plugin
+## Compiling ONLYOFFICE addon package for Nuxeo
 
-To build Nuxeo plugin, the following steps must be performed for Ubuntu:
+To build Nuxeo package, the following steps must be performed for Ubuntu:
 
 1. The stable Java version is necessary for the successful build. If you do not have it installed, use the following commands to install Open JDK 8:
     ```bash
@@ -64,12 +82,12 @@ To build Nuxeo plugin, the following steps must be performed for Ubuntu:
 2. Install latest Maven:
 Installation process is described [here](https://maven.apache.org/install.html)
 
-3. Download the Nuxeo ONLYOFFICE integration plugin source code:
+3. Download the ONLYOFFICE addon package for Nuxeo source code:
     ```bash
     git clone https://github.com/onlyoffice/onlyoffice-nuxeo.git
     ```
 
-4. Compile Nuxeo ONLYOFFICE integration plugin:
+4. Compile ONLYOFFICE addon package for Nuxeo:
     ```bash
     cd onlyoffice-nuxeo/
     mvn clean install
@@ -145,12 +163,18 @@ The table below will help you make the right choice.
 | Font and paragraph formatting   | + | + |
 | Object insertion                | + | + |
 | Transitions                     | + | + |
+| Animations                      | + | + |
 | Presenter mode                  | + | + |
 | Notes                           | + | + |
 | **Form creator features** | **Community Edition** | **Enterprise Edition** |
 | Adding form fields           | + | + |
 | Form preview                    | + | + |
 | Saving as PDF                   | + | + |
+| **Working with PDF**      | **Community Edition** | **Enterprise Edition** |
+| Text annotations (highlight, underline, cross out) | + | + |
+| Comments                        | + | + |
+| Freehand drawings               | + | + |
+| Form filling                    | + | + |
 | | [Get it now](https://www.onlyoffice.com/download-docs.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubNuxeo#docs-community)  | [Start Free Trial](https://www.onlyoffice.com/download-docs.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubNuxeo#docs-enterprise)  |
 
 \* If supported by DMS.

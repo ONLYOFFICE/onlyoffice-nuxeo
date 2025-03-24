@@ -1,5 +1,20 @@
 # Change Log
 
+## 3.0.0
+## Added
+- core of the package has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
+- improved connection settings validation
+- shardkey parameter
+- default empty file templates
+- editing pdf
+
+## Changed
+- apache httpclient 5
+- default token lifetime is 5 minutes
+- address of the convert service, /converter instead /ConvertService.ashx
+- create pdf instead docxf
+- remove support docxf and oform
+
 ## 2.1.0
 ## Added
 - improvement of jwt signature
@@ -14,7 +29,7 @@
 
 ## Changed
 - document server v6.0 and earlier is no longer supported
-- fixed plugin compatibility issue with SAML
+- fixed package compatibility issue with SAML
 
 ## 2.0.0
 ## Added

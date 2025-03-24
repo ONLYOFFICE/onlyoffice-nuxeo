@@ -18,6 +18,8 @@
 
 package org.onlyoffice.operation;
 
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -65,6 +67,7 @@ public class CreateOperation {
     @OperationMethod
     public String run() throws IOException {
         Utils utils = Framework.getService(Utils.class);
+        DocumentManager documentManager = Framework.getService(DocumentManager.class);
 
         Locale locale = Locale.ENGLISH;
 
@@ -72,22 +75,15 @@ public class CreateOperation {
             locale = Locale.forLanguageTag(language);
         }
 
-        String pathLocale = utils.getPathLocale(locale.toLanguageTag());
+        DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
+        String extension = documentManager.getDefaultExtension(documentType);
 
-        if (pathLocale == null) {
-            pathLocale = utils.getPathLocale(locale.getLanguage());
-
-            if (pathLocale == null) pathLocale = utils.getPathLocale("en");
-        }
-
-        String extension = getExtension(type);
-
-        try (InputStream inputStream = getClass().getResourceAsStream("/app_data/document-templates/" + pathLocale  + "/new." + extension)){
+        try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)){
             DocumentModel newDoc = session.createDocumentModel(path, title, "File");
 
             Blob blob = Blobs.createBlob(inputStream);
             blob.setFilename(title + "." + extension);
-            blob.setMimeType(utils.getMimeType(extension));
+            blob.setMimeType(utils.getMimeType(title + "." + extension));
 
             newDoc.setPropertyValue("file:content", (Serializable) blob);
 
@@ -95,21 +91,6 @@ public class CreateOperation {
             session.save();
 
             return result.getId();
-        }
-    }
-
-    private String getExtension(String type) {
-        switch (type.toLowerCase()) {
-            case "word":
-                return "docx";
-            case "cell":
-                return "xlsx";
-            case "slide":
-                return "pptx";
-            case "form":
-                return "docxf";
-            default:
-                return "docx";
         }
     }
 }

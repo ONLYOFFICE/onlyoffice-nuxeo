@@ -42,13 +42,18 @@
             text-decoration: none;
         }
     </style>
-    <script id="scriptApi" type="text/javascript" src="${docUrl}web-apps/apps/api/documents/api.js"></script>
+    <script id="scriptApi" type="text/javascript" src="${docUrl}"></script>
 </head>
 <body>
     <div id="placeholder"></div>
     <script>
         var connectEditor = function () {
             var config = ${config};
+
+            if (typeof DocsAPI === "undefined") {
+                alert("ONLYOFFICE is not available. Please contact us at support@onlyoffice.com");
+                return;
+            }
 
             if ((config.document.fileType === "docxf" || config.document.fileType === "oform")
                 && DocsAPI.DocEditor.version().split(".")[0] < 7) {

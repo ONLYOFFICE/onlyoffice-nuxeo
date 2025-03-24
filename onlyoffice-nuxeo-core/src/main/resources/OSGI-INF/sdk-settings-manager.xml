@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.sdk.manager.settings.SettingsManager" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.manager.settings.SettingsManagerImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.manager.settings.SettingsManager" />
+    </service>
+</component>
