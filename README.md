@@ -1,6 +1,6 @@
 # ONLYOFFICE addon package for Nuxeo
 
-Bring full office editing to your [Nuxeo](https://www.nuxeo.com/) content platform — edit, co-author, and manage office files without leaving Nuxeo. Powered by [ONLYOFFICE Docs](https://www.onlyoffice.com/docs). 
+Bring full office editing to your [Nuxeo](https://www.nuxeo.com/) content platform — edit, co-author, and manage office files without leaving Nuxeo. Powered by [ONLYOFFICE Docs](https://www.onlyoffice.com/docs).
 
 ## Features 🌟
 
@@ -44,17 +44,17 @@ The package allows to:
 
 You’ll need a running instance of ONLYOFFICE Docs (Document Server) that can communicate both ways with your Nuxeo server and is reachable by end-user browsers.
 
-#### ☁️ Option 1: ONLYOFFICE Docs Cloud  
-No installation needed — just [register here](https://www.onlyoffice.com/docs-registration) and get instant access.  
+#### ☁️ Option 1: ONLYOFFICE Docs Cloud
+No installation needed — just [register here](https://www.onlyoffice.com/docs-registration) and get instant access.
 Your registration email includes all required connection details, including the **Document Server address** and **JWT credentials**.
 
-#### 🏠 Option 2: Self-hosted ONLYOFFICE Docs  
-Install ONLYOFFICE Docs on your own infrastructure for full control.    
+#### 🏠 Option 2: Self-hosted ONLYOFFICE Docs
+Install ONLYOFFICE Docs on your own infrastructure for full control.
 You have two main choices for the ONLYOFFICE Document Server:
 
-* **Community Edition (Free)**: Ideal for small teams and personal use.  
-  * The **recommended** installation method is [Docker](https://github.com/onlyoffice/Docker-DocumentServer).  
-  * To install it on Debian, Ubuntu, or other derivatives, click [here](https://helpcenter.onlyoffice.com/docs/installation/docs-community-install-ubuntu.aspx).   
+* **Community Edition (Free)**: Ideal for small teams and personal use.
+  * The **recommended** installation method is [Docker](https://github.com/onlyoffice/Docker-DocumentServer).
+  * To install it on Debian, Ubuntu, or other derivatives, click [here](https://helpcenter.onlyoffice.com/docs/installation/docs-community-install-ubuntu.aspx).
 * **Enterprise Edition**: Packed with professional features and scalability for larger organizations. To install, click [here](https://helpcenter.onlyoffice.com/docs/installation/enterprise).
 
 Community Edition vs Enterprise Edition comparison can be found [here](#onlyoffice-docs-editions).
@@ -66,7 +66,7 @@ Community Edition vs Enterprise Edition comparison can be found [here](#onlyoffi
 You have two options:
 
 ### Option A: Nuxeo Marketplace (recommended)
-Install directly from [Nuxeo Marketplace](https://connect.nuxeo.com/nuxeo/site/marketplace)  
+Install directly from [Nuxeo Marketplace](https://connect.nuxeo.com/nuxeo/site/marketplace)
 
 ### Option B: [nuxeoctl](https://doc.nuxeo.com/nxdoc/installing-a-new-package-on-your-instance/)
 
@@ -81,12 +81,12 @@ Open the [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index
 ```
 onlyoffice.docserv.url=http://documentserver/
 ```
-where the **documentserver** is the name of the server with **ONLYOFFICE Docs** installed. 
-The address must be accessible from the user browser and from the Nuxeo server. 
+where the **documentserver** is the name of the server with **ONLYOFFICE Docs** installed.
+The address must be accessible from the user browser and from the Nuxeo server.
 The Nuxeo server address must also be accessible from **ONLYOFFICE Docs** for correct work.
 
-Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
-Specify your own secret key by adding the `onlyoffice.jwt.secret=yoursecret` line to the **nuxeo.conf** file. 
+Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity.
+Specify your own secret key by adding the `onlyoffice.jwt.secret=yoursecret` line to the **nuxeo.conf** file.
 In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/docs/docs-api/additional-api/signature/), specify the same secret key and enable the validation.
 
 ## Compiling the ONLYOFFICE addon package for Nuxeo
@@ -115,7 +115,7 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 5. Built package is located here `./onlyoffice-nuxeo-package/target/onlyoffice-nuxeo-package-x.x.zip`
 
-## How it works ✍️ 
+## How it works ✍️
 
 **Create a new file**
 
@@ -132,9 +132,9 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 **Auto-save & versioning**: Changes are sent back to Nuxeo; Nuxeo handles repository updates/versioning.
 
-The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/docs/docs-api/get-started/basic-concepts/). 
+The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/docs/docs-api/get-started/basic-concepts/).
 
-## ONLYOFFICE Docs editions 
+## ONLYOFFICE Docs editions
 
 ONLYOFFICE offers different versions of its online document editors that can be deployed on your own servers.
 
