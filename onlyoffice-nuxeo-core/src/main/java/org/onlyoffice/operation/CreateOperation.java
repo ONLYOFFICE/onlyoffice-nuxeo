@@ -78,7 +78,7 @@ public class CreateOperation {
         DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
         String extension = documentManager.getDefaultExtension(documentType);
 
-        try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)){
+        try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)) {
             DocumentModel newDoc = session.createDocumentModel(path, title, "File");
 
             Blob blob = Blobs.createBlob(inputStream);

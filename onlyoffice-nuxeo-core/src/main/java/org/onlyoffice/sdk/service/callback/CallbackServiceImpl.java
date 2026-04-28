@@ -55,6 +55,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+
 public class CallbackServiceImpl extends DefaultCallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
 
@@ -87,7 +89,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     @Override
-    public void handlerSave(Callback callback, String fileId) throws Exception {
+    public void handlerSave(final Callback callback, final String fileId) throws Exception {
         logger.info("Document Updated, changing content");
         WebContext ctx = WebEngine.getActiveContext();
         CoreSession session = ctx.getCoreSession();
@@ -100,7 +102,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     @Override
-    public void handlerClosed(Callback callback, String fileId) throws Exception {
+    public void handlerClosed(final Callback callback, final String fileId) throws Exception {
         logger.info("No document updates, unlocking node");
         WebContext ctx = WebEngine.getActiveContext();
         CoreSession session = ctx.getCoreSession();
@@ -110,7 +112,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         this.removeLock(session, model);
     }
 
-    private void updateDocument(CoreSession session, DocumentModel model, String changeToken, String url) throws Exception {
+    private void updateDocument(final CoreSession session, final DocumentModel model, final String changeToken,
+                                final String url) throws Exception {
         Blob original = getBlob(model, "file:content");
 
         File tempFile = File.createTempFile("onlyoffice", null);
@@ -138,7 +141,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
     }
 
-    private void removeLock(CoreSession session, DocumentModel model) throws Exception {
+    private void removeLock(final CoreSession session, final DocumentModel model) throws Exception {
         RepositoryService repositoryService = Framework.getService(RepositoryService.class);
         Session repoSession = repositoryService.getSession(model.getRepositoryName());
 
@@ -146,18 +149,27 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         String owner = model.getLockInfo().getOwner();
 
         Lock lock = doc.removeLock(owner);
-        if (lock == null) {
-
-        } else if (lock.getFailed()) {
-            throw new LockException("Document already locked by " + lock.getOwner() + ": " + model.getRef(), 409);
+        if (lock != null && lock.getFailed()) {
+            throw new LockException(
+                    "Document already locked by " + lock.getOwner() + ": " + model.getRef(),
+                    SC_CONFLICT
+            );
         } else {
             Map<String, Serializable> options = new HashMap();
             options.put("lock", lock);
-            this.notifyEvent("documentUnlocked", model, options, (String)null, (String)null, true, false, session);
+            this.notifyEvent(
+                    "documentUnlocked",
+                    model, options,
+                    (String) null,
+                    (String) null,
+                    true,
+                    false,
+                    session
+            );
         }
     }
 
-    private Blob getBlob(DocumentModel model, String xpath) {
+    private Blob getBlob(final DocumentModel model, final String xpath) {
         Blob blob = (Blob) model.getPropertyValue(xpath);
         if (blob == null) {
             BlobHolder bh = model.getAdapter(BlobHolder.class);
@@ -168,8 +180,9 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         return blob;
     }
 
-    private void notifyEvent(String eventId, DocumentModel source, Map<String, Serializable> options, String category,
-                             String comment, boolean withLifeCycle, boolean inline, CoreSession session) {
+    private void notifyEvent(final String eventId, final DocumentModel source, final Map<String, Serializable> options,
+                             final String category, final String comment, final boolean withLifeCycle,
+                             final boolean inline, final CoreSession session) {
         DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), source);
         if (options != null) {
             ctx.setProperties(options);
@@ -195,6 +208,6 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             event.setInline(true);
         }
 
-        ((EventService)Framework.getService(EventService.class)).fireEvent(event);
+        ((EventService) Framework.getService(EventService.class)).fireEvent(event);
     }
 }

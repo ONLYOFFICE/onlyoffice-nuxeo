@@ -86,7 +86,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
     }
 
     @Override
-    public String getTestConvertUrl(String productInnerUrl) {
+    public String getTestConvertUrl(final String productInnerUrl) {
         WebContext ctx = WebEngine.getActiveContext();
 
         return String.format(
@@ -96,7 +96,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
         );
     }
 
-    private String getBaseNuxeoUrl(WebContext ctx, Boolean inner) {
+    private String getBaseNuxeoUrl(final WebContext ctx, final Boolean inner) {
         HttpServletRequest request = ctx.getRequest();
         String webAppName = VirtualHostHelper.getWebAppName(request);
         String serverUrl = null;
@@ -111,7 +111,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
         return StringUtils.isNotBlank(webAppName) ? sanitizeUrl(serverUrl) + "/" + webAppName : sanitizeUrl(serverUrl);
     }
 
-    private String generateToken(String userName) {
+    private String generateToken(final String userName) {
         TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
 
         return  tokenAuthenticationService.acquireToken(

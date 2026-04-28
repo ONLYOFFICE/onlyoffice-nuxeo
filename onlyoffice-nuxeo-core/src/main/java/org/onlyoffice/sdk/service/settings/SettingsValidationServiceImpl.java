@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingsValidationServiceImpl extends DefaultSettingsValidationServiceV2 implements SettingsValidationService {
+public class SettingsValidationServiceImpl extends DefaultSettingsValidationServiceV2
+        implements SettingsValidationService {
     private static final Logger logger = LoggerFactory.getLogger(SettingsValidationServiceImpl.class);
     public SettingsValidationServiceImpl() {
         super(

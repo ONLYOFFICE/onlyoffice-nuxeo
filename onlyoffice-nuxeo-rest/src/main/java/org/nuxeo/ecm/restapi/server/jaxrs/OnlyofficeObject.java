@@ -23,11 +23,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -48,7 +55,13 @@ import com.onlyoffice.model.settings.validation.ValidationResult;
 import com.onlyoffice.service.documenteditor.callback.CallbackService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.nuxeo.ecm.core.api.*;
+import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentSecurityException;
+import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.io.download.DownloadService;
@@ -77,7 +90,7 @@ public class OnlyofficeObject extends DefaultObject {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void initialize(Object... args) {
+    protected void initialize(final Object... args) {
         super.initialize(args);
 
         permissionService = Framework.getService(PermissionService.class);
@@ -112,7 +125,7 @@ public class OnlyofficeObject extends DefaultObject {
                 ""
         );
 
-        Map<String, Object> extraSettings = new HashMap<String, Object>(){{
+        Map<String, Object> extraSettings = new HashMap<String, Object>() {{
             put("pathApiUrl", settingsManager.getDocsIntegrationSdkProperties().getDocumentServer().getApiUrl());
         }};
 
@@ -138,7 +151,7 @@ public class OnlyofficeObject extends DefaultObject {
     @POST
     @Path("settings")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object setSettings(InputStream input) throws IOException {
+    public Object setSettings(final InputStream input) throws IOException {
         checkAdministrator();
 
         Settings settings = objectMapper.readValue(input, Settings.class);
@@ -180,7 +193,7 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("filter/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getFilter(@PathParam("id") String id) {
+    public Object getFilter(final @PathParam("id") String id) {
         JSONObject response = new JSONObject();
 
         CoreSession session = getContext().getCoreSession();
@@ -192,7 +205,11 @@ public class OnlyofficeObject extends DefaultObject {
             response.put("mode", "view");
         }
 
-        Boolean hasWriteProperties = permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
+        Boolean hasWriteProperties = permissionService.checkPermission(
+                model,
+                session.getPrincipal(),
+                SecurityConstants.WRITE_PROPERTIES
+        );
 
         if (documentManager.isEditable(fileName) && hasWriteProperties) {
             response.put("mode", "edit");
@@ -208,7 +225,7 @@ public class OnlyofficeObject extends DefaultObject {
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postCallback(@PathParam("id") String id, InputStream input) throws IOException {
+    public Object postCallback(final @PathParam("id") String id, final InputStream input) throws IOException {
         Status code = Status.OK;
         Exception error = null;
 
@@ -251,8 +268,8 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("download/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getDownload(@PathParam("id") String id, @Context HttpServletRequest request,
-                              @Context HttpServletResponse response) throws IOException {
+    public Object getDownload(final @PathParam("id") String id, final @Context HttpServletRequest request,
+                              final @Context HttpServletResponse response) throws IOException {
         boolean isTransactionActive = false;
 
         try {
@@ -358,7 +375,7 @@ public class OnlyofficeObject extends DefaultObject {
         }
     }
 
-    private Blob getBlob(DocumentModel model, String xpath) {
+    private Blob getBlob(final DocumentModel model, final String xpath) {
         Blob blob = (Blob) model.getPropertyValue(xpath);
         if (blob == null) {
             BlobHolder bh = model.getAdapter(BlobHolder.class);

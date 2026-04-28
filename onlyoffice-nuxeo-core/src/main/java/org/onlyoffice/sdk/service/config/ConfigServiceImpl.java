@@ -56,7 +56,11 @@ public class ConfigServiceImpl extends DefaultConfigService {
         DocumentModel model = session.getDocument(new IdRef(fileId));
         String fileName = getDocumentManager().getDocumentName(fileId);
 
-        Boolean editPermission = permissionService.checkPermission(model, ctx.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
+        Boolean editPermission = permissionService.checkPermission(
+                model,
+                ctx.getPrincipal(),
+                SecurityConstants.WRITE_PROPERTIES
+        );
         Boolean isEditable = getDocumentManager().isEditable(fileName) || getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()

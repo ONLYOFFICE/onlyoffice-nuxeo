@@ -43,12 +43,12 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
     private final JavaPropsMapper javaPropsMapper = new JavaPropsMapper();
 
     @Override
-    public String getSetting(String name) {
+    public String getSetting(final String name) {
         return Framework.getProperty(SETTINGS_PREFIX + "." + name);
     }
 
     @Override
-    public void setSetting(String name, String value) {
+    public void setSetting(final String name, final String value) {
         Properties properties = new Properties();
 
         properties.put(name, value);
@@ -66,7 +66,7 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
             Properties settingsProperties = new Properties();
             Map<String, String> settingsMap = convertObjectToDotNotationMap(settings);
 
-            for (Map.Entry<String, String> setting : settingsMap.entrySet()){
+            for (Map.Entry<String, String> setting : settingsMap.entrySet()) {
                 settingsProperties.setProperty(setting.getKey(), setting.getValue());
             }
 
@@ -82,11 +82,11 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
         }
     }
 
-    private void setSettings(Properties properties) throws IOException {
+    private void setSettings(final Properties properties) throws IOException {
         Properties frameworkProperties = Framework.getProperties();
 
-        Set<String>propertyNames = properties.stringPropertyNames();
-        for(String propertyName : propertyNames) {
+        Set<String> propertyNames = properties.stringPropertyNames();
+        for (String propertyName : propertyNames) {
             frameworkProperties.put(SETTINGS_PREFIX + "." + propertyName, properties.get(propertyName));
         }
 
@@ -101,7 +101,7 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
         sittingsFile.createNewFile();
 
         List<String> listProperties = new ArrayList<>();
-        for (Map.Entry<String, Object> property : backupProperties.entrySet()){
+        for (Map.Entry<String, Object> property : backupProperties.entrySet()) {
             listProperties.add(property.getKey() + "=" + property.getValue());
         }
 
