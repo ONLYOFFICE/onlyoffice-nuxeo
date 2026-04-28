@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.nuxeo</groupId>
     <artifactId>nuxeo-parent</artifactId>
-    <version>2021.1.19</version>
+    <version>2025.19.3</version>
   </parent>
 
   <groupId>org.onlyoffice</groupId>
@@ -60,7 +60,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <nuxeo.target.version>2021</nuxeo.target.version>
+    <nuxeo.target.version>2025</nuxeo.target.version>
   </properties>
 
   <build>

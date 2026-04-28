@@ -55,7 +55,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
 
 public class CallbackServiceImpl extends DefaultCallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
