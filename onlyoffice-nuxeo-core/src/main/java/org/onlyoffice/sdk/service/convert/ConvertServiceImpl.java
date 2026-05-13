@@ -18,22 +18,20 @@
 
 package org.onlyoffice.sdk.service.convert;
 
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
-import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.manager.url.UrlManager;
 import com.onlyoffice.service.convert.ConvertService;
-import com.onlyoffice.service.convert.DefaultConvertService;
+import com.onlyoffice.service.convert.DefaultConvertServiceV2;
 import org.nuxeo.runtime.api.Framework;
 
 
-public class ConvertServiceImpl extends DefaultConvertService implements ConvertService {
+public class ConvertServiceImpl extends DefaultConvertServiceV2 implements ConvertService {
     public ConvertServiceImpl() {
         super(
                 Framework.getService(DocumentManager.class),
                 Framework.getService(UrlManager.class),
-                Framework.getService(RequestManager.class),
-                Framework.getService(SettingsManager.class)
+                Framework.getService(DocumentServerClient.class)
         );
     }
 }

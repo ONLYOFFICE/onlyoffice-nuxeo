@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="com.onlyoffice.client.DocumentServerClient" version="1.0">
+
+    <implementation class="org.onlyoffice.sdk.client.ApacheHttpclientDocumentServerClientImpl" />
+
+    <service>
+        <provide interface="com.onlyoffice.client.DocumentServerClient" />
+    </service>
+</component>

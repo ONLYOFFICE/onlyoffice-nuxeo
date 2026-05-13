@@ -18,12 +18,11 @@
 
 package org.onlyoffice.sdk.service.callback;
 
-import com.onlyoffice.manager.request.RequestManager;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.documenteditor.Callback;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
-import org.apache.hc.core5.http.HttpEntity;
 import org.nuxeo.ecm.automation.core.util.DocumentHelper;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
@@ -50,6 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ import java.util.Map;
 public class CallbackServiceImpl extends DefaultCallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
 
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
     private Utils utils;
 
     public CallbackServiceImpl() {
@@ -66,7 +67,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 Framework.getService(SettingsManager.class)
         );
 
-        this.requestManager = Framework.getService(RequestManager.class);
+        this.documentServerClient = Framework.getService(DocumentServerClient.class);
         this.utils = Framework.getService(Utils.class);
     }
 
@@ -112,27 +113,29 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     private void updateDocument(CoreSession session, DocumentModel model, String changeToken, String url) throws Exception {
         Blob original = getBlob(model, "file:content");
 
-        requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
-            @Override
-            public Void doWork(final Object response) throws Exception {
-                Blob saved = Blobs.createBlob(((HttpEntity)response).getContent(), original.getMimeType(), original.getEncoding());
-                saved.setFilename(original.getFilename());
-
-                DocumentHelper.addBlob(model.getProperty("file:content"), saved);
-
-                if (model.hasFacet(FacetNames.VERSIONABLE)) {
-                    VersioningOption vo = VersioningOption.MINOR;
-                    model.putContextData(VersioningService.VERSIONING_OPTION, vo);
-                }
-
-                model.putContextData(CoreSession.CHANGE_TOKEN, utils.getChangeToken(changeToken));
-
-                session.saveDocument(model);
-                session.save();
-
-                return null;
+        File tempFile = File.createTempFile("onlyoffice", null);
+        try {
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                documentServerClient.getFile(url, fos);
             }
-        });
+
+            Blob saved = Blobs.createBlob(tempFile, original.getMimeType(), original.getEncoding());
+            saved.setFilename(original.getFilename());
+
+            DocumentHelper.addBlob(model.getProperty("file:content"), saved);
+
+            if (model.hasFacet(FacetNames.VERSIONABLE)) {
+                VersioningOption vo = VersioningOption.MINOR;
+                model.putContextData(VersioningService.VERSIONING_OPTION, vo);
+            }
+
+            model.putContextData(CoreSession.CHANGE_TOKEN, utils.getChangeToken(changeToken));
+
+            session.saveDocument(model);
+            session.save();
+        } finally {
+            tempFile.delete();
+        }
     }
 
     private void removeLock(CoreSession session, DocumentModel model) throws Exception {
