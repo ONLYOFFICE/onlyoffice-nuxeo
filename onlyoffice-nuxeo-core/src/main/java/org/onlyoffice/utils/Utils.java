@@ -23,7 +23,7 @@ import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
 
 public interface Utils {
-    public String getChangeToken(String key);
-    public Document resolveReference(Session session, DocumentRef docRef);
+    String getChangeToken(String key);
+    Document resolveReference(Session session, DocumentRef docRef);
     String getMimeType(String extension);
 }

@@ -26,6 +26,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.document.DocumentManager;
@@ -63,7 +66,7 @@ public class Editor extends ModuleRoot {
 
 
     @Override
-    protected void initialize(Object... args) {
+    protected void initialize(final Object... args) {
         super.initialize(args);
         urlManager = Framework.getService(UrlManager.class);
         documentManager = Framework.getService(DocumentManager.class);
@@ -73,7 +76,7 @@ public class Editor extends ModuleRoot {
     @GET
     @Path("{id}")
     @Produces(MediaType.TEXT_HTML)
-    public Object getEdit(@PathParam("id") String id) throws JsonProcessingException {
+    public Object getEdit(final @PathParam("id") String id) throws JsonProcessingException {
         try {
             WebContext ctx = getContext();
             CoreSession session = ctx.getCoreSession();
@@ -99,9 +102,9 @@ public class Editor extends ModuleRoot {
                 .arg("docTitle", model.getTitle())
                 .arg("docType", docType.name().toLowerCase());
         } catch (DocumentSecurityException e) {
-            return Response.status(403).build();
+            return Response.status(SC_FORBIDDEN).build();
         } catch (DocumentNotFoundException e) {
-            return Response.status(404).build();
+            return Response.status(SC_NOT_FOUND).build();
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
             throw new NuxeoException(e);
