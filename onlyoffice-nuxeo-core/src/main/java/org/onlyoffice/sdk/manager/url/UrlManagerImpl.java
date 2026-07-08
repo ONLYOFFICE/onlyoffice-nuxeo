@@ -31,7 +31,7 @@ import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl extends DefaultUrlManager {
     private static final String APPLICATION_NAME = "onlyoffice-nuxeo";

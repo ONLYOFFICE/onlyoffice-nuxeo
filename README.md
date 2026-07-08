@@ -1,5 +1,8 @@
 # ONLYOFFICE addon package for Nuxeo
 
+> [!IMPORTANT]
+> The upgrade to LTS2025 is **work in progress**. Do not build or use as is for now.
+
 Bring full office editing to your [Nuxeo](https://www.nuxeo.com/) content platform — edit, co-author, and manage office files without leaving Nuxeo. Powered by [ONLYOFFICE Docs](https://www.onlyoffice.com/docs).
 
 ## Features 🌟
