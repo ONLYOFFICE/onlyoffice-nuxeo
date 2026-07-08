@@ -138,6 +138,23 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/docs/docs-api/get-started/basic-concepts/).
 
+## ToDo / Known limitations
+
+- **Save-to-Nuxeo latency:** changes are pushed to Nuxeo only when the editing
+  session ends (ONLYOFFICE callback status 2, sent by the Document Server after
+  the last user closes the editor, plus an internal delay — up to ~1 min). There
+  is no intermediate save while a document is open.
+- **Forcesave not wired up:** faster/periodic saves require ONLYOFFICE *forcesave*
+  (callback status 6). It is currently a no-op — `CallbackServiceImpl` does not
+  override `handlerForcesave`, so any forcesave is silently dropped. To enable it:
+  1. Implement `handlerForcesave` in
+     `onlyoffice-nuxeo-core/.../sdk/service/callback/CallbackServiceImpl.java`
+     (write the blob like `handlerSave`, but keep the lock and skip creating a
+     version each time).
+  2. Trigger it via a manual Save button (`onlyoffice.customization.forcesave=true`
+     in `nuxeo.conf`) and/or Document Server `autoAssembly` (`local.json`:
+     `services.CoAuthoring.autoAssembly.enable=true`, `autoAssembly.interval`).
+
 ## ONLYOFFICE Docs editions
 
 ONLYOFFICE offers different versions of its online document editors that can be deployed on your own servers.
