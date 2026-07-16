@@ -5,14 +5,14 @@
   <parent>
     <groupId>org.nuxeo</groupId>
     <artifactId>nuxeo-parent</artifactId>
-    <version>2025.19.3</version>
+    <version>2025.21</version>
   </parent>
 
   <groupId>org.onlyoffice</groupId>
   <artifactId>onlyoffice-nuxeo-parent</artifactId>
   <version>3.0.0</version>
   <name>ONLYOFFICE Nuxeo Parent</name>
-  <description>Bring full office editing to your Nuxeo content platform â€” edit, co-author, and manage office files without leaving Nuxeo.</description>
+  <description>Bring full office editing to your Nuxeo content platform — edit, co-author, and manage office files without leaving Nuxeo.</description>
   <packaging>pom</packaging>
 
   <modules>
