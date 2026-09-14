@@ -37,7 +37,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Checkout plugin
         uses: actions/checkout@v7
@@ -47,18 +47,39 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'maven'
           server-id: maven-private
           server-username: NUXEO_MAVEN_USERNAME
           server-password: NUXEO_MAVEN_PASSWORD
 
+      - name: Restore Maven repository
+        id: maven-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
       - name: Build with Maven
-        run: mvn -B -ntp clean install
+        timeout-minutes: 60
+        run: mvn -B -ntp -U -Dmaven.artifact.threads=8 clean install
         env:
           NUXEO_MAVEN_USERNAME: ${{ secrets.NUXEO_MAVEN_USERNAME }}
           NUXEO_MAVEN_PASSWORD: ${{ secrets.NUXEO_MAVEN_PASSWORD }}
 
+      - name: Drop failed resolution markers
+        if: always()
+        run: find ~/.m2/repository -name '*.lastUpdated' -delete || true
+
+      - name: Save Maven repository
+        if: always() && steps.maven-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+
       - name: Upload package
+        timeout-minutes: 15
         uses: christopherHX/gitea-upload-artifact@v4
         with:
           name: plugin
