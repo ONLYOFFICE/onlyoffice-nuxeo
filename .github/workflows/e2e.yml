@@ -68,7 +68,7 @@ jobs:
 
   e2e:
     needs: build
-    uses: ONLYOFFICE/integration-tests/.github/workflows/e2e.yml@feature/nuxeo
+    uses: ONLYOFFICE/integration-tests/.github/workflows/e2e.yml@a7f3ec7842d5353cba5874acf93338b25805bba6 # feature/nuxeo
     with:
       system: nuxeo
       artifact_name: plugin
