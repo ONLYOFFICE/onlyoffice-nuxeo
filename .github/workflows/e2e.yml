@@ -19,7 +19,6 @@ on:
       - 'LICENSE'
       - '.idea/**'
       - '.gitignore'
-      - '.github/**'
   pull_request:
     branches: [master, develop]
     paths-ignore:
@@ -27,7 +26,6 @@ on:
       - 'LICENSE'
       - '.idea/**'
       - '.gitignore'
-      - '.github/**'
 
 permissions:
   contents: read
