@@ -12,7 +12,7 @@
   <artifactId>onlyoffice-nuxeo-parent</artifactId>
   <version>3.0.0</version>
   <name>ONLYOFFICE Nuxeo Parent</name>
-  <description>Bring full office editing to your Nuxeo content platform — edit, co-author, and manage office files without leaving Nuxeo.</description>
+  <description>Bring full office editing to your Nuxeo content platform â€” edit, co-author, and manage office files without leaving Nuxeo.</description>
   <packaging>pom</packaging>
 
   <modules>
@@ -136,8 +136,7 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -147,8 +146,7 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -158,16 +156,15 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
 
   <pluginRepositories>
     <pluginRepository>
-      <id>public</id>
-      <url>https://maven.nuxeo.org/nexus/content/groups/public</url>
+      <id>maven-public-plugins</id>
+      <url>https://packages.nuxeo.com/repository/maven-public/</url>
       <name>Nuxeo releases</name>
       <releases>
         <enabled>true</enabled>
