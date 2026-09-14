@@ -8,7 +8,7 @@ on:
           Nuxeo image. Nuxeo publishes its LTS images only on its private registry
           (docker-private.packages.nuxeo.com), so the NUXEO_REGISTRY_* secrets must match.
           The package is built against nuxeo-parent 2021.x, so the image should be a compatible LTS one.
-        default: 'docker-private.packages.nuxeo.com/nuxeo/nuxeo:2023'
+        default: 'docker-private.packages.nuxeo.com/nuxeo/nuxeo:2025'
       documentserver_image:
         description: 'Document Server image'
         default: 'onlyoffice/documentserver:latest'
@@ -73,7 +73,7 @@ jobs:
       system: nuxeo
       artifact_name: plugin
       documentserver_image: ${{ inputs.documentserver_image || 'onlyoffice/documentserver:latest' }}
-      env_overrides: NUXEO_IMAGE=${{ inputs.nuxeo_image || 'docker-private.packages.nuxeo.com/nuxeo/nuxeo:2023' }}
+      env_overrides: NUXEO_IMAGE=${{ inputs.nuxeo_image || 'docker-private.packages.nuxeo.com/nuxeo/nuxeo:2025' }}
     secrets:
       nuxeo_clid: ${{ secrets.NUXEO_CLID }}
       nuxeo_registry_user: ${{ secrets.NUXEO_MAVEN_USERNAME }}
