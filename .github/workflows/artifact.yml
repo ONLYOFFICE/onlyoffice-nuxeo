@@ -26,8 +26,8 @@ jobs:
           java-version: '21'
           cache: maven
           server-id: maven-private
-          server-username: NUXEO_MAVEN_USERNAME
-          server-password: NUXEO_MAVEN_PASSWORD
+          server-username-env-var: NUXEO_MAVEN_USERNAME
+          server-password-env-var: NUXEO_MAVEN_PASSWORD
 
       - name: Build with Maven
         run: mvn -B -ntp clean install
