@@ -36,7 +36,15 @@ jobs:
           NUXEO_MAVEN_PASSWORD: ${{ secrets.NUXEO_MAVEN_PASSWORD }}
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        if: ${{ github.server_url == 'https://github.com' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: onlyoffice-nuxeo-package
+          path: onlyoffice-nuxeo-package/target/onlyoffice-nuxeo-package-*.zip
+
+      - name: Upload package
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: christopherHX/gitea-upload-artifact@v4
         with:
           name: onlyoffice-nuxeo-package
           path: onlyoffice-nuxeo-package/target/onlyoffice-nuxeo-package-*.zip
