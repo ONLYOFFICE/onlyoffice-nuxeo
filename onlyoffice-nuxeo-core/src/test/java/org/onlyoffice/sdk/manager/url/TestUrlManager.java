@@ -21,6 +21,8 @@ package org.onlyoffice.sdk.manager.url;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import jakarta.inject.Inject;
 
 import com.onlyoffice.manager.url.UrlManager;
@@ -34,6 +36,7 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.runtime.test.runner.Features;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
@@ -44,6 +47,7 @@ import org.onlyoffice.test.TestHelper.FrameworkProperties;
 public class TestUrlManager {
     private static final String PRODUCT_INNER_URL_PROPERTY = "onlyoffice." + SettingsConstants.PRODUCT_INNER_URL;
     private static final String INNER_URL = "http://nuxeo-internal:8080";
+    private static final long OTHER_REQUEST_TIMEOUT_MS = 10000;
 
     @Inject
     private UrlManager urlManager;
@@ -100,6 +104,24 @@ public class TestUrlManager {
         assertTrue(url, url.startsWith(baseUrl(ActiveWebContext.SERVER_URL)
                 + "/api/v1/onlyoffice/callback/" + model.getId() + "?token="));
         assertEquals(session.getPrincipal().getName(), tokenAuthenticationService.getUserName(tokenOf(url)));
+    }
+
+    /**
+     * BUG: the token was acquired in the transaction of the current request, so Document Server, which calls Nuxeo
+     * back while that request is still running (e.g. the settings validation), got a 401 for a new token.
+     */
+    @Test
+    public void tokenIsUsableBeforeCurrentTransactionCommits() throws Exception {
+        String token = tokenOf(urlManager.getTestConvertUrl(null));
+
+        // what Document Server sees: another request, in another thread and transaction
+        AtomicReference<String> userName = new AtomicReference<>();
+        Thread documentServerRequest = new Thread(() -> userName.set(
+                TransactionHelper.runInTransaction(() -> tokenAuthenticationService.getUserName(token))));
+        documentServerRequest.start();
+        documentServerRequest.join(OTHER_REQUEST_TIMEOUT_MS);
+
+        assertEquals(session.getPrincipal().getName(), userName.get());
     }
 
     @Test
