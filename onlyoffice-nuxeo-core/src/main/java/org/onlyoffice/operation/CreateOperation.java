@@ -20,6 +20,7 @@ package org.onlyoffice.operation;
 
 import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
+import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -29,6 +30,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.pathsegment.PathSegmentService;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
@@ -79,10 +81,13 @@ public class CreateOperation {
         String extension = documentManager.getDefaultExtension(documentType);
 
         try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)) {
-            DocumentModel newDoc = session.createDocumentModel(path, title, "File");
+            // the title may contain characters that are not allowed in a document name ('/') or in a file name
+            String name = Framework.getService(PathSegmentService.class).generatePathSegment(title);
+            DocumentModel newDoc = session.createDocumentModel(path, name, "File");
+            newDoc.setPropertyValue("dc:title", title);
 
             Blob blob = Blobs.createBlob(inputStream);
-            blob.setFilename(title + "." + extension);
+            blob.setFilename(FileUtils.getSafeFilename(title) + "." + extension);
             blob.setMimeType(utils.getMimeType(extension));
 
             newDoc.setPropertyValue("file:content", (Serializable) blob);

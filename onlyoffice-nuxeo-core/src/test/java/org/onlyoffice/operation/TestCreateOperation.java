@@ -19,6 +19,8 @@
 package org.onlyoffice.operation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -141,6 +143,40 @@ public class TestCreateOperation {
         } finally {
             Locale.setDefault(defaultLocale);
         }
+    }
+
+    @Test
+    public void titleIsStoredAsIs() throws Exception {
+        DocumentModel model = create(session, "Budget: Q1 \"draft\"", "cell", null);
+
+        assertEquals("Budget: Q1 \"draft\"", model.getPropertyValue("dc:title"));
+    }
+
+    /**
+     * BUG: the title was used as the document name, which cannot contain a slash, so the operation failed.
+     */
+    @Test
+    public void titleWithSlashCreatesDocument() throws Exception {
+        DocumentModel model = create(session, "Q1/Q2 report", "word", null);
+
+        assertEquals("Q1/Q2 report", model.getPropertyValue("dc:title"));
+        assertFalse(model.getName(), model.getName().contains("/"));
+        assertEquals("Q1_Q2 report.docx", blobOf(model).getFilename());
+    }
+
+    @Test
+    public void fileNameIsSafe() throws Exception {
+        // ':' in a file name breaks the Nuxeo conversions (full-text extraction), path separators break downloads
+        assertEquals("a_b_c_ d.docx", blobOf(create(session, "a/b\\c: d", "word", null)).getFilename());
+    }
+
+    @Test
+    public void sameTitleTwiceCreatesTwoDocuments() throws Exception {
+        DocumentModel first = create(session, "Notes", "word", null);
+        DocumentModel second = create(session, "Notes", "word", null);
+
+        assertNotEquals(first.getId(), second.getId());
+        assertEquals("Notes", second.getPropertyValue("dc:title"));
     }
 
     @Test(expected = DocumentSecurityException.class)
