@@ -31,6 +31,7 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.Lock;
 import org.nuxeo.ecm.core.api.LockException;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.versioning.VersioningService;
@@ -51,7 +52,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -115,6 +118,9 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     private void updateDocument(final CoreSession session, final DocumentModel model, final String changeToken,
                                 final String url) throws Exception {
         Blob original = getBlob(model, "file:content");
+        if (original == null) {
+            throw new NuxeoException("Document has no content to update: " + model.getRef(), SC_CONFLICT);
+        }
 
         File tempFile = File.createTempFile("onlyoffice", null);
         try {
@@ -137,7 +143,12 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             session.saveDocument(model);
             session.save();
         } finally {
-            tempFile.delete();
+            try {
+                Files.deleteIfExists(tempFile.toPath());
+            } catch (IOException e) {
+                logger.warn("Could not delete temporary file {}: {}", tempFile, e.toString());
+                tempFile.deleteOnExit();
+            }
         }
     }
 
