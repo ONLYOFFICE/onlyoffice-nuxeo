@@ -299,8 +299,9 @@ public class OnlyofficeObject extends DefaultObject {
                 }
 
                 try {
-                    String payload = jwtManager.verify(token, JwtOperation.DOWNLOAD);
+                    jwtManager.verify(token, JwtOperation.DOWNLOAD);
                 } catch (Exception e) {
+                    logger.warn("JWT verification failed while downloading document {}: {}", id, e.toString());
                     throw new DocumentSecurityException("JWT verification failed");
                 }
             }
@@ -362,8 +363,9 @@ public class OnlyofficeObject extends DefaultObject {
             }
 
             try {
-                String payload = jwtManager.verify(token, JwtOperation.DOWNLOAD);
+                jwtManager.verify(token, JwtOperation.DOWNLOAD);
             } catch (Exception e) {
+                logger.warn("JWT verification failed while downloading test file: {}", e.toString());
                 return Response.status(Status.UNAUTHORIZED).build();
             }
         }
