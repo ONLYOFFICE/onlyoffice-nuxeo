@@ -134,7 +134,7 @@ public class TestSettingsManager {
      */
     @Test
     public void persistedSettingsSurviveReloadWithSpecialCharacters() throws Exception {
-        String key = "se\\cr=et:#!  ü中";
+        String key = "  se\\cr=et:#!\n line ü中";
 
         save("http://docs.example.com/", key);
 
