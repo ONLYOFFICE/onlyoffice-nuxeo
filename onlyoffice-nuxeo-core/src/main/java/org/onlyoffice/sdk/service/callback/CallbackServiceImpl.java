@@ -142,31 +142,41 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     private void removeLock(final CoreSession session, final DocumentModel model) throws Exception {
+        Lock lockInfo = model.getLockInfo();
+        if (lockInfo == null) {
+            logger.debug("Document {} is not locked, nothing to unlock", model.getRef());
+            return;
+        }
+
         RepositoryService repositoryService = Framework.getService(RepositoryService.class);
         Session repoSession = repositoryService.getSession(model.getRepositoryName());
 
         Document doc = utils.resolveReference(repoSession, model.getRef());
-        String owner = model.getLockInfo().getOwner();
 
-        Lock lock = doc.removeLock(owner);
-        if (lock != null && lock.getFailed()) {
+        Lock lock = doc.removeLock(lockInfo.getOwner());
+        if (lock == null) {
+            logger.debug("Document {} was unlocked concurrently", model.getRef());
+            return;
+        }
+
+        if (lock.getFailed()) {
             throw new LockException(
                     "Document already locked by " + lock.getOwner() + ": " + model.getRef(),
                     SC_CONFLICT
             );
-        } else {
-            Map<String, Serializable> options = new HashMap();
-            options.put("lock", lock);
-            this.notifyEvent(
-                    "documentUnlocked",
-                    model, options,
-                    (String) null,
-                    (String) null,
-                    true,
-                    false,
-                    session
-            );
         }
+
+        Map<String, Serializable> options = new HashMap();
+        options.put("lock", lock);
+        this.notifyEvent(
+                "documentUnlocked",
+                model, options,
+                (String) null,
+                (String) null,
+                true,
+                false,
+                session
+        );
     }
 
     private Blob getBlob(final DocumentModel model, final String xpath) {
