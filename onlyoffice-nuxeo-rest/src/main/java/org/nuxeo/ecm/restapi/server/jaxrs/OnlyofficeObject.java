@@ -201,23 +201,26 @@ public class OnlyofficeObject extends DefaultObject {
         CoreSession session = getContext().getCoreSession();
         DocumentModel model = session.getDocument(new IdRef(id));
 
-        String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
+        BlobHolder blobHolder = model.getAdapter(BlobHolder.class);
+        Blob blob = blobHolder != null ? blobHolder.getBlob() : null;
+        String fileName = blob != null ? blob.getFilename() : null;
 
-        if (documentManager.isViewable(fileName)) {
-            response.put("mode", "view");
+        // documents without content (e.g. a File without attachment) cannot be opened: no mode
+        if (fileName != null) {
+            if (documentManager.isViewable(fileName)) {
+                response.put("mode", "view");
+            }
+
+            if (documentManager.isEditable(fileName) && permissionService.checkPermission(
+                    model,
+                    session.getPrincipal(),
+                    SecurityConstants.WRITE_PROPERTIES
+            )) {
+                response.put("mode", "edit");
+            }
         }
 
-        Boolean hasWriteProperties = permissionService.checkPermission(
-                model,
-                session.getPrincipal(),
-                SecurityConstants.WRITE_PROPERTIES
-        );
-
-        if (documentManager.isEditable(fileName) && hasWriteProperties) {
-            response.put("mode", "edit");
-        }
-
-         return Response.status(Status.OK)
+        return Response.status(Status.OK)
                 .entity(response.toString(2))
                 .type("application/json")
                 .build();
