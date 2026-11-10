@@ -245,6 +245,13 @@ public class OnlyofficeObject extends DefaultObject {
             code = Status.UNAUTHORIZED;
             error = ex;
             logger.error("Security error while saving document " + id, ex);
+        } catch (NuxeoException ex) {
+            // Permanent errors (not found, forbidden, lock conflict) carry a 4xx status and are not retried by
+            // Document Server; anything else stays 5xx so that transient failures are retried.
+            Status status = Status.fromStatusCode(ex.getStatusCode());
+            code = status != null ? status : Status.INTERNAL_SERVER_ERROR;
+            error = ex;
+            logger.error("Error while saving document " + id, ex);
         } catch (Exception ex) {
             code = Status.INTERNAL_SERVER_ERROR;
             error = ex;
