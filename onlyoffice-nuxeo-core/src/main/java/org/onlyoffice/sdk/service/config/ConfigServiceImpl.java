@@ -25,6 +25,7 @@ import com.onlyoffice.manager.url.UrlManager;
 import com.onlyoffice.model.documenteditor.config.document.Permissions;
 import com.onlyoffice.model.common.User;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
+import org.apache.commons.lang3.StringUtils;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
@@ -34,6 +35,9 @@ import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.service.PermissionService;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConfigServiceImpl extends DefaultConfigService {
     private PermissionService permissionService;
@@ -76,10 +80,19 @@ public class ConfigServiceImpl extends DefaultConfigService {
         if (principal != null) {
             return User.builder()
                     .id(principal.getName())
-                    .name(principal.getFirstName() + " " + principal.getLastName())
+                    .name(getDisplayName(principal))
                     .build();
         } else {
             return super.getUser();
         }
+    }
+
+    private String getDisplayName(final NuxeoPrincipal principal) {
+        String fullName = Stream.of(principal.getFirstName(), principal.getLastName())
+                .filter(StringUtils::isNotBlank)
+                .map(String::trim)
+                .collect(Collectors.joining(" "));
+
+        return fullName.isEmpty() ? principal.getName() : fullName;
     }
 }

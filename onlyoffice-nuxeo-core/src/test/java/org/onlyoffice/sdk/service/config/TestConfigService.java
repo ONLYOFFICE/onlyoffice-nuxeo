@@ -168,4 +168,13 @@ public class TestConfigService {
             assertEquals("John", configService.getUser().getName());
         }
     }
+
+    @Test
+    public void userWithBlankFirstNameAndLastName() {
+        try (ActiveWebContext context = ActiveWebContext.activate(session)) {
+            when(context.getWebContext().getPrincipal()).thenReturn(principal(USER, "  ", "Doe"));
+
+            assertEquals("Doe", configService.getUser().getName());
+        }
+    }
 }
