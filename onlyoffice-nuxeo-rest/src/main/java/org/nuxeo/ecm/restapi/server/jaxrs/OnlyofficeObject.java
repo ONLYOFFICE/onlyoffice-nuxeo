@@ -280,12 +280,12 @@ public class OnlyofficeObject extends DefaultObject {
             if (settingsManager.isSecurityEnabled()) {
                 String jwtHeader = settingsManager.getSecurityHeader();
                 List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-                String header = values.isEmpty() ? null : values.get(0);
+                String header = values == null || values.isEmpty() ? null : values.get(0);
                 String authorizationPrefix = settingsManager.getSecurityPrefix();
                 String token = (header != null && header.startsWith(authorizationPrefix))
                         ? header.substring(authorizationPrefix.length()) : header;
 
-                if (token == null || token == "") {
+                if (token == null || token.isEmpty()) {
                     throw new DocumentSecurityException("Expected JWT");
                 }
 
@@ -343,12 +343,12 @@ public class OnlyofficeObject extends DefaultObject {
         if (settingsManager.isSecurityEnabled()) {
             String jwtHeader = settingsManager.getSecurityHeader();
             List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-            String header = values.isEmpty() ? null : values.get(0);
+            String header = values == null || values.isEmpty() ? null : values.get(0);
             String authorizationPrefix = settingsManager.getSecurityPrefix();
             String token = (header != null && header.startsWith(authorizationPrefix))
                     ? header.substring(authorizationPrefix.length()) : header;
 
-            if (token == null || token == "") {
+            if (token == null || token.isEmpty()) {
                 return Response.status(Status.UNAUTHORIZED).build();
             }
 
