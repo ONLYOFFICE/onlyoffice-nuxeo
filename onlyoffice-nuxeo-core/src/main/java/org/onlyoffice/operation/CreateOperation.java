@@ -83,7 +83,7 @@ public class CreateOperation {
 
             Blob blob = Blobs.createBlob(inputStream);
             blob.setFilename(title + "." + extension);
-            blob.setMimeType(utils.getMimeType(title + "." + extension));
+            blob.setMimeType(utils.getMimeType(extension));
 
             newDoc.setPropertyValue("file:content", (Serializable) blob);
 
