@@ -51,6 +51,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.ConcurrentUpdateException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
@@ -217,6 +218,45 @@ public class TestCallbackService {
 
         assertEquals(SAVED_CONTENT, contentOf(session.getDocument(model.getRef())));
         assertNull(session.getLockInfo(model.getRef()));
+    }
+
+    @Test
+    public void closedKeepsLockSetOutsideOnlyoffice() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+        coreFeature.getCoreSession(CO_EDITOR).setLock(model.getRef());
+
+        process(userSession, callback(Status.CLOSED, key, null));
+
+        assertEquals(CO_EDITOR, session.getLockInfo(model.getRef()).getOwner());
+    }
+
+    @Test
+    public void saveIsRejectedWhenLockedByAnotherUserOutsideOnlyoffice() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+        coreFeature.getCoreSession(CO_EDITOR).setLock(model.getRef());
+
+        try {
+            process(userSession, callback(Status.SAVE, key, FILE_URL));
+            fail("Saving over a lock of another user must be rejected");
+        } catch (DocumentSecurityException e) {
+            assertEquals(CO_EDITOR, session.getLockInfo(model.getRef()).getOwner());
+            assertEquals("original", contentOf(session.getDocument(model.getRef())));
+        }
+    }
+
+    @Test
+    public void saveByOwnerOfManualLockKeepsTheLock() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+        userSession.setLock(model.getRef());
+
+        process(userSession, callback(Status.EDITING, key, null));
+        process(userSession, callback(Status.SAVE, key, FILE_URL));
+
+        assertEquals(SAVED_CONTENT, contentOf(session.getDocument(model.getRef())));
+        assertEquals(USER, session.getLockInfo(model.getRef()).getOwner());
     }
 
     @Test

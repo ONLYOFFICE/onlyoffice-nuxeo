@@ -44,6 +44,7 @@ import org.onlyoffice.test.TestHelper;
 public class TestPermissionService {
     private static final String USER = "jdoe";
     private static final String OTHER_USER = "bob";
+    private static final long LOCK_CREATION_GAP_MS = 1500;
 
     @Inject
     private PermissionService permissionService;
@@ -122,8 +123,43 @@ public class TestPermissionService {
     }
 
     /**
-     * BUG: Nuxeo's default lock security policy denies write access to everyone but the lock owner, but the plugin
-     * evaluates policies with an empty {@code new SecurityPolicyServiceImpl()} and ignores every registered policy.
+     * A record of a former editing session must not make a lock set later by a user look like an editing session
+     * lock.
+     */
+    @Test
+    public void staleEditingSessionRecordDoesNotCoverManualLock() throws Exception {
+        DocumentModel model = createDoc();
+        TestHelper.grant(session, model, USER, SecurityConstants.READ_WRITE);
+        TestHelper.grant(session, model, OTHER_USER, SecurityConstants.READ_WRITE);
+
+        Callback editing = new Callback();
+        editing.setStatus(Status.EDITING);
+        CoreSession otherSession = coreFeature.getCoreSession(OTHER_USER);
+        try (ActiveWebContext ignored = ActiveWebContext.activate(otherSession)) {
+            callbackService.processCallback(editing, model.getId());
+        }
+
+        // the editing session lock is removed outside of ONLYOFFICE, then the same user locks the document manually
+        session.removeLock(model.getRef());
+        Thread.sleep(LOCK_CREATION_GAP_MS);
+        otherSession.setLock(model.getRef());
+
+        assertFalse(canWrite(coreFeature.getCoreSession(USER), model));
+    }
+
+    @Test
+    public void administratorCanWriteDocumentLockedByAnotherUser() {
+        DocumentModel model = createDoc();
+        TestHelper.grant(session, model, OTHER_USER, SecurityConstants.READ_WRITE);
+        coreFeature.getCoreSession(OTHER_USER).setLock(model.getRef());
+
+        assertEquals(session.hasPermission(model.getRef(), SecurityConstants.WRITE_PROPERTIES),
+                permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES));
+    }
+
+    /**
+     * Nuxeo's default lock security policy denies write access to everyone but the lock owner; the plugin used to
+     * evaluate policies with an empty {@code new SecurityPolicyServiceImpl()} and ignore every registered policy.
      */
     @Test
     public void documentLockedByAnotherUserIsNotWritable() {

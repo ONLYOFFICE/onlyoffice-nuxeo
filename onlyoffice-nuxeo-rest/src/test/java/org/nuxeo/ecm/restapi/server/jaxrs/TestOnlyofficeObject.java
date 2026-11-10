@@ -301,6 +301,17 @@ public class TestOnlyofficeObject {
     }
 
     @Test
+    public void filterReturnsViewForDocumentLockedByAnotherUser() throws Exception {
+        DocumentModel model = createFile("report.docx");
+        grant(model, SecurityConstants.READ_WRITE);
+        session.setLock(model.getRef());
+
+        JsonNode filter = json((Response) endpoint(coreFeature.getCoreSession(USER)).getFilter(model.getId()));
+
+        assertEquals("view", filter.get("mode").asText());
+    }
+
+    @Test
     public void filterReturnsViewForViewOnlyFormat() throws Exception {
         DocumentModel model = createFile("scan.djvu");
 
