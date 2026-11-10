@@ -30,8 +30,8 @@ import org.nuxeo.runtime.api.Framework;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 
-public class DocumentMangerImpl extends DefaultDocumentManager {
-    public DocumentMangerImpl() {
+public class DocumentManagerImpl extends DefaultDocumentManager {
+    public DocumentManagerImpl() {
         super(Framework.getService(SettingsManager.class));
     }
 
