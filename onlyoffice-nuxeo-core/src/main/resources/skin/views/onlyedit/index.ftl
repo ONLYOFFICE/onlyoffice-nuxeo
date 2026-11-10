@@ -21,8 +21,8 @@
     *
      -->
 
-    <link rel="shortcut icon" href="${skinPath}/images/${docType}.ico"/>
-    <title>${docTitle} - ONLYOFFICE</title>
+    <link rel="shortcut icon" href="${skinPath?html}/images/${docType?html}.ico"/>
+    <title>${docTitle?html} - ONLYOFFICE</title>
     <style>
         html, body {
             height: 100%;
@@ -42,13 +42,14 @@
             text-decoration: none;
         }
     </style>
-    <script id="scriptApi" type="text/javascript" src="${docUrl}"></script>
+    <script id="scriptApi" type="text/javascript" src="${docUrl?html}"></script>
 </head>
 <body>
     <div id="placeholder"></div>
     <script>
         var connectEditor = function () {
-            var config = ${config};
+            // passed as an escaped JS string literal so that config values cannot close this script block
+            var config = JSON.parse("${config?js_string}");
 
             if (typeof DocsAPI === "undefined") {
                 alert("ONLYOFFICE is not available. Please contact us at support@onlyoffice.com");
