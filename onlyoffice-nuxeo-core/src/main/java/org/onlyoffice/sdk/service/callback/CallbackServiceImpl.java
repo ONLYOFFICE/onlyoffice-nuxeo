@@ -35,7 +35,6 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.versioning.VersioningService;
-import org.nuxeo.ecm.core.event.Event;
 import org.nuxeo.ecm.core.event.EventService;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
 import org.nuxeo.ecm.core.model.Document;
@@ -179,15 +178,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         Map<String, Serializable> options = new HashMap();
         options.put("lock", lock);
-        this.notifyEvent(
-                "documentUnlocked",
-                model, options,
-                (String) null,
-                (String) null,
-                true,
-                false,
-                session
-        );
+        notifyEvent("documentUnlocked", model, options, session);
     }
 
     private Blob getBlob(final DocumentModel model, final String xpath) {
@@ -202,33 +193,13 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     private void notifyEvent(final String eventId, final DocumentModel source, final Map<String, Serializable> options,
-                             final String category, final String comment, final boolean withLifeCycle,
-                             final boolean inline, final CoreSession session) {
+                             final CoreSession session) {
         DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), source);
-        if (options != null) {
-            ctx.setProperties(options);
-        }
-
+        ctx.setProperties(options);
         ctx.setProperty("repositoryName", source.getRepositoryName());
-        if (source != null && withLifeCycle) {
-            String currentLifeCycleState = source.getCurrentLifeCycleState();
-            ctx.setProperty("documentLifeCycle", currentLifeCycleState);
-        }
+        ctx.setProperty("documentLifeCycle", source.getCurrentLifeCycleState());
+        ctx.setProperty("category", "eventDocumentCategory");
 
-        if (comment != null) {
-            ctx.setProperty("comment", comment);
-        }
-
-        ctx.setProperty("category", category == null ? "eventDocumentCategory" : category);
-        Event event = ctx.newEvent(eventId);
-        if ("sessionSaved".equals(eventId)) {
-            event.setIsCommitEvent(true);
-        }
-
-        if (inline) {
-            event.setInline(true);
-        }
-
-        ((EventService) Framework.getService(EventService.class)).fireEvent(event);
+        Framework.getService(EventService.class).fireEvent(ctx.newEvent(eventId));
     }
 }
