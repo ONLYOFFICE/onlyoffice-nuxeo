@@ -48,6 +48,7 @@ import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.common.Format;
 import com.onlyoffice.model.documenteditor.Callback;
+import com.onlyoffice.model.security.JwtOperation;
 import com.onlyoffice.model.settings.Settings;
 import com.onlyoffice.model.settings.SettingsConstants;
 import com.onlyoffice.model.settings.security.Security;
@@ -290,7 +291,7 @@ public class OnlyofficeObject extends DefaultObject {
                 }
 
                 try {
-                    String payload = jwtManager.verify(token);
+                    String payload = jwtManager.verify(token, JwtOperation.DOWNLOAD);
                 } catch (Exception e) {
                     throw new DocumentSecurityException("JWT verification failed");
                 }
@@ -353,7 +354,7 @@ public class OnlyofficeObject extends DefaultObject {
             }
 
             try {
-                String payload = jwtManager.verify(token);
+                String payload = jwtManager.verify(token, JwtOperation.DOWNLOAD);
             } catch (Exception e) {
                 return Response.status(Status.UNAUTHORIZED).build();
             }
