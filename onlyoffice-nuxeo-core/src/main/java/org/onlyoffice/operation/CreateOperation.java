@@ -75,7 +75,7 @@ public class CreateOperation {
             locale = Locale.forLanguageTag(language);
         }
 
-        DocumentType documentType = DocumentType.valueOf(type.toUpperCase());
+        DocumentType documentType = DocumentType.valueOf(type.toUpperCase(Locale.ROOT));
         String extension = documentManager.getDefaultExtension(documentType);
 
         try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)) {
