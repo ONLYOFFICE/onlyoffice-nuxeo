@@ -8,6 +8,18 @@
 - updated document type icons (word, cell, slide, pdf)
 - updated com.onlyoffice:docs-integration-sdk to v1.11.0, see [ONLYOFFICE/docs-integration-sdk-java v1.11.0](https://github.com/ONLYOFFICE/docs-integration-sdk-java/releases/tag/v1.11.0)
 - download and test-txt endpoints verify the JWT operation claim (download)
+- documents locked by another user in Nuxeo open in view mode, other Nuxeo security policies are respected
+
+## Fixed
+- escaping of the document title and the editor config on the editor page (XSS)
+- lock set by another user outside ONLYOFFICE removed when saving the document
+- mime type of created and converted documents
+- special characters in settings lost after restart
+- "null" in the user name shown in the editor
+- creating presentations and diagrams with a Turkish server locale
+- filter error for a document without content
+- first validation of the convert service failing on a new instance
+- creating a document with "/" in the title
 
 ## 3.0.0
 ## Added
