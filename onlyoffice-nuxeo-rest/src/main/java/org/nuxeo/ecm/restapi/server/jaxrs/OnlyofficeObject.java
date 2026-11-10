@@ -40,6 +40,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.document.DocumentManager;
@@ -240,7 +241,7 @@ public class OnlyofficeObject extends DefaultObject {
             callback = callbackService.verifyCallback(callback, authorizationHeader);
 
             callbackService.processCallback(callback, id);
-        } catch (SecurityException ex) {
+        } catch (SecurityException | JWTVerificationException ex) {
             code = Status.UNAUTHORIZED;
             error = ex;
             logger.error("Security error while saving document " + id, ex);
