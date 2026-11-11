@@ -10,7 +10,7 @@
 
   <groupId>org.onlyoffice</groupId>
   <artifactId>onlyoffice-nuxeo-parent</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <name>ONLYOFFICE Nuxeo Parent</name>
   <description>Bring full office editing to your Nuxeo content platform — edit, co-author, and manage office files without leaving Nuxeo.</description>
   <packaging>pom</packaging>

@@ -1,6 +1,6 @@
 # Change Log
 
-##
+## 3.1.0
 ## Added
 - support for Nuxeo 2025.*
 
