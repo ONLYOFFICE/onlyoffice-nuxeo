@@ -30,6 +30,7 @@ import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -114,12 +115,14 @@ public class UrlManagerImpl extends DefaultUrlManager {
     private String generateToken(final String userName) {
         TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
 
-        return  tokenAuthenticationService.acquireToken(
+        // Document Server may call Nuxeo back with this token while the current request is still running
+        // (e.g. the settings validation), so the token must be committed right away
+        return TransactionHelper.runInNewTransaction(() -> tokenAuthenticationService.acquireToken(
                 userName,
                 APPLICATION_NAME,
                 DEVICE_ID,
                 "",
                 "rw"
-        );
+        ));
     }
 }

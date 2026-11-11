@@ -44,6 +44,7 @@ import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
+import org.onlyoffice.service.LockService;
 import org.onlyoffice.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
     private DocumentServerClient documentServerClient;
     private Utils utils;
+    private LockService lockService;
 
     public CallbackServiceImpl() {
         super(
@@ -73,6 +75,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         this.documentServerClient = Framework.getService(DocumentServerClient.class);
         this.utils = Framework.getService(Utils.class);
+        this.lockService = Framework.getService(LockService.class);
     }
 
     @Override
@@ -82,11 +85,10 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
-        if (!model.isLocked()) {
-            logger.info("Document open for editing, locking document");
-            model.setLock();
+        if (lockService.lock(session, model)) {
+            logger.info("Document {} open for editing, locked by the editing session", model.getRef());
         } else {
-            logger.debug("Document already locked, another user has entered/exited");
+            logger.debug("Document {} already locked, another user has entered/exited", model.getRef());
         }
     }
 
@@ -158,6 +160,12 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             return;
         }
 
+        if (!lockService.isEditingSessionLock(model.getId(), lockInfo)) {
+            logger.info("Document {} is locked by {} outside of ONLYOFFICE, keeping the lock", model.getRef(),
+                    lockInfo.getOwner());
+            return;
+        }
+
         RepositoryService repositoryService = Framework.getService(RepositoryService.class);
         Session repoSession = repositoryService.getSession(model.getRepositoryName());
 
@@ -166,6 +174,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         Lock lock = doc.removeLock(lockInfo.getOwner());
         if (lock == null) {
             logger.debug("Document {} was unlocked concurrently", model.getRef());
+            lockService.forget(model.getId());
             return;
         }
 
@@ -175,6 +184,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                     SC_CONFLICT
             );
         }
+
+        lockService.forget(model.getId());
 
         Map<String, Serializable> options = new HashMap();
         options.put("lock", lock);

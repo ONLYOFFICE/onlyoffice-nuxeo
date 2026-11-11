@@ -52,6 +52,8 @@ import com.onlyoffice.manager.url.UrlManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
+
 @Path("/onlyedit")
 @WebObject(type = "onlyedit")
 @Consumes(MediaType.WILDCARD)
@@ -100,7 +102,7 @@ public class Editor extends ModuleRoot {
                 .arg("config", objectMapper.writeValueAsString(config))
                 .arg("docUrl", urlManager.getDocumentServerApiUrl())
                 .arg("docTitle", model.getTitle())
-                .arg("docType", docType.name().toLowerCase());
+                .arg("docType", docType.name().toLowerCase(Locale.ROOT));
         } catch (DocumentSecurityException e) {
             return Response.status(SC_FORBIDDEN).build();
         } catch (DocumentNotFoundException e) {

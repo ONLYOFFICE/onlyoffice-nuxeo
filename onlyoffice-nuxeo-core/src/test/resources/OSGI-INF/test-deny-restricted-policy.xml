@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.test.denyRestrictedPolicy" version="1.0">
+
+  <extension target="org.nuxeo.ecm.core.security.SecurityService" point="policies">
+    <policy name="test-deny-restricted" class="org.onlyoffice.service.DenyRestrictedDocumentPolicy" order="50" />
+  </extension>
+
+</component>

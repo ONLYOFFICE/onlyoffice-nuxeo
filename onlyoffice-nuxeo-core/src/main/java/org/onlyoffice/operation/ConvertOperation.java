@@ -109,7 +109,7 @@ public class ConvertOperation {
 
                 Blob blob = Blobs.createBlob(tempFile);
                 blob.setFilename(title + "." + targetExtension);
-                blob.setMimeType(utils.getMimeType(title + "." + targetExtension));
+                blob.setMimeType(utils.getMimeType(targetExtension));
 
                 model.setPropertyValue("file:content", (Serializable) blob);
 

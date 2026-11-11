@@ -21,25 +21,23 @@ package org.onlyoffice.sdk.manager.settings;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.onlyoffice.manager.settings.DefaultSettingsManager;
 import com.onlyoffice.model.settings.Settings;
-import org.apache.commons.io.FileUtils;
 import org.nuxeo.common.Environment;
 import org.nuxeo.runtime.api.Framework;
 
 import java.beans.IntrospectionException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Function;
-
-import static java.util.stream.Collectors.toMap;
 
 public class SettingsManagerImpl extends DefaultSettingsManager {
     private static final String SETTINGS_PREFIX = "onlyoffice";
+    private static final String SETTINGS_FILE = "onlyoffice.properties";
     private final JavaPropsMapper javaPropsMapper = new JavaPropsMapper();
 
     @Override
@@ -90,21 +88,18 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
             frameworkProperties.put(SETTINGS_PREFIX + "." + propertyName, properties.get(propertyName));
         }
 
-        frameworkProperties = Framework.getProperties();
-
-        Map<String, Object> backupProperties = frameworkProperties.stringPropertyNames()
-                .stream()
-                .filter(k -> k.startsWith("onlyoffice"))
-                .collect(toMap(Function.identity(), frameworkProperties::get));
-
-        File sittingsFile = new File(Environment.getDefault().getConfig(), "onlyoffice.properties");
-        sittingsFile.createNewFile();
-
-        List<String> listProperties = new ArrayList<>();
-        for (Map.Entry<String, Object> property : backupProperties.entrySet()) {
-            listProperties.add(property.getKey() + "=" + property.getValue());
+        Properties persistedProperties = new Properties();
+        for (String propertyName : frameworkProperties.stringPropertyNames()) {
+            if (propertyName.startsWith(SETTINGS_PREFIX)) {
+                persistedProperties.setProperty(propertyName, frameworkProperties.getProperty(propertyName));
+            }
         }
 
-        FileUtils.writeLines(sittingsFile, listProperties);
+        // Properties.store escapes the values, so they are read back unchanged by the Nuxeo runtime, which loads
+        // the config directory with Properties.load and a UTF-8 reader
+        File settingsFile = new File(Environment.getDefault().getConfig(), SETTINGS_FILE);
+        try (Writer writer = Files.newBufferedWriter(settingsFile.toPath(), StandardCharsets.UTF_8)) {
+            persistedProperties.store(writer, null);
+        }
     }
 }
