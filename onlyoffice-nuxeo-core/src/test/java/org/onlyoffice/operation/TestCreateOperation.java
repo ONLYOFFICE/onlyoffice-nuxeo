@@ -132,7 +132,7 @@ public class TestCreateOperation {
 
     /**
      * BUG: {@code type.toUpperCase()} depends on the JVM default locale; with a Turkish locale "slide" becomes
-     * "SLİDE" and no document type matches.
+     * "SLIDE" with a dotted capital I (U+0130) and no document type matches.
      */
     @Test
     public void typeParsingDoesNotDependOnDefaultLocale() throws Exception {
