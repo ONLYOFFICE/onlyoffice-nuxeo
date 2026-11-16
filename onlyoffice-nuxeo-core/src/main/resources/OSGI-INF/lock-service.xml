@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.service.LockService" version="1.0">
+
+    <implementation class="org.onlyoffice.service.LockServiceImpl" />
+
+    <service>
+        <provide interface="org.onlyoffice.service.LockService" />
+    </service>
+</component>

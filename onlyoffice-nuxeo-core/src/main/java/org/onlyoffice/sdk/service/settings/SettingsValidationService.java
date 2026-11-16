@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package org.onlyoffice.sdk.service.settings;
 
 import com.onlyoffice.model.settings.validation.ValidationResult;
 
-import java.util.List;
 import java.util.Map;
 
 public interface SettingsValidationService extends com.onlyoffice.service.settings.SettingsValidationService {

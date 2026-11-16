@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.document.DocumentManager;
@@ -41,6 +49,7 @@ import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.common.Format;
 import com.onlyoffice.model.documenteditor.Callback;
+import com.onlyoffice.model.security.JwtOperation;
 import com.onlyoffice.model.settings.Settings;
 import com.onlyoffice.model.settings.SettingsConstants;
 import com.onlyoffice.model.settings.security.Security;
@@ -48,7 +57,13 @@ import com.onlyoffice.model.settings.validation.ValidationResult;
 import com.onlyoffice.service.documenteditor.callback.CallbackService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.nuxeo.ecm.core.api.*;
+import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentSecurityException;
+import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.io.download.DownloadService;
@@ -77,7 +92,7 @@ public class OnlyofficeObject extends DefaultObject {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void initialize(Object... args) {
+    protected void initialize(final Object... args) {
         super.initialize(args);
 
         permissionService = Framework.getService(PermissionService.class);
@@ -112,7 +127,7 @@ public class OnlyofficeObject extends DefaultObject {
                 ""
         );
 
-        Map<String, Object> extraSettings = new HashMap<String, Object>(){{
+        Map<String, Object> extraSettings = new HashMap<String, Object>() {{
             put("pathApiUrl", settingsManager.getDocsIntegrationSdkProperties().getDocumentServer().getApiUrl());
         }};
 
@@ -138,7 +153,7 @@ public class OnlyofficeObject extends DefaultObject {
     @POST
     @Path("settings")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object setSettings(InputStream input) throws IOException {
+    public Object setSettings(final InputStream input) throws IOException {
         checkAdministrator();
 
         Settings settings = objectMapper.readValue(input, Settings.class);
@@ -180,25 +195,32 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("filter/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getFilter(@PathParam("id") String id) {
+    public Object getFilter(final @PathParam("id") String id) {
         JSONObject response = new JSONObject();
 
         CoreSession session = getContext().getCoreSession();
         DocumentModel model = session.getDocument(new IdRef(id));
 
-        String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
+        BlobHolder blobHolder = model.getAdapter(BlobHolder.class);
+        Blob blob = blobHolder != null ? blobHolder.getBlob() : null;
+        String fileName = blob != null ? blob.getFilename() : null;
 
-        if (documentManager.isViewable(fileName)) {
-            response.put("mode", "view");
+        // documents without content (e.g. a File without attachment) cannot be opened: no mode
+        if (fileName != null) {
+            if (documentManager.isViewable(fileName)) {
+                response.put("mode", "view");
+            }
+
+            if (documentManager.isEditable(fileName) && permissionService.checkPermission(
+                    model,
+                    session.getPrincipal(),
+                    SecurityConstants.WRITE_PROPERTIES
+            )) {
+                response.put("mode", "edit");
+            }
         }
 
-        Boolean hasWriteProperties = permissionService.checkPermission(model, session.getPrincipal(), SecurityConstants.WRITE_PROPERTIES);
-
-        if (documentManager.isEditable(fileName) && hasWriteProperties) {
-            response.put("mode", "edit");
-        }
-
-         return Response.status(Status.OK)
+        return Response.status(Status.OK)
                 .entity(response.toString(2))
                 .type("application/json")
                 .build();
@@ -208,7 +230,7 @@ public class OnlyofficeObject extends DefaultObject {
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postCallback(@PathParam("id") String id, InputStream input) throws IOException {
+    public Object postCallback(final @PathParam("id") String id, final InputStream input) throws IOException {
         Status code = Status.OK;
         Exception error = null;
 
@@ -222,10 +244,17 @@ public class OnlyofficeObject extends DefaultObject {
             callback = callbackService.verifyCallback(callback, authorizationHeader);
 
             callbackService.processCallback(callback, id);
-        } catch (SecurityException ex) {
+        } catch (SecurityException | JWTVerificationException ex) {
             code = Status.UNAUTHORIZED;
             error = ex;
             logger.error("Security error while saving document " + id, ex);
+        } catch (NuxeoException ex) {
+            // Permanent errors (not found, forbidden, lock conflict) carry a 4xx status and are not retried by
+            // Document Server; anything else stays 5xx so that transient failures are retried.
+            Status status = Status.fromStatusCode(ex.getStatusCode());
+            code = status != null ? status : Status.INTERNAL_SERVER_ERROR;
+            error = ex;
+            logger.error("Error while saving document " + id, ex);
         } catch (Exception ex) {
             code = Status.INTERNAL_SERVER_ERROR;
             error = ex;
@@ -251,8 +280,8 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("download/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getDownload(@PathParam("id") String id, @Context HttpServletRequest request,
-                              @Context HttpServletResponse response) throws IOException {
+    public Object getDownload(final @PathParam("id") String id, final @Context HttpServletRequest request,
+                              final @Context HttpServletResponse response) throws IOException {
         boolean isTransactionActive = false;
 
         try {
@@ -263,18 +292,19 @@ public class OnlyofficeObject extends DefaultObject {
             if (settingsManager.isSecurityEnabled()) {
                 String jwtHeader = settingsManager.getSecurityHeader();
                 List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-                String header = values.isEmpty() ? null : values.get(0);
+                String header = values == null || values.isEmpty() ? null : values.get(0);
                 String authorizationPrefix = settingsManager.getSecurityPrefix();
                 String token = (header != null && header.startsWith(authorizationPrefix))
                         ? header.substring(authorizationPrefix.length()) : header;
 
-                if (token == null || token == "") {
+                if (token == null || token.isEmpty()) {
                     throw new DocumentSecurityException("Expected JWT");
                 }
 
                 try {
-                    String payload = jwtManager.verify(token);
+                    jwtManager.verify(token, JwtOperation.DOWNLOAD);
                 } catch (Exception e) {
+                    logger.warn("JWT verification failed while downloading document {}: {}", id, e.toString());
                     throw new DocumentSecurityException("JWT verification failed");
                 }
             }
@@ -326,18 +356,19 @@ public class OnlyofficeObject extends DefaultObject {
         if (settingsManager.isSecurityEnabled()) {
             String jwtHeader = settingsManager.getSecurityHeader();
             List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-            String header = values.isEmpty() ? null : values.get(0);
+            String header = values == null || values.isEmpty() ? null : values.get(0);
             String authorizationPrefix = settingsManager.getSecurityPrefix();
             String token = (header != null && header.startsWith(authorizationPrefix))
                     ? header.substring(authorizationPrefix.length()) : header;
 
-            if (token == null || token == "") {
+            if (token == null || token.isEmpty()) {
                 return Response.status(Status.UNAUTHORIZED).build();
             }
 
             try {
-                String payload = jwtManager.verify(token);
+                jwtManager.verify(token, JwtOperation.DOWNLOAD);
             } catch (Exception e) {
+                logger.warn("JWT verification failed while downloading test file: {}", e.toString());
                 return Response.status(Status.UNAUTHORIZED).build();
             }
         }
@@ -358,7 +389,7 @@ public class OnlyofficeObject extends DefaultObject {
         }
     }
 
-    private Blob getBlob(DocumentModel model, String xpath) {
+    private Blob getBlob(final DocumentModel model, final String xpath) {
         Blob blob = (Blob) model.getPropertyValue(xpath);
         if (blob == null) {
             BlobHolder bh = model.getAdapter(BlobHolder.class);

@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.onlyoffice</groupId>
     <artifactId>onlyoffice-nuxeo-parent</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
   </parent>
   <artifactId>onlyoffice-nuxeo-rest</artifactId>
   <name>ONLYOFFICE Nuxeo Rest</name>
@@ -18,6 +18,28 @@
     <dependency>
       <groupId>org.nuxeo.ecm.platform</groupId>
       <artifactId>nuxeo-rest-api-server</artifactId>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>org.nuxeo.runtime</groupId>
+      <artifactId>nuxeo-runtime-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.nuxeo.ecm.platform</groupId>
+      <artifactId>nuxeo-platform-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.nuxeo.ecm.automation</groupId>
+      <artifactId>nuxeo-automation-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

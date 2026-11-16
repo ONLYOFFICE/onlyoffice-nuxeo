@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,9 @@ import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl extends DefaultUrlManager {
     private static final String APPLICATION_NAME = "onlyoffice-nuxeo";
@@ -86,7 +87,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
     }
 
     @Override
-    public String getTestConvertUrl(String productInnerUrl) {
+    public String getTestConvertUrl(final String productInnerUrl) {
         WebContext ctx = WebEngine.getActiveContext();
 
         return String.format(
@@ -96,7 +97,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
         );
     }
 
-    private String getBaseNuxeoUrl(WebContext ctx, Boolean inner) {
+    private String getBaseNuxeoUrl(final WebContext ctx, final Boolean inner) {
         HttpServletRequest request = ctx.getRequest();
         String webAppName = VirtualHostHelper.getWebAppName(request);
         String serverUrl = null;
@@ -111,15 +112,17 @@ public class UrlManagerImpl extends DefaultUrlManager {
         return StringUtils.isNotBlank(webAppName) ? sanitizeUrl(serverUrl) + "/" + webAppName : sanitizeUrl(serverUrl);
     }
 
-    private String generateToken(String userName) {
+    private String generateToken(final String userName) {
         TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
 
-        return  tokenAuthenticationService.acquireToken(
+        // Document Server may call Nuxeo back with this token while the current request is still running
+        // (e.g. the settings validation), so the token must be committed right away
+        return TransactionHelper.runInNewTransaction(() -> tokenAuthenticationService.acquireToken(
                 userName,
                 APPLICATION_NAME,
                 DEVICE_ID,
                 "",
                 "rw"
-        );
+        ));
     }
 }

@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
 package org.onlyoffice.utils;
 
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
@@ -39,7 +37,7 @@ public class UtilsImpl extends DefaultComponent implements Utils {
 
 
     @Override
-    public String getChangeToken(String key) {
+    public String getChangeToken(final String key) {
         try {
             String decoded = new String(Base64.getDecoder().decode(key), "UTF-8");
             return decoded.split("__")[1];
@@ -49,7 +47,7 @@ public class UtilsImpl extends DefaultComponent implements Utils {
     }
 
     @Override
-    public Document resolveReference(Session session, DocumentRef docRef) {
+    public Document resolveReference(final Session session, final DocumentRef docRef) {
         if (docRef == null) {
             throw new IllegalArgumentException("null docRref");
         } else {
@@ -58,13 +56,13 @@ public class UtilsImpl extends DefaultComponent implements Utils {
                 throw new IllegalArgumentException("null reference");
             } else {
                 int type = docRef.type();
-                switch(type) {
-                    case 1:
-                        return session.getDocumentByUUID((String)ref);
-                    case 2:
-                        return session.resolvePath((String)ref);
-                    case 3:
-                        return session.getDocumentByUUID(((DocumentModel)ref).getId());
+                switch (type) {
+                    case DocumentRef.ID:
+                        return session.getDocumentByUUID((String) ref);
+                    case DocumentRef.PATH:
+                        return session.resolvePath((String) ref);
+                    case DocumentRef.INSTANCE:
+                        return session.getDocumentByUUID(((DocumentModel) ref).getId());
                     default:
                         throw new IllegalArgumentException("Invalid type: " + type);
                 }
@@ -73,7 +71,7 @@ public class UtilsImpl extends DefaultComponent implements Utils {
     }
 
     @Override
-    public String getMimeType(String extension) {
+    public String getMimeType(final String extension) {
         try {
             return Framework.getService(MimetypeRegistry.class).getMimetypeFromExtension(extension);
         } catch (MimetypeNotFoundException | MimetypeDetectionException e) {

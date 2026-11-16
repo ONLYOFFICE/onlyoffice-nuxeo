@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
 
 public interface Utils {
-    public String getChangeToken(String key);
-    public Document resolveReference(Session session, DocumentRef docRef);
+    String getChangeToken(String key);
+    Document resolveReference(Session session, DocumentRef docRef);
     String getMimeType(String extension);
 }

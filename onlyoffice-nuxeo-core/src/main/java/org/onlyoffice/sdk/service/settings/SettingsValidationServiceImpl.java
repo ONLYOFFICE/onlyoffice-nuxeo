@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@
 
 package org.onlyoffice.sdk.service.settings;
 
-import com.onlyoffice.manager.request.RequestManager;
-import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.url.UrlManager;
 
 import com.onlyoffice.model.common.CommonResponse;
 import com.onlyoffice.model.settings.validation.ValidationResult;
 import com.onlyoffice.model.settings.validation.status.Status;
-import com.onlyoffice.service.settings.DefaultSettingsValidationService;
+import com.onlyoffice.service.settings.DefaultSettingsValidationServiceV2;
 import org.nuxeo.runtime.api.Framework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +32,13 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingsValidationServiceImpl extends DefaultSettingsValidationService implements SettingsValidationService {
+public class SettingsValidationServiceImpl extends DefaultSettingsValidationServiceV2
+        implements SettingsValidationService {
     private static final Logger logger = LoggerFactory.getLogger(SettingsValidationServiceImpl.class);
     public SettingsValidationServiceImpl() {
         super(
-                Framework.getService(RequestManager.class),
-                Framework.getService(UrlManager.class),
-                Framework.getService(SettingsManager.class)
+                Framework.getService(DocumentServerClient.class),
+                Framework.getService(UrlManager.class)
         );
     }
 
@@ -83,7 +82,7 @@ public class SettingsValidationServiceImpl extends DefaultSettingsValidationServ
         try {
             result.put(
                     "convertService",
-                    checkConvertService()
+                    checkConvertService(null)
             );
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -5,14 +5,14 @@
   <parent>
     <groupId>org.nuxeo</groupId>
     <artifactId>nuxeo-parent</artifactId>
-    <version>2021.1.19</version>
+    <version>2025.21</version>
   </parent>
 
   <groupId>org.onlyoffice</groupId>
   <artifactId>onlyoffice-nuxeo-parent</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <name>ONLYOFFICE Nuxeo Parent</name>
-  <description />
+  <description>Bring full office editing to your Nuxeo content platform — edit, co-author, and manage office files without leaving Nuxeo.</description>
   <packaging>pom</packaging>
 
   <modules>
@@ -45,14 +45,9 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.auth0</groupId>
-        <artifactId>java-jwt</artifactId>
-        <version>4.0.0</version>
-      </dependency>
-      <dependency>
         <groupId>com.onlyoffice</groupId>
         <artifactId>docs-integration-sdk</artifactId>
-        <version>1.3.0</version>
+        <version>1.11.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -60,7 +55,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <nuxeo.target.version>2021</nuxeo.target.version>
+    <nuxeo.target.version>2025</nuxeo.target.version>
   </properties>
 
   <build>
@@ -103,6 +98,28 @@
           </archive>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <failsOnError>true</failsOnError>
+          <failOnViolation>true</failOnViolation>
+          <logViolationsToConsole>true</logViolationsToConsole>
+          <violationSeverity>warning</violationSeverity>
+          <consoleOutput>true</consoleOutput>
+          <includeTestSourceDirectory>true
+          </includeTestSourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -114,8 +131,7 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -125,8 +141,7 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -136,16 +151,15 @@
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
 
   <pluginRepositories>
     <pluginRepository>
-      <id>public</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
+      <id>maven-public-plugins</id>
+      <url>https://packages.nuxeo.com/repository/maven-public/</url>
       <name>Nuxeo releases</name>
       <releases>
         <enabled>true</enabled>

@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,20 @@
 
 package org.onlyoffice.sdk.service.convert;
 
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
-import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.manager.url.UrlManager;
 import com.onlyoffice.service.convert.ConvertService;
-import com.onlyoffice.service.convert.DefaultConvertService;
+import com.onlyoffice.service.convert.DefaultConvertServiceV2;
 import org.nuxeo.runtime.api.Framework;
 
 
-public class ConvertServiceImpl extends DefaultConvertService implements ConvertService {
+public class ConvertServiceImpl extends DefaultConvertServiceV2 implements ConvertService {
     public ConvertServiceImpl() {
         super(
                 Framework.getService(DocumentManager.class),
                 Framework.getService(UrlManager.class),
-                Framework.getService(RequestManager.class),
-                Framework.getService(SettingsManager.class)
+                Framework.getService(DocumentServerClient.class)
         );
     }
 }

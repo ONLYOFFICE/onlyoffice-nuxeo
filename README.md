@@ -19,16 +19,20 @@ The package allows to:
 ### Supported formats
 
 **For viewing:**
-* **WORD:** DJVU, DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OTT, OXPS, PDF, RTF, TXT, XML, XPS
-* **CELL:** CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX
-* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
+
+- **WORD**: DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, GDOC, HML, HTM, HTML, HWP, HWPX, MD, MHT, MHTML, ODT, OTT, PAGES, RTF, STW, SXW, TXT, WPS, WPT, XML
+- **CELL**: CSV, ET, ETT, FODS, GSHEET, NUMBERS, ODS, OTS, SXC, TSV, XLS, XLSB, XLSM, XLSX, XLT, XLTM, XLTX
+- **SLIDE**: DPS, DPT, FODP, GSLIDES, KEY, ODG, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
+- **PDF**: DJVU, DOCXF, OFORM, OXPS, PDF, XPS
+- **DIAGRAM**: VSDM, VSDX, VSSM, VSSX, VSTM, VSTX
 
 **For editing:**
 
-* **WORD:** DOCM, DOCX, DOTM, DOTX, HTM, XML
-* **CELL:** XLSM, XLSX, XLTM, XLTX
-* **SLIDE:** POTM, POTX, PPSM, PPSX, PPTM, PPTX
-* **PDF:** PDF
+- **WORD**: DOCM, DOCX, DOTM, DOTX
+- **CELL**: XLSB, XLSM, XLSX, XLTM, XLTX
+- **SLIDE**: POTM, POTX, PPSM, PPSX, PPTM, PPTX
+- **PDF**: PDF
+
 
 **For filling:**
 
@@ -36,9 +40,10 @@ The package allows to:
 
 **For converting to Office Open XML formats:**
 
-* **WORD:** DOC, DOCM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, ODT, OTT, OXPS, PDF, RTF, XML, XPS
-* **CELL:** FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX
-* **SLIDE:** FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM
+- **WORD**: DOC, DOCM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HML, HTM, HTML, HWP, HWPX, MD, MHT, MHTML, ODT, OTT, PAGES, RTF, STW, SXW, TXT, WPS, WPT, XML
+- **CELL**: CSV, ET, ETT, FODS, NUMBERS, ODS, OTS, SXC, TSV, XLS, XLSB, XLSM, XLT, XLTM, XLTX
+- **SLIDE**: DPS, DPT, FODP, KEY, ODG, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, SXI
+- **PDF**: DOCXF, OXPS, PDF, XPS
 
 ## Installing ONLYOFFICE Docs
 
@@ -79,15 +84,16 @@ nuxeoctl mp-install /path/to/onlyoffice-nuxeo-package-x.x.zip
 Open the [nuxeo.conf](https://doc.nuxeo.com/nxdoc/configuration-parameters-index-nuxeoconf/) file and enter the name of the server with ONLYOFFICE Docs installed:
 
 ```
-onlyoffice.docserv.url=http://documentserver/
+onlyoffice.url=http://documentserver/
 ```
 where the **documentserver** is the name of the server with **ONLYOFFICE Docs** installed.
 The address must be accessible from the user browser and from the Nuxeo server.
 The Nuxeo server address must also be accessible from **ONLYOFFICE Docs** for correct work.
 
-JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity.
-If needed, specify your own secret key by adding the `onlyoffice.jwt.secret=yoursecret` line to the **nuxeo.conf** file.
+JWT is used to restrict access to ONLYOFFICE Docs and to guarantee data integrity.
+To enable it, set the shared secret key by adding the `onlyoffice.security.key=yoursecret` line to the **nuxeo.conf** file.
 In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/docs/docs-api/additional-api/signature/), specify the same secret key and enable the validation.
+If your Document Server expects a non-default JWT header or prefix, override `onlyoffice.security.header` (default `Authorization`) and `onlyoffice.security.prefix` (default `Bearer `).
 
 ## Compiling the ONLYOFFICE addon package for Nuxeo
 

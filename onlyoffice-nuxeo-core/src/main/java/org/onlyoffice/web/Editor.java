@@ -1,6 +1,6 @@
 /**
  *
- * (c) Copyright Ascensio System SIA 2023
+ * (c) Copyright Ascensio System SIA 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,16 @@
 
 package org.onlyoffice.web;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +52,8 @@ import com.onlyoffice.manager.url.UrlManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
+
 @Path("/onlyedit")
 @WebObject(type = "onlyedit")
 @Consumes(MediaType.WILDCARD)
@@ -63,7 +68,7 @@ public class Editor extends ModuleRoot {
 
 
     @Override
-    protected void initialize(Object... args) {
+    protected void initialize(final Object... args) {
         super.initialize(args);
         urlManager = Framework.getService(UrlManager.class);
         documentManager = Framework.getService(DocumentManager.class);
@@ -73,7 +78,7 @@ public class Editor extends ModuleRoot {
     @GET
     @Path("{id}")
     @Produces(MediaType.TEXT_HTML)
-    public Object getEdit(@PathParam("id") String id) throws JsonProcessingException {
+    public Object getEdit(final @PathParam("id") String id) throws JsonProcessingException {
         try {
             WebContext ctx = getContext();
             CoreSession session = ctx.getCoreSession();
@@ -97,11 +102,11 @@ public class Editor extends ModuleRoot {
                 .arg("config", objectMapper.writeValueAsString(config))
                 .arg("docUrl", urlManager.getDocumentServerApiUrl())
                 .arg("docTitle", model.getTitle())
-                .arg("docType", docType.name().toLowerCase());
+                .arg("docType", docType.name().toLowerCase(Locale.ROOT));
         } catch (DocumentSecurityException e) {
-            return Response.status(403).build();
+            return Response.status(SC_FORBIDDEN).build();
         } catch (DocumentNotFoundException e) {
-            return Response.status(404).build();
+            return Response.status(SC_NOT_FOUND).build();
         } catch (Exception e) {
             logger.error("Error while opening editor for " + id, e);
             throw new NuxeoException(e);

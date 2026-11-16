@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <component name="com.onlyoffice.manager.document.DocumentManager" version="1.0">
 
-    <implementation class="org.onlyoffice.sdk.manager.document.DocumentMangerImpl" />
+    <implementation class="org.onlyoffice.sdk.manager.document.DocumentManagerImpl" />
 
     <service>
         <provide interface="com.onlyoffice.manager.document.DocumentManager" />
