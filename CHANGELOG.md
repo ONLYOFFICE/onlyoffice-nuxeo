@@ -1,5 +1,9 @@
 # Change Log
 
+##
+## Fixed
+- Nuxeo failing to start alongside other addons (e.g. OpenSearch) because the package replaced httpclient5 in nxserver/lib
+
 ## 3.1.0
 ## Added
 - support for Nuxeo 2025.*
