@@ -66,6 +66,10 @@
           <artifact groupId="nuxeo-studio" />
           <!-- Filter out your artifacts using their groupId for instance -->
           <artifact groupId="org.onlyoffice*"/>
+          <!-- Shaded into onlyoffice-nuxeo-core, must not replace the httpclient5 shipped with Nuxeo -->
+          <artifact groupId="com.onlyoffice" artifactId="docs-integration-sdk"/>
+          <artifact groupId="org.apache.httpcomponents.client5"/>
+          <artifact groupId="org.apache.httpcomponents.core5"/>
         </excludes>
       </artifact:set>
     </copy>
