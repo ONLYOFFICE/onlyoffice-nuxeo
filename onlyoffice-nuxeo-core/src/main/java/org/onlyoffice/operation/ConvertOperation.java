@@ -24,7 +24,6 @@ import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.service.convert.ConvertService;
-import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -36,6 +35,7 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.runtime.api.Framework;
@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 @Operation(
         id = ConvertOperation.ID,
@@ -77,14 +79,20 @@ public class ConvertOperation {
                     SecurityConstants.WRITE_PROPERTIES, session.getPrincipal().getName()));
         }
 
-        String fileName = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-        String title = documentManager.getBaseName(fileName);
-
-        if (documentManager.getDefaultConvertExtension(fileName) == null) {
-            throw new OperationException("Document type is not supported!");
+        // A NuxeoException keeps its status in the REST answer, anything else is turned into a 500 by Nuxeo
+        BlobHolder blobHolder = model.getAdapter(BlobHolder.class);
+        Blob source = blobHolder != null ? blobHolder.getBlob() : null;
+        if (source == null) {
+            throw new NuxeoException("Document has no content to convert", SC_BAD_REQUEST);
         }
 
+        String fileName = source.getFilename();
+        String title = documentManager.getBaseName(fileName);
+
         String targetExtension = documentManager.getDefaultConvertExtension(fileName);
+        if (targetExtension == null) {
+            throw new NuxeoException("Document type is not supported!", SC_BAD_REQUEST);
+        }
 
         Locale locale = Locale.ENGLISH;
 

@@ -20,6 +20,7 @@ package org.onlyoffice.operation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -52,6 +53,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.runtime.mockito.RuntimeService;
@@ -69,6 +71,7 @@ public class TestConvertOperation {
     private static final String DOCX_MIME_TYPE =
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final int HALF = 50;
+    private static final int SC_BAD_REQUEST = 400;
 
     @Mock
     @RuntimeService
@@ -172,9 +175,33 @@ public class TestConvertOperation {
         verify(documentServerClient, never()).getFile(any(String.class), any(OutputStream.class));
     }
 
-    @Test(expected = OperationException.class)
+    private void assertBadRequest(final DocumentModel model) throws Exception {
+        try {
+            convert(session, model, null);
+            fail("Conversion of " + model.getName() + " must be rejected");
+        } catch (NuxeoException e) {
+            assertEquals(SC_BAD_REQUEST, e.getStatusCode());
+        }
+        verify(convertService, never()).processConvert(any(ConvertRequest.class), any(String.class));
+    }
+
+    @Test
     public void unsupportedFormatIsRejected() throws Exception {
-        convert(session, createDoc("archive.xyz"), null);
+        assertBadRequest(createDoc("archive.xyz"));
+        assertBadRequest(TestHelper.createFile(session, "editable", "report.docx", DOCX_MIME_TYPE, "x"));
+    }
+
+    @Test
+    public void documentWithoutContentIsRejected() throws Exception {
+        assertBadRequest(TestHelper.createFile(session, "empty", null, null, null));
+    }
+
+    @Test
+    public void documentThatCannotHoldContentIsRejected() throws Exception {
+        DocumentModel folder = session.createDocument(session.createDocumentModel("/", "folder", "Folder"));
+        session.save();
+
+        assertBadRequest(folder);
     }
 
     @Test(expected = DocumentSecurityException.class)

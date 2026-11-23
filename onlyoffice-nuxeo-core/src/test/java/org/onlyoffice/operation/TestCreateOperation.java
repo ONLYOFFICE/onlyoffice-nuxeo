@@ -40,6 +40,7 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.runtime.test.runner.Features;
@@ -56,6 +57,7 @@ public class TestCreateOperation {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String PPTX_MIME_TYPE =
             "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    private static final int SC_BAD_REQUEST = 400;
 
     @Inject
     private AutomationService automationService;
@@ -125,8 +127,8 @@ public class TestCreateOperation {
         try {
             create(session, "Doc", "unknown", null);
             fail("Unknown document type must be rejected");
-        } catch (OperationException e) {
-            assertTrue(e.getCause() instanceof IllegalArgumentException);
+        } catch (NuxeoException e) {
+            assertEquals(SC_BAD_REQUEST, e.getStatusCode());
         }
     }
 
