@@ -20,12 +20,15 @@ package org.onlyoffice.sdk.manager.settings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import jakarta.inject.Inject;
@@ -51,6 +54,7 @@ public class TestSettingsManager {
     private static final String URL_PROPERTY = "onlyoffice." + SettingsConstants.URL;
     private static final String KEY_PROPERTY = "onlyoffice." + SettingsConstants.SECURITY_KEY;
     private static final String HEADER_PROPERTY = "onlyoffice." + SettingsConstants.SECURITY_HEADER;
+    private static final String EXTRA_PROPERTY = "onlyoffice.extra";
 
     @Inject
     private SettingsManager settingsManager;
@@ -84,7 +88,8 @@ public class TestSettingsManager {
         properties = new FrameworkProperties()
                 .set(URL_PROPERTY, null)
                 .set(KEY_PROPERTY, null)
-                .set(HEADER_PROPERTY, null);
+                .set(HEADER_PROPERTY, null)
+                .set(EXTRA_PROPERTY, null);
         Files.deleteIfExists(settingsFile().toPath());
     }
 
@@ -139,5 +144,29 @@ public class TestSettingsManager {
         save("http://docs.example.com/", key);
 
         assertEquals(key, loadPersistedSettings().getProperty(KEY_PROPERTY));
+    }
+
+    @Test
+    public void extraIsNotPersisted() throws Exception {
+        Map<String, Object> extra = new HashMap<>();
+        extra.put("pathApiUrl", "/web-apps/apps/api/documents/api.js");
+        extra.put("unknownField", "value");
+
+        settingsManager.setSettings(Settings.builder().url("http://docs.example.com/").extra(extra).build());
+
+        assertNull(Framework.getProperty(EXTRA_PROPERTY));
+        Properties persisted = loadPersistedSettings();
+        assertFalse(persisted.containsKey(EXTRA_PROPERTY));
+        assertEquals("http://docs.example.com/", persisted.getProperty(URL_PROPERTY));
+    }
+
+    @Test
+    public void extraSavedByEarlierVersionsIsRemoved() throws Exception {
+        properties.set(EXTRA_PROPERTY, "{pathApiUrl=/web-apps/apps/api/documents/api.js}");
+
+        save("http://docs.example.com/", "secret");
+
+        assertNull(Framework.getProperty(EXTRA_PROPERTY));
+        assertFalse(loadPersistedSettings().containsKey(EXTRA_PROPERTY));
     }
 }

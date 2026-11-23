@@ -64,6 +64,11 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
             Properties settingsProperties = new Properties();
             Map<String, String> settingsMap = convertObjectToDotNotationMap(settings);
 
+            // extra is data for the settings page (and any unknown field of the request ends up there), not a
+            // setting; also drops the value saved by earlier versions, which would otherwise be persisted forever
+            settingsMap.remove(Settings.Fields.extra);
+            Framework.getProperties().remove(SETTINGS_PREFIX + "." + Settings.Fields.extra);
+
             for (Map.Entry<String, String> setting : settingsMap.entrySet()) {
                 settingsProperties.setProperty(setting.getKey(), setting.getValue());
             }
