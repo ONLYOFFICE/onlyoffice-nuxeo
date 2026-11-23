@@ -57,6 +57,9 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
     // the save comes when the last user leaves the editor, however long the session lasted
     private static final long DOWNLOAD_TTL_MS = TimeUnit.HOURS.toMillis(1);
 
+    // A link issued on one node of a cluster may be checked on another, whose clock is behind
+    private static final long CLOCK_SKEW_S = 60;
+
     // Earlier versions handed Document Server Nuxeo authentication tokens of this application, which never expire
     // and open the whole REST API
     private static final String LEGACY_TOKENS_DIRECTORY = "authTokens";
@@ -95,6 +98,7 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
         try {
             jwt = JWT.require(getAlgorithm())
                     .withClaim(OPERATION_CLAIM, operation.name())
+                    .acceptLeeway(CLOCK_SKEW_S)
                     .build()
                     .verify(token);
         } catch (JWTVerificationException e) {

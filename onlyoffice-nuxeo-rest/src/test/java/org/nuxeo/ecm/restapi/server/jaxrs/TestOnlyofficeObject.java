@@ -20,6 +20,7 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -563,6 +564,21 @@ public class TestOnlyofficeObject {
         userManager.createUser(user);
     }
 
+    // Outside of a login, a session is a system one in test mode (not in production): these tests fail if the
+    // endpoints did not log in as the user of the link
+    @Test
+    public void callbackOfUserWhoMayOnlyReadIsForbidden() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        grant(model, SecurityConstants.READ);
+
+        Response response = (Response) endpoint(session).postCallback(model.getId(),
+                link(Operation.CALLBACK, model.getId(), USER, "key"), body("{\"status\":1,\"key\":\"key\"}"));
+
+        assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
+        assertNull(session.getLockInfo(model.getRef()));
+    }
+
     @Test
     public void callbackIsProcessedAsTheUserTheLinkWasIssuedTo() throws Exception {
         createUser();
@@ -604,6 +620,28 @@ public class TestOnlyofficeObject {
         documentServerRequest.join(OTHER_REQUEST_TIMEOUT_MS);
 
         assertEquals(Response.Status.OK.getStatusCode(), status.get());
+    }
+
+    @Test
+    public void downloadOfUserWhoMayNotReadIsRefused() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        ACP acp = model.getACP();
+        ACL acl = acp.getOrCreateACL(ACL.LOCAL_ACL);
+        acl.add(new ACE(session.getPrincipal().getName(), SecurityConstants.EVERYTHING, true));
+        acl.add(ACE.BLOCK);
+        session.setACP(model.getRef(), acp, true);
+        session.save();
+
+        try {
+            Response response = (Response) endpoint(session).getDownload(model.getId(),
+                    link(Operation.DOWNLOAD, model.getId(), USER, null), mock(HttpServletRequest.class),
+                    mock(HttpServletResponse.class));
+            assertNotEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        } catch (IOException e) {
+            // refused by the repository
+        }
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
     }
 
     @Test

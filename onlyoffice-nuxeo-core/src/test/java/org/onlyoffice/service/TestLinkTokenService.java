@@ -48,6 +48,7 @@ public class TestLinkTokenService {
     private static final String OTHER_DOCUMENT = "1b2e7f40-5c9d-4e1a-8f3b-6d0a9c2e7b54";
     private static final String KEY = "a2V5X18x";
     private static final long HOUR_MS = 3600000L;
+    private static final long CLOCK_AHEAD_MS = 30000L;
 
     @Inject
     private LinkTokenService linkTokenService;
@@ -119,6 +120,25 @@ public class TestLinkTokenService {
                 .sign(storedSecret());
 
         assertRejected(expired, Operation.DOWNLOAD, DOCUMENT);
+    }
+
+    /**
+     * BUG: a token issued by a node of the cluster whose clock is a little ahead was refused by the others ("can't be
+     * used before"), so the editor did not open when Document Server's request landed on another node.
+     */
+    @Test
+    public void tokenIssuedByNodeWithClockAheadIsAccepted() {
+        linkTokenService.createToken(Operation.DOWNLOAD, DOCUMENT, USER, null);
+        long now = System.currentTimeMillis();
+        String ahead = JWT.create()
+                .withSubject(USER)
+                .withClaim("op", Operation.DOWNLOAD.name())
+                .withClaim("doc", DOCUMENT)
+                .withIssuedAt(new Date(now + CLOCK_AHEAD_MS))
+                .withExpiresAt(new Date(now + HOUR_MS))
+                .sign(storedSecret());
+
+        assertEquals(USER, linkTokenService.verifyToken(ahead, Operation.DOWNLOAD, DOCUMENT).getUserName());
     }
 
     @Test
