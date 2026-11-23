@@ -18,6 +18,7 @@
 
 package org.onlyoffice.sdk.manager.url;
 
+import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.settings.SettingsConstants;
 import com.onlyoffice.manager.url.DefaultUrlManager;
@@ -26,18 +27,15 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
-import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
-import org.nuxeo.runtime.transaction.TransactionHelper;
+import org.onlyoffice.service.LinkTokenService;
+import org.onlyoffice.service.LinkTokenService.Operation;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl extends DefaultUrlManager {
-    private static final String APPLICATION_NAME = "onlyoffice-nuxeo";
-    private static final String DEVICE_ID = "document-server";
-
     public UrlManagerImpl() {
         super(Framework.getService(SettingsManager.class));
     }
@@ -50,10 +48,11 @@ public class UrlManagerImpl extends DefaultUrlManager {
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
         return String.format(
-                "%1s/api/v1/onlyoffice/download/%2s?token=%3s",
+                "%1s/api/v1/onlyoffice/download/%2s?%3s=%4s",
                 getBaseNuxeoUrl(ctx, true),
                 model.getId(),
-                generateToken(ctx.getPrincipal().getName())
+                LinkTokenService.PARAMETER,
+                createToken(Operation.DOWNLOAD, model.getId(), ctx, null)
         );
     }
 
@@ -65,10 +64,12 @@ public class UrlManagerImpl extends DefaultUrlManager {
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
         return String.format(
-                "%1s/api/v1/onlyoffice/callback/%2s?token=%3s",
+                "%1s/api/v1/onlyoffice/callback/%2s?%3s=%4s",
                 getBaseNuxeoUrl(ctx, true),
                 model.getId(),
-                generateToken(ctx.getPrincipal().getName())
+                LinkTokenService.PARAMETER,
+                createToken(Operation.CALLBACK, model.getId(), ctx,
+                        Framework.getService(DocumentManager.class).getDocumentKey(model.getId(), false))
         );
     }
 
@@ -91,9 +92,10 @@ public class UrlManagerImpl extends DefaultUrlManager {
         WebContext ctx = WebEngine.getActiveContext();
 
         return String.format(
-                "%1s/api/v1/onlyoffice/test-txt?token=%2s",
+                "%1s/api/v1/onlyoffice/test-txt?%2s=%3s",
                 getBaseNuxeoUrl(ctx, true),
-                generateToken(ctx.getPrincipal().getName())
+                LinkTokenService.PARAMETER,
+                createToken(Operation.TEST_FILE, null, ctx, null)
         );
     }
 
@@ -112,17 +114,9 @@ public class UrlManagerImpl extends DefaultUrlManager {
         return StringUtils.isNotBlank(webAppName) ? sanitizeUrl(serverUrl) + "/" + webAppName : sanitizeUrl(serverUrl);
     }
 
-    private String generateToken(final String userName) {
-        TokenAuthenticationService tokenAuthenticationService = Framework.getService(TokenAuthenticationService.class);
-
-        // Document Server may call Nuxeo back with this token while the current request is still running
-        // (e.g. the settings validation), so the token must be committed right away
-        return TransactionHelper.runInNewTransaction(() -> tokenAuthenticationService.acquireToken(
-                userName,
-                APPLICATION_NAME,
-                DEVICE_ID,
-                "",
-                "rw"
-        ));
+    private static String createToken(final Operation operation, final String documentId, final WebContext ctx,
+                                      final String documentKey) {
+        return Framework.getService(LinkTokenService.class)
+                .createToken(operation, documentId, ctx.getPrincipal().getName(), documentKey);
     }
 }

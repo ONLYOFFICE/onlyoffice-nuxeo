@@ -34,6 +34,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -58,6 +59,7 @@ import com.onlyoffice.service.documenteditor.callback.CallbackService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.CoreInstance;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
@@ -67,12 +69,17 @@ import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.io.download.DownloadService;
+import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.exceptions.WebSecurityException;
 import org.nuxeo.ecm.webengine.model.impl.DefaultObject;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.onlyoffice.sdk.service.settings.SettingsValidationService;
+import org.onlyoffice.service.LinkTokenService;
+import org.onlyoffice.service.LinkTokenService.LinkToken;
+import org.onlyoffice.service.LinkTokenService.Operation;
 import org.onlyoffice.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +95,7 @@ public class OnlyofficeObject extends DefaultObject {
     private SettingsManager settingsManager;
     private JwtManager jwtManager;
     private DocumentManager documentManager;
+    private LinkTokenService linkTokenService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -101,6 +109,7 @@ public class OnlyofficeObject extends DefaultObject {
         settingsManager = Framework.getService(SettingsManager.class);
         jwtManager = Framework.getService(JwtManager.class);
         documentManager = Framework.getService(DocumentManager.class);
+        linkTokenService = Framework.getService(LinkTokenService.class);
     }
 
     @GET
@@ -230,10 +239,14 @@ public class OnlyofficeObject extends DefaultObject {
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postCallback(final @PathParam("id") String id, final InputStream input) {
+    public Object postCallback(final @PathParam("id") String id,
+                               final @QueryParam(LinkTokenService.PARAMETER) String linkToken,
+                               final InputStream input) {
         Status code = Status.OK;
 
         try {
+            LinkToken link = linkTokenService.verifyToken(linkToken, Operation.CALLBACK, id);
+
             Callback callback = objectMapper.readValue(input, Callback.class);
 
             String securityHeader = settingsManager.getSecurityHeader();
@@ -243,7 +256,13 @@ public class OnlyofficeObject extends DefaultObject {
             callback = callbackService.verifyCallback(callback, authorizationHeader);
             validateCallback(callback);
 
-            callbackService.processCallback(callback, id);
+            if (link.getDocumentKey() != null && !link.getDocumentKey().equals(callback.getKey())) {
+                throw new SecurityException("Link token issued for another editing session");
+            }
+
+            try (NuxeoLoginContext ignored = loginAs(link.getUserName())) {
+                callbackService.processCallback(callback, id);
+            }
         } catch (SecurityException | JWTVerificationException ex) {
             code = Status.UNAUTHORIZED;
             logger.warn("Callback for document {} refused: {}", id, ex.toString());
@@ -299,11 +318,21 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("download/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getDownload(final @PathParam("id") String id, final @Context HttpServletRequest request,
+    public Object getDownload(final @PathParam("id") String id,
+                              final @QueryParam(LinkTokenService.PARAMETER) String linkToken,
+                              final @Context HttpServletRequest request,
                               final @Context HttpServletResponse response) throws IOException {
+        LinkToken link;
+        try {
+            link = linkTokenService.verifyToken(linkToken, Operation.DOWNLOAD, id);
+        } catch (SecurityException e) {
+            logger.warn("Download of document {} refused: {}", id, e.getMessage());
+            return Response.status(Status.UNAUTHORIZED).build();
+        }
+
         boolean isTransactionActive = false;
 
-        try {
+        try (NuxeoLoginContext ignored = loginAs(link.getUserName())) {
             if (!TransactionHelper.isTransactionActive()) {
                 isTransactionActive = TransactionHelper.startTransaction();
             }
@@ -329,14 +358,9 @@ public class OnlyofficeObject extends DefaultObject {
             }
 
             IdRef docRef = new IdRef(id);
-            CoreSession session = getContext().getCoreSession();
+            CoreSession session = CoreInstance.getCoreSession(null);
 
             if (!session.exists(docRef)) {
-                NuxeoPrincipal principal = NuxeoPrincipal.getCurrent();
-                if (principal != null && principal.isAnonymous()) {
-                    throw new DocumentSecurityException("Authentication is needed for downloading the blob");
-                }
-
                 return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
             }
 
@@ -354,6 +378,9 @@ public class OnlyofficeObject extends DefaultObject {
             downloadService.downloadBlob(context);
 
             return Response.ok().build();
+        } catch (SecurityException e) {
+            logger.warn("Download of document {} refused: {}", id, e.getMessage());
+            return Response.status(Status.UNAUTHORIZED).build();
         } catch (NuxeoException e) {
             if (isTransactionActive) {
                 TransactionHelper.setTransactionRollbackOnly();
@@ -369,8 +396,14 @@ public class OnlyofficeObject extends DefaultObject {
     @GET
     @Path("test-txt")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getTestFile() throws UnsupportedEncodingException {
-        checkAdministrator();
+    public Object getTestFile(final @QueryParam(LinkTokenService.PARAMETER) String linkToken)
+            throws UnsupportedEncodingException {
+        try {
+            linkTokenService.verifyToken(linkToken, Operation.TEST_FILE, null);
+        } catch (SecurityException e) {
+            logger.warn("Download of the test file refused: {}", e.getMessage());
+            return Response.status(Status.UNAUTHORIZED).build();
+        }
 
         if (settingsManager.isSecurityEnabled()) {
             String jwtHeader = settingsManager.getSecurityHeader();
@@ -399,6 +432,21 @@ public class OnlyofficeObject extends DefaultObject {
                 .header("Content-Length", message.getBytes("UTF-8").length)
                 .type("text/plain")
                 .entity(message).build();
+    }
+
+    // The links handed to Document Server are not authenticated by Nuxeo (see link-token-service.xml): the work is
+    // done as the user the link was issued to, with the permissions that user has now
+    private static NuxeoLoginContext loginAs(final String userName) {
+        // the request has no principal yet, and the user directory is readable only by an authenticated one
+        NuxeoPrincipal principal = Framework.doPrivileged(
+                () -> Framework.getService(UserManager.class).getPrincipal(userName));
+        if (principal == null) {
+            throw new SecurityException("Link token issued to an unknown user");
+        }
+
+        NuxeoLoginContext loginContext = NuxeoLoginContext.create(principal);
+        loginContext.login();
+        return loginContext;
     }
 
     private void checkAdministrator() {

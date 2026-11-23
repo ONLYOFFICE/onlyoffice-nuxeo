@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<component name="org.onlyoffice.service.LinkTokenService" version="1.0">
+
+    <implementation class="org.onlyoffice.service.LinkTokenServiceImpl" />
+
+    <service>
+        <provide interface="org.onlyoffice.service.LinkTokenService" />
+    </service>
+
+    <!-- The links handed to Document Server carry their own token (LinkTokenService), checked by the endpoints
+         themselves: they are not authenticated by Nuxeo, so that no Nuxeo credentials have to be handed out -->
+    <extension target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService" point="openUrl">
+        <openUrl name="onlyoffice-download">
+            <grantPattern>.*/api/v1/onlyoffice/download/[^/]+</grantPattern>
+            <method>GET</method>
+        </openUrl>
+        <openUrl name="onlyoffice-test-file">
+            <grantPattern>.*/api/v1/onlyoffice/test-txt</grantPattern>
+            <method>GET</method>
+        </openUrl>
+        <openUrl name="onlyoffice-callback">
+            <grantPattern>.*/api/v1/onlyoffice/callback/[^/]+</grantPattern>
+            <method>POST</method>
+        </openUrl>
+    </extension>
+</component>

@@ -37,12 +37,22 @@ import org.nuxeo.ecm.core.api.security.ACL;
 import org.nuxeo.ecm.core.api.security.ACP;
 import org.nuxeo.ecm.core.api.security.impl.ACPImpl;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 
 /**
  * Small helpers shared by the tests.
  */
 public final class TestHelper {
     private TestHelper() {
+    }
+
+    /**
+     * Logs in as the user of {@code session}, as the endpoints called by Document Server do for the user of the link.
+     */
+    public static NuxeoLoginContext loginAs(final CoreSession session) {
+        NuxeoLoginContext loginContext = NuxeoLoginContext.create(session.getPrincipal());
+        loginContext.login();
+        return loginContext;
     }
 
     public static DocumentModel createFile(final CoreSession session, final String name, final String fileName,
