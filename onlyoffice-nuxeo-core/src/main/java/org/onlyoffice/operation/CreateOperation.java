@@ -30,6 +30,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.pathsegment.PathSegmentService;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.utils.Utils;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Locale;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 @Operation(
         id = CreateOperation.ID,
@@ -77,7 +80,13 @@ public class CreateOperation {
             locale = Locale.forLanguageTag(language);
         }
 
-        DocumentType documentType = DocumentType.valueOf(type.toUpperCase(Locale.ROOT));
+        DocumentType documentType;
+        try {
+            documentType = DocumentType.valueOf(type.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            // a NuxeoException keeps its status in the REST answer, anything else is turned into a 500 by Nuxeo
+            throw new NuxeoException("Document type is not supported: " + type, SC_BAD_REQUEST);
+        }
         String extension = documentManager.getDefaultExtension(documentType);
 
         try (InputStream inputStream = documentManager.getNewBlankFile(extension, locale)) {
