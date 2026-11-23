@@ -57,15 +57,16 @@ public class TestDocumentManager {
     }
 
     @Test
-    public void documentKeyEncodesIdAndChangeToken() {
+    public void documentKeyEncodesIdAndUserChangeToken() {
         DocumentModel model = createDoc();
+        String userChangeToken = utils.getUserChangeToken(model.getChangeToken());
 
         try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             String key = documentManager.getDocumentKey(model.getId(), false);
             String decoded = new String(Base64.getDecoder().decode(key), StandardCharsets.UTF_8);
 
-            assertEquals(model.getId() + "__" + model.getChangeToken(), decoded);
-            assertEquals(model.getChangeToken(), utils.getChangeToken(key));
+            assertEquals(model.getId() + "__" + userChangeToken, decoded);
+            assertEquals(userChangeToken, utils.getChangeToken(key));
         }
     }
 
@@ -84,17 +85,36 @@ public class TestDocumentManager {
     }
 
     @Test
-    public void documentKeyChangesWhenDocumentIsModified() {
+    public void documentKeyChangesWhenUserModifiesDocument() {
         DocumentModel model = createDoc();
 
         try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             String before = documentManager.getDocumentKey(model.getId(), false);
 
             model.setPropertyValue("dc:description", "changed");
+            model.putContextData(CoreSession.USER_CHANGE, Boolean.TRUE);
             session.saveDocument(model);
             session.save();
 
             assertNotEquals(before, documentManager.getDocumentKey(model.getId(), false));
+        }
+    }
+
+    @Test
+    public void documentKeyStaysWhenDocumentIsUpdatedInBackground() {
+        DocumentModel model = createDoc();
+        String changeToken = session.getDocument(model.getRef()).getChangeToken();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            String before = documentManager.getDocumentKey(model.getId(), false);
+
+            // what listeners such as the thumbnail update do: a save not marked as a user change
+            model.setPropertyValue("dc:description", "changed");
+            session.saveDocument(model);
+            session.save();
+
+            assertNotEquals(changeToken, session.getDocument(model.getRef()).getChangeToken());
+            assertEquals(before, documentManager.getDocumentKey(model.getId(), false));
         }
     }
 

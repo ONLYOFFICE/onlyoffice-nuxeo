@@ -26,13 +26,18 @@ import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.runtime.api.Framework;
+import org.onlyoffice.utils.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
+    private final Utils utils;
+
     public DocumentManagerImpl() {
         super(Framework.getService(SettingsManager.class));
+
+        this.utils = Framework.getService(Utils.class);
     }
 
     @Override
@@ -41,8 +46,9 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
         try {
-
-            String key = model.getId() + "__" + model.getChangeToken();
+            // background updates of the document must not change the key: users opening it in between would end up
+            // in separate editing sessions, and all but the first one to save would lose their changes
+            String key = model.getId() + "__" + utils.getUserChangeToken(model.getChangeToken());
             key = embedded ? key + "_embedded" : key;
             return Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
