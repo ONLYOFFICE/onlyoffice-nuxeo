@@ -19,6 +19,7 @@
 package org.onlyoffice.operation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +52,7 @@ import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
@@ -175,20 +178,35 @@ public class TestConvertOperation {
         verify(documentServerClient, never()).getFile(any(String.class), any(OutputStream.class));
     }
 
-    private void assertBadRequest(final DocumentModel model) throws Exception {
+    private String assertBadRequest(final DocumentModel model) throws Exception {
         try {
             convert(session, model, null);
             fail("Conversion of " + model.getName() + " must be rejected");
+            return null;
         } catch (NuxeoException e) {
             assertEquals(SC_BAD_REQUEST, e.getStatusCode());
+            return e.getMessage();
+        } finally {
+            verify(convertService, never()).processConvert(any(ConvertRequest.class), any(String.class));
         }
-        verify(convertService, never()).processConvert(any(ConvertRequest.class), any(String.class));
     }
 
     @Test
     public void unsupportedFormatIsRejected() throws Exception {
-        assertBadRequest(createDoc("archive.xyz"));
+        assertTrue(assertBadRequest(createDoc("archive.xyz")).contains("archive.xyz"));
         assertBadRequest(TestHelper.createFile(session, "editable", "report.docx", DOCX_MIME_TYPE, "x"));
+        assertBadRequest(TestHelper.createFile(session, "no-extension", "legacy", "application/msword", "x"));
+    }
+
+    @Test
+    public void contentWithoutFileNameIsRejected() throws Exception {
+        DocumentModel model = session.createDocumentModel("/", "unnamed", "File");
+        model.setPropertyValue("file:content", (Serializable) Blobs.createBlob("legacy", "application/msword"));
+        model = session.createDocument(model);
+        session.save();
+        assertNull(((Blob) model.getPropertyValue("file:content")).getFilename());
+
+        assertBadRequest(model);
     }
 
     @Test

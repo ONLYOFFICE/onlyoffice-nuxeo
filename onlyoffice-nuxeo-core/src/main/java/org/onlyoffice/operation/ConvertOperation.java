@@ -91,7 +91,7 @@ public class ConvertOperation {
 
         String targetExtension = documentManager.getDefaultConvertExtension(fileName);
         if (targetExtension == null) {
-            throw new NuxeoException("Document type is not supported!", SC_BAD_REQUEST);
+            throw new NuxeoException("Conversion is not supported for " + fileName, SC_BAD_REQUEST);
         }
 
         Locale locale = Locale.ENGLISH;
