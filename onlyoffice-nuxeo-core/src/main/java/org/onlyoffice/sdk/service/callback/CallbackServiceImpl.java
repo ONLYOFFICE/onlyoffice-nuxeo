@@ -26,6 +26,7 @@ import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
 import org.nuxeo.ecm.automation.core.util.DocumentHelper;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
+import org.nuxeo.ecm.core.api.ConcurrentUpdateException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
@@ -116,11 +117,18 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         this.removeLock(session, model);
     }
 
-    private void updateDocument(final CoreSession session, final DocumentModel model, final String changeToken,
+    private void updateDocument(final CoreSession session, final DocumentModel model, final String key,
                                 final String url) throws Exception {
         Blob original = getBlob(model, "file:content");
         if (original == null) {
             throw new NuxeoException("Document has no content to update: " + model.getRef(), SC_CONFLICT);
+        }
+
+        // Compared by hand rather than through CoreSession.CHANGE_TOKEN: the key carries only the user part of the
+        // change token, Nuxeo expects the whole token there
+        String keyChangeToken = utils.getUserChangeToken(utils.getChangeToken(key));
+        if (keyChangeToken != null && !keyChangeToken.equals(utils.getUserChangeToken(model.getChangeToken()))) {
+            throw new ConcurrentUpdateException("Invalid change token").addInfo(model.getId());
         }
 
         File tempFile = File.createTempFile("onlyoffice", null);
@@ -139,7 +147,9 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 model.putContextData(VersioningService.VERSIONING_OPTION, vo);
             }
 
-            model.putContextData(CoreSession.CHANGE_TOKEN, utils.getChangeToken(changeToken));
+            // without it the save is a system change: the user change token, and so the document key, stays the same
+            // and the next editing session would reopen the previous one
+            model.putContextData(CoreSession.USER_CHANGE, Boolean.TRUE);
 
             session.saveDocument(model);
             session.save();

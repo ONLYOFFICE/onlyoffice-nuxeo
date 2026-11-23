@@ -24,6 +24,7 @@ import org.nuxeo.ecm.core.model.Session;
 
 public interface Utils {
     String getChangeToken(String key);
+    String getUserChangeToken(String changeToken);
     Document resolveReference(Session session, DocumentRef docRef);
     String getMimeType(String extension);
 }

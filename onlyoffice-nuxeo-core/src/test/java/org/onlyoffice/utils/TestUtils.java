@@ -73,6 +73,18 @@ public class TestUtils {
     }
 
     @Test
+    public void getUserChangeTokenTakesUserPartOfChangeToken() {
+        assertEquals("1", utils.getUserChangeToken("3-1"));
+    }
+
+    @Test
+    public void getUserChangeTokenKeepsTokenWithoutSystemPart() {
+        assertEquals("1", utils.getUserChangeToken("1"));
+        assertEquals("1700000000000", utils.getUserChangeToken("1700000000000"));
+        assertNull(utils.getUserChangeToken(null));
+    }
+
+    @Test
     public void resolveReferenceByIdAndPath() {
         DocumentModel model = TestHelper.createFile(session, "doc", "doc.docx", "application/octet-stream", "x");
         Session repoSession = repositoryService.getSession(model.getRepositoryName());

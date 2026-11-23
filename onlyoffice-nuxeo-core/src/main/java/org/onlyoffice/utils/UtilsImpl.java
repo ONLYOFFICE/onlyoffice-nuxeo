@@ -46,6 +46,17 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         }
     }
 
+    // Nuxeo's change token is "<system change token>-<user change token>" (just a timestamp when change tokens are
+    // disabled); only the user part is what Nuxeo checks for concurrent updates, the system part also moves on
+    // background updates (thumbnails, fulltext, ...)
+    @Override
+    public String getUserChangeToken(final String changeToken) {
+        if (changeToken == null) {
+            return null;
+        }
+        return changeToken.substring(changeToken.lastIndexOf('-') + 1);
+    }
+
     @Override
     public Document resolveReference(final Session session, final DocumentRef docRef) {
         if (docRef == null) {

@@ -20,6 +20,7 @@ package org.onlyoffice.sdk.service.callback;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import jakarta.inject.Inject;
 
@@ -277,6 +279,46 @@ public class TestCallbackService {
         } catch (ConcurrentUpdateException e) {
             assertEquals("original", contentOf(session.getDocument(model.getRef())));
         }
+    }
+
+    @Test
+    public void saveAcceptsBackgroundUpdatesMeanwhile() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+
+        // what listeners such as the thumbnail update do: a save not marked as a user change
+        DocumentModel background = session.getDocument(model.getRef());
+        background.setPropertyValue("dc:description", "updated in background");
+        session.saveDocument(background);
+        session.save();
+
+        process(userSession, callback(Status.SAVE, key, FILE_URL));
+
+        DocumentModel saved = session.getDocument(model.getRef());
+        assertEquals(SAVED_CONTENT, contentOf(saved));
+        assertEquals("updated in background", saved.getPropertyValue("dc:description"));
+    }
+
+    @Test
+    public void saveChangesDocumentKey() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+
+        process(userSession, callback(Status.SAVE, key, FILE_URL));
+
+        assertNotEquals(key, currentKey(userSession));
+    }
+
+    @Test
+    public void saveAcceptsKeyWithWholeChangeToken() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        // keys of editing sessions opened before the key switched to the user change token
+        String legacyKey = Base64.getEncoder().encodeToString((model.getId() + "__"
+                + session.getDocument(model.getRef()).getChangeToken()).getBytes(StandardCharsets.UTF_8));
+
+        process(userSession, callback(Status.SAVE, legacyKey, FILE_URL));
+
+        assertEquals(SAVED_CONTENT, contentOf(session.getDocument(model.getRef())));
     }
 
     @Test
