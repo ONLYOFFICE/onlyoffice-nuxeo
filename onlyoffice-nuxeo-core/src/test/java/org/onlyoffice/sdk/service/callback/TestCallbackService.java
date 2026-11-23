@@ -59,6 +59,7 @@ import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper;
@@ -279,6 +280,43 @@ public class TestCallbackService {
         } catch (ConcurrentUpdateException e) {
             assertEquals("original", contentOf(session.getDocument(model.getRef())));
         }
+    }
+
+    @Test
+    public void saveIsRejectedWhenDocumentIsChangedWhileDownloadingTheFile() throws Exception {
+        // the concurrent change below runs in its own transaction, which must see the document
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
+
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+
+        doAnswer(invocation -> {
+            TransactionHelper.runInNewTransaction(() -> {
+                CoreSession other = coreFeature.getCoreSession(CO_EDITOR);
+                DocumentModel concurrent = other.getDocument(model.getRef());
+                concurrent.setPropertyValue("dc:description", "changed while downloading");
+                concurrent.putContextData(CoreSession.USER_CHANGE, Boolean.TRUE);
+                other.saveDocument(concurrent);
+                other.save();
+            });
+            byte[] bytes = SAVED_CONTENT.getBytes(StandardCharsets.UTF_8);
+            invocation.getArgument(1, OutputStream.class).write(bytes);
+            return bytes.length;
+        }).when(documentServerClient).getFile(eq(FILE_URL), any(OutputStream.class));
+
+        try {
+            process(userSession, callback(Status.SAVE, key, FILE_URL));
+            fail("A change committed while the file was downloaded must not be overwritten");
+        } catch (ConcurrentUpdateException e) {
+            TransactionHelper.setTransactionRollbackOnly();
+        }
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
+
+        DocumentModel saved = session.getDocument(model.getRef());
+        assertEquals("changed while downloading", saved.getPropertyValue("dc:description"));
+        assertEquals("original", contentOf(saved));
     }
 
     @Test
