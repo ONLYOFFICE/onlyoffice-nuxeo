@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -101,6 +102,7 @@ public class TestOnlyofficeObject {
     private static final String SECRET = "secret";
     private static final String KEY_PROPERTY = "onlyoffice." + SettingsConstants.SECURITY_KEY;
     private static final String URL_PROPERTY = "onlyoffice." + SettingsConstants.URL;
+    private static final String EXTRA_PROPERTY = "onlyoffice.extra";
     private static final int SC_CONFLICT = 409;
 
     @Mock
@@ -126,7 +128,7 @@ public class TestOnlyofficeObject {
 
     @Before
     public void setUp() throws IOException {
-        for (String name : new String[] {KEY_PROPERTY, URL_PROPERTY}) {
+        for (String name : new String[] {KEY_PROPERTY, URL_PROPERTY, EXTRA_PROPERTY}) {
             originalProperties.put(name, Framework.getProperties().get(name));
             Framework.getProperties().remove(name);
         }
@@ -263,6 +265,26 @@ public class TestOnlyofficeObject {
         assertEquals("http://docs.example.com/", settingsManager.getSetting(SettingsConstants.URL));
         assertEquals(SECRET, settingsManager.getSetting(SettingsConstants.SECURITY_KEY));
         verify(validation).validateSettings();
+    }
+
+    @Test
+    public void postSettingsDoesNotPersistExtra() throws Exception {
+        OnlyofficeObject endpoint = endpoint(session);
+        SettingsValidationService validation = mock(SettingsValidationService.class);
+        when(validation.validateSettings()).thenReturn(Collections.emptyMap());
+        setField(endpoint, "settingsValidationService", validation);
+
+        // the settings page sends back the extra data it got with the settings
+        endpoint.setSettings(body("{\"url\":\"http://docs.example.com/\","
+                + "\"extra\":{\"pathApiUrl\":\"/web-apps/apps/api/documents/api.js\"},\"unknownField\":\"value\"}"));
+
+        Properties persisted = new Properties();
+        try (Reader reader = Files.newBufferedReader(settingsFile().toPath())) {
+            persisted.load(reader);
+        }
+        assertEquals("http://docs.example.com/", persisted.getProperty(URL_PROPERTY));
+        assertFalse(persisted.containsKey(EXTRA_PROPERTY));
+        assertNull(Framework.getProperty(EXTRA_PROPERTY));
     }
 
     @Test(expected = WebSecurityException.class)

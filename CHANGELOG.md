@@ -6,6 +6,7 @@
 - users opening the same document ending up in separate editing sessions after a background update of the document (thumbnail, fulltext, ...), with all but the first one to save losing their changes (Invalid change token)
 - callback answering 500 with the text of the exception to malformed requests (not a JSON object, unknown or missing status, header token without payload, save without file url), now 400 without the exception text
 - ONLYOFFICE.Convert answering 500 for a document that cannot be converted (unsupported format, no content) and ONLYOFFICE.Create for an unknown document type, now 400 with the reason
+- data of the settings page (path to api.js) and unknown fields of the request stored as the "onlyoffice.extra" setting; a value stored by earlier versions is removed on the next save
 
 ## 3.1.0
 ## Added
