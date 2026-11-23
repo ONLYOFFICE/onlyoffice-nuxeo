@@ -3,6 +3,7 @@
 ##
 ## Fixed
 - Nuxeo failing to start alongside other addons (e.g. OpenSearch) because the package replaced httpclient5 in nxserver/lib
+- ONLYOFFICE.Convert answering 500 for a document that cannot be converted (unsupported format, no content) and ONLYOFFICE.Create for an unknown document type, now 400 with the reason
 
 ## 3.1.0
 ## Added
