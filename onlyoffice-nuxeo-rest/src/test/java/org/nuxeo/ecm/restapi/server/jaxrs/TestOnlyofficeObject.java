@@ -20,6 +20,7 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -410,10 +411,69 @@ public class TestOnlyofficeObject {
         doThrow(new IllegalStateException("boom")).when(failing).processCallback(any(), any());
         setField(endpoint, "callbackService", failing);
 
-        Response response = (Response) endpoint.postCallback(model.getId(), body("{\"status\":2}"));
+        Response response = (Response) endpoint.postCallback(model.getId(),
+                body("{\"status\":2,\"key\":\"key\",\"url\":\"http://docs.example.com/file\"}"));
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("boom", objectMapper.readTree((String) response.getEntity()).get("message").asText());
+        assertEquals(1, json(response).get("error").asInt());
+        assertFalse("the exception text is not sent back", json(response).has("message"));
+    }
+
+    private void assertBadRequest(final OnlyofficeObject endpoint, final DocumentModel model, final String body)
+            throws IOException {
+        Response response = (Response) endpoint.postCallback(model.getId(), body(body));
+
+        assertEquals(body, Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertEquals(body, 1, json(response).get("error").asInt());
+        assertFalse(body, json(response).has("message"));
+        assertNull(body, session.getLockInfo(model.getRef()));
+    }
+
+    @Test
+    public void callbackThatIsNotJsonObjectIsBadRequest() throws Exception {
+        DocumentModel model = createFile("report.docx");
+
+        for (String body : new String[] {"42", "[]", "\"x\"", "", "not json"}) {
+            assertBadRequest(endpoint(session), model, body);
+        }
+    }
+
+    @Test
+    public void callbackWithoutKnownStatusIsBadRequest() throws Exception {
+        DocumentModel model = createFile("report.docx");
+
+        for (String body : new String[] {"{\"key\":\"key\"}", "{\"status\":42,\"key\":\"key\"}",
+                "{\"status\":\"x\",\"key\":\"key\"}", "{\"status\":{},\"key\":\"key\"}"}) {
+            assertBadRequest(endpoint(session), model, body);
+        }
+    }
+
+    @Test
+    public void callbackToSaveWithoutUrlIsBadRequest() throws Exception {
+        DocumentModel model = createFile("report.docx");
+
+        assertBadRequest(endpoint(session), model, "{\"status\":2,\"key\":\"key\"}");
+        assertBadRequest(endpoint(session), model, "{\"status\":3,\"key\":\"key\",\"url\":\"\"}");
+    }
+
+    @Test
+    public void callbackWithHeaderTokenWithoutPayloadIsBadRequest() throws Exception {
+        Framework.getProperties().put(KEY_PROPERTY, SECRET);
+        DocumentModel model = createFile("report.docx");
+
+        Map<String, Object> callback = new HashMap<>();
+        callback.put("status", 1);
+        callback.put("key", "key");
+
+        OnlyofficeObject endpoint = endpoint(session);
+        header(settingsManager.getSecurityHeader(),
+                settingsManager.getSecurityPrefix() + jwtManager.createToken(callback, SECRET));
+        assertBadRequest(endpoint, model, "{\"status\":1}");
+
+        endpoint = endpoint(session);
+        header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix()
+                + jwtManager.createToken(Collections.singletonMap("payload", "not a callback"), SECRET));
+        assertBadRequest(endpoint, model, "{\"status\":1}");
     }
 
     // ------------------------------------------------------------------ download
