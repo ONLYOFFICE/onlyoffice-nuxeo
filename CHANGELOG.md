@@ -9,7 +9,7 @@
 - data of the settings page (path to api.js) and unknown fields of the request stored as the "onlyoffice.extra" setting; a value stored by earlier versions is removed on the next save
 
 ## Security
-- the links handed to Document Server (download, callback, test file of the connection check) carried a Nuxeo authentication token of the user, which never expired and gave access to the whole REST API as that user; they now carry a token of the connector, valid only for one operation on one document (and, for the callback, one editing session); the tokens handed out by earlier versions are revoked on startup
+- the links handed to Document Server (download, callback, test file of the connection check) carried a Nuxeo authentication token of the user, which never expired and gave access to the whole REST API as that user; they now carry a token of the connector, valid only for one operation on one document (and, for the callback, one editing session); the tokens handed out by earlier versions are revoked on startup. Close all editing sessions before upgrading: the changes of a session left open during the upgrade cannot be saved back to Nuxeo
 
 ## 3.1.0
 ## Added
