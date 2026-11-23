@@ -230,50 +230,69 @@ public class OnlyofficeObject extends DefaultObject {
     @Path("callback/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postCallback(final @PathParam("id") String id, final InputStream input) throws IOException {
+    public Object postCallback(final @PathParam("id") String id, final InputStream input) {
         Status code = Status.OK;
-        Exception error = null;
-
-        Callback callback = objectMapper.readValue(input, Callback.class);
 
         try {
+            Callback callback = objectMapper.readValue(input, Callback.class);
+
             String securityHeader = settingsManager.getSecurityHeader();
             List<String> values = getContext().getHttpHeaders().getRequestHeader(securityHeader);
             String authorizationHeader = values == null || values.isEmpty() ? null : values.get(0);
 
             callback = callbackService.verifyCallback(callback, authorizationHeader);
+            validateCallback(callback);
 
             callbackService.processCallback(callback, id);
         } catch (SecurityException | JWTVerificationException ex) {
             code = Status.UNAUTHORIZED;
-            error = ex;
-            logger.error("Security error while saving document " + id, ex);
+            logger.warn("Callback for document {} refused: {}", id, ex.toString());
+        } catch (JsonProcessingException ex) {
+            code = Status.BAD_REQUEST;
+            logger.warn("Callback for document {} refused, not a valid callback: {}", id, ex.getOriginalMessage());
         } catch (NuxeoException ex) {
             // Permanent errors (not found, forbidden, lock conflict) carry a 4xx status and are not retried by
             // Document Server; anything else stays 5xx so that transient failures are retried.
             Status status = Status.fromStatusCode(ex.getStatusCode());
             code = status != null ? status : Status.INTERNAL_SERVER_ERROR;
-            error = ex;
-            logger.error("Error while saving document " + id, ex);
+            if (code.getFamily() == Status.Family.CLIENT_ERROR) {
+                logger.warn("Callback for document {} refused: {}", id, ex.toString());
+            } else {
+                logger.error("Error while saving document " + id, ex);
+            }
         } catch (Exception ex) {
             code = Status.INTERNAL_SERVER_ERROR;
-            error = ex;
             logger.error("Error while saving document " + id, ex);
         }
 
+        // Document Server reads only "error"; the reason stays in the log, not in the answer to the caller
         HashMap<String, Object> response = new HashMap<String, Object>();
-        if (error != null) {
-            response.put("error", 1);
-            response.put("message", error.getMessage());
-        } else {
-            response.put("error", 0);
-        }
+        response.put("error", code == Status.OK ? 0 : 1);
 
         try {
             return Response.status(code).entity(new JSONObject(response).toString(2)).build();
         } catch (Exception e) {
             logger.error("Error while processing callback for " + id, e);
             return Response.status(code).build();
+        }
+    }
+
+    // A status the SDK does not know is deserialized as null, as is the callback from a header token without
+    // "payload"
+    private static void validateCallback(final Callback callback) {
+        if (callback == null) {
+            throw new NuxeoException("Callback is empty", HttpServletResponse.SC_BAD_REQUEST);
+        }
+
+        com.onlyoffice.model.documenteditor.callback.Status status = callback.getStatus();
+        if (status == null) {
+            throw new NuxeoException("Callback has no known status", HttpServletResponse.SC_BAD_REQUEST);
+        }
+
+        if ((status == com.onlyoffice.model.documenteditor.callback.Status.SAVE
+                || status == com.onlyoffice.model.documenteditor.callback.Status.SAVE_CORRUPTED)
+                && StringUtils.isBlank(callback.getUrl())) {
+            throw new NuxeoException("Callback to save has no file url", HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
