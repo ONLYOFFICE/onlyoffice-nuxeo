@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Token tidak valid",
   "onlyoffice.service.convert.error.connection": "Kesalahan koneksi",
   "onlyoffice.service.convert.error.download_result": "Kesalahan hasil file download",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Kesalahan saat menentukan format file keluaran secara otomatis",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "File terlalu besar untuk dikonversi",
 
   "onlyoffice.service.command.check.error-prefix": "Kesalahan saat memeriksa CommandService ($).",
   "onlyoffice.service.command.error.no": "Tidak ada kesalahan",

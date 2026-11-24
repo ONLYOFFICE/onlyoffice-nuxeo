@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "Jeton incorrect",
     "onlyoffice.service.convert.error.connection": "Erreur de connexion",
     "onlyoffice.service.convert.error.download_result": "Erreur de téléchargement du fichier de résultats",
+    "onlyoffice.service.convert.error.ooxml_output_type": "Erreur lors de la détermination automatique du format du fichier de sortie",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "Le fichier est trop volumineux pour être converti",
 
     "onlyoffice.service.command.check.error-prefix": "Erreur lors de la vérification du CommandService ($).",
     "onlyoffice.service.command.error.no": "Aucune erreur",

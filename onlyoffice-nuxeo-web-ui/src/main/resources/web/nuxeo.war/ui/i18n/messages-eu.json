@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Marka-ikurra ez da zuzena",
   "onlyoffice.service.convert.error.connection": "Konexio-errorea",
   "onlyoffice.service.convert.error.download_result": "Errorea emaitzen fitxategiaren deskargan",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Errorea irteerako fitxategiaren formatua automatikoki zehaztean",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "Fitxategia handiegia da bihurtzeko",
 
   "onlyoffice.service.command.check.error-prefix": "Errorea CommandService egiaztatzen saiatzean ($).",
   "onlyoffice.service.command.error.no": "Akatsik ez",

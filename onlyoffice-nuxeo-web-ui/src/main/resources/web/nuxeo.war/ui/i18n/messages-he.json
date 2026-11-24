@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "טוקן לא חוקי",
     "onlyoffice.service.convert.error.connection": "שגיאת חיבור",
     "onlyoffice.service.convert.error.download_result": "שגיאה בהורדת הקובץ",
+    "onlyoffice.service.convert.error.ooxml_output_type": "שגיאה בקביעה אוטומטית של תבנית קובץ הפלט",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "הקובץ גדול מדי להמרה",
 
     "onlyoffice.service.command.check.error-prefix": "שגיאה בניסיון לבדוק שירות פקודות CommandService ($)",
     "onlyoffice.service.command.error.no": "אין שגיאות",

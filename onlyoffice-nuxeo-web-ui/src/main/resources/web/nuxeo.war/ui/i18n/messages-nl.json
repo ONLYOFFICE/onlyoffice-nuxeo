@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Ongeldig tok",
   "onlyoffice.service.convert.error.connection": "Verbindingsfout",
   "onlyoffice.service.convert.error.download_result": "Download resultaat bestand fout",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Fout bij het automatisch bepalen van de indeling van het uitvoerbestand",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "Het bestand is te groot om te converteren",
 
   "onlyoffice.service.command.check.error-prefix": "Fout bij de controle van CommandService ($).",
   "onlyoffice.service.command.error.no": "Geen fouten",
