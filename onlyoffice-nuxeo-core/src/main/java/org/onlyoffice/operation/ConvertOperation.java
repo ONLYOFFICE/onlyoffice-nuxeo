@@ -36,9 +36,14 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
+import org.nuxeo.ecm.core.api.versioning.VersioningService;
+import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.runtime.api.Framework;
+import org.onlyoffice.service.LockService;
+import org.onlyoffice.service.PermissionService;
 import org.onlyoffice.utils.Utils;
 
 import java.io.File;
@@ -47,6 +52,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
 
 @Operation(
         id = ConvertOperation.ID,
@@ -77,6 +83,16 @@ public class ConvertOperation {
         if (!session.hasPermission(model.getRef(), SecurityConstants.WRITE_PROPERTIES)) {
             throw new DocumentSecurityException(String.format("Privilege '%s' is not granted to '%s'",
                     SecurityConstants.WRITE_PROPERTIES, session.getPrincipal().getName()));
+        }
+
+        if (!Framework.getService(PermissionService.class).isModifiable(model)) {
+            throw new NuxeoException("The content of the document cannot be replaced: " + id, SC_CONFLICT);
+        }
+
+        // the save of the editing session would then be refused, and its changes lost
+        if (Framework.getService(LockService.class).isEditingSessionLock(model.getId(),
+                session.getLockInfo(model.getRef()))) {
+            throw new NuxeoException("The document is being edited in ONLYOFFICE: " + id, SC_CONFLICT);
         }
 
         // A NuxeoException keeps its status in the REST answer, anything else is turned into a 500 by Nuxeo
@@ -119,7 +135,17 @@ public class ConvertOperation {
                 blob.setFilename(title + "." + targetExtension);
                 blob.setMimeType(utils.getMimeType(targetExtension));
 
+                boolean versionable = model.hasFacet(FacetNames.VERSIONABLE);
+                // without a version of it, the file in the original format would be lost
+                if (versionable && model.isCheckedOut()) {
+                    session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+                    model = session.getDocument(model.getRef());
+                }
+
                 model.setPropertyValue("file:content", (Serializable) blob);
+                if (versionable) {
+                    model.putContextData(VersioningService.VERSIONING_OPTION, VersioningOption.MINOR);
+                }
 
                 session.saveDocument(model);
                 session.save();
