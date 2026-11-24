@@ -64,6 +64,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.nuxeo.common.Environment;
 import org.nuxeo.ecm.automation.test.AutomationFeature;
@@ -75,6 +76,7 @@ import org.nuxeo.ecm.core.api.security.ACE;
 import org.nuxeo.ecm.core.api.security.ACL;
 import org.nuxeo.ecm.core.api.security.ACP;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
+import org.nuxeo.ecm.core.io.download.DownloadHelper;
 import org.nuxeo.ecm.core.io.download.DownloadService;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.ecm.core.test.DefaultRepositoryInit;
@@ -669,6 +671,78 @@ public class TestOnlyofficeObject {
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(downloadService).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadIsNeverRenderedByTheBrowser() throws Exception {
+        DocumentModel model = createFile("page.html");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getParameter("inline")).thenReturn("true");
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        Response result = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                request, response);
+
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatus());
+        ArgumentCaptor<DownloadService.DownloadContext> context =
+                ArgumentCaptor.forClass(DownloadService.DownloadContext.class);
+        verify(downloadService).downloadBlob(context.capture());
+        assertTrue(DownloadHelper.getRFC2231ContentDisposition(request, "page.html", context.getValue().getInline())
+                .startsWith("attachment"));
+        verify(response).setHeader("X-Content-Type-Options", "nosniff");
+        verify(response).setHeader("Content-Security-Policy", "sandbox");
+    }
+
+    @Test
+    public void downloadOfFormatUnknownToDocumentServerIsForbidden() throws Exception {
+        for (String fileName : new String[] {"image.svg", "script.js", "noextension"}) {
+            DocumentModel model = createFile(fileName);
+
+            Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                    mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+            assertEquals(fileName, Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+            session.removeDocument(model.getRef());
+            session.save();
+        }
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadOfFormatWithUppercaseExtensionIsServed() throws Exception {
+        DocumentModel model = createFile("REPORT.DOCX");
+
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        verify(downloadService).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadOfContentWithoutFileNameIsForbidden() throws Exception {
+        DocumentModel model = session.createDocumentModel("/", "doc", "File");
+        model.setPropertyValue("file:content", (Serializable) Blobs.createBlob("content"));
+        model = session.createDocument(model);
+        session.save();
+        assertNull(((Blob) model.getPropertyValue("file:content")).getFilename());
+
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadOfDocumentWithoutContentIsNotFound() throws Exception {
+        DocumentModel model = createFile(null);
+
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
     }
 
     @Test
