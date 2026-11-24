@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "Token no válido",
     "onlyoffice.service.convert.error.connection": "Error de conexión",
     "onlyoffice.service.convert.error.download_result": "Error al descargar el archivo resultante",
+    "onlyoffice.service.convert.error.ooxml_output_type": "Error al determinar automáticamente el formato del archivo de salida",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "El archivo es demasiado grande para convertirlo",
 
     "onlyoffice.service.command.check.error-prefix": "Error al intentar comprobar el Servicio de comandos ($).",
     "onlyoffice.service.command.error.no": "Sin errores",

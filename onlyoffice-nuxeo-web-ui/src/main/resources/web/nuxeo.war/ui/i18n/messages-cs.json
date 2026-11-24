@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Neplatný token",
   "onlyoffice.service.convert.error.connection": "Chyba spojení",
   "onlyoffice.service.convert.error.download_result": "Chyba při stahování výsledného souboru",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Chyba při automatickém určování formátu výstupního souboru",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "Soubor je příliš velký na převod",
 
   "onlyoffice.service.command.check.error-prefix": "Chyba při pokusu o kontrolu služby CommandService ($).",
   "onlyoffice.service.command.error.no": "Žádné chyby",

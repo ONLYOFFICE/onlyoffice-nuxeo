@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "無効なトークン",
     "onlyoffice.service.convert.error.connection": "接続エラー",
     "onlyoffice.service.convert.error.download_result": "結果ファイルのダウンロードエラー",
+    "onlyoffice.service.convert.error.ooxml_output_type": "出力ファイル形式の自動判別中にエラーが発生しました",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "ファイルが大きすぎるため変換できません",
 
     "onlyoffice.service.command.check.error-prefix": "CommandService ($) をチェックしようとしたときにエラーが発生しました。",
     "onlyoffice.service.command.error.no": "エラーなし",
