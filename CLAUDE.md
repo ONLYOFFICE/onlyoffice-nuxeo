@@ -85,7 +85,6 @@ The download, callback and test-file URLs are open URLs (no Nuxeo authentication
 | `sdk.service.settings` | Connection checks of the settings page (`SettingsValidationService`) |
 | `service` | `PermissionService` (Nuxeo permission checks; `canEdit` refuses versions, proxies, trashed documents and documents under retention or legal hold), `LinkTokenService` (tokens of Document Server links), `LockService` (locks of editing sessions) |
 | `utils` | `Utils` — shared helpers |
-| `listener` | `ContentChangeListener` — marks every save that replaces `file:content` as a user change, so that the document key changes |
 | `operation` | `CreateOperation` (`ONLYOFFICE.Create`), `ConvertOperation` (`ONLYOFFICE.Convert`) — Nuxeo automation |
 | `web` | `Editor` — WebEngine editor page |
 

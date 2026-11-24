@@ -49,8 +49,8 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
             // background updates of the document must not change the key: users opening it in between would end up
             // in separate editing sessions, and all but the first one to save would lose their changes
             String key = model.getId() + "__" + utils.getUserChangeToken(model.getChangeToken());
-            // the user change token alone can repeat for another content: restoring a version brings back the token
-            // of the version, and the next replacement of the file reuses a key Document Server may have cached
+            // the user change token alone misses most replacements of the file (Blob.AttachOnDocument, WebDAV,
+            // Drive, ...) and repeats after restoring a version: Document Server would serve a cached previous file
             String contentHash = utils.getContentHash(model);
             if (contentHash != null) {
                 key = key + "__" + contentHash;
