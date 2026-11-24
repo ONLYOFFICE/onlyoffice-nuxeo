@@ -147,15 +147,11 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             throw new NuxeoException("Document has no content to update: " + model.getRef(), SC_CONFLICT);
         }
 
-        // Compared by hand rather than through CoreSession.CHANGE_TOKEN: the key carries only the user part of the
-        // change token, Nuxeo expects the whole token there
-        String keyChangeToken = utils.getUserChangeToken(utils.getChangeToken(key));
-        if (keyChangeToken != null && !keyChangeToken.equals(utils.getUserChangeToken(model.getChangeToken()))) {
-            throw new ConcurrentUpdateException("Invalid change token").addInfo(model.getId());
-        }
-        String keyContentHash = utils.getContentHash(key);
-        if (keyContentHash != null && !keyContentHash.equals(utils.getContentHash(model))) {
-            throw new ConcurrentUpdateException("Content changed").addInfo(model.getId());
+        // the key is built from the user change token and the file: another one means that the document was changed
+        // since the editing session started
+        if (!utils.getDocumentKey(model, false).equals(key)) {
+            throw new ConcurrentUpdateException("Document changed since the editing session started")
+                    .addInfo(model.getId());
         }
 
         File tempFile = File.createTempFile("onlyoffice", null);

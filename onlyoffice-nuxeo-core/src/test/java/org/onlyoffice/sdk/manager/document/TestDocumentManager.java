@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +40,9 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.VersioningOption;
+import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.kv.KeyValueService;
+import org.nuxeo.runtime.kv.KeyValueStore;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.test.ActiveWebContext;
@@ -51,6 +53,9 @@ import org.onlyoffice.utils.Utils;
 @RunWith(FeaturesRunner.class)
 @Features(OnlyofficeFeature.class)
 public class TestDocumentManager {
+    private static final String SECRET_STORE = "onlyoffice";
+    private static final String SECRET_KEY = "onlyoffice:link-token-secret";
+    private static final int SECRET_LENGTH = 32;
 
     @Inject
     private DocumentManager documentManager;
@@ -138,17 +143,47 @@ public class TestDocumentManager {
     }
 
     @Test
-    public void documentKeyEncodesIdUserChangeTokenAndContentHash() {
+    public void documentKeyIsOpaqueAndFitsDocumentServer() {
         DocumentModel model = createDoc();
-        String userChangeToken = utils.getUserChangeToken(model.getChangeToken());
 
         try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             String key = documentManager.getDocumentKey(model.getId(), false);
-            String decoded = new String(Base64.getDecoder().decode(key), StandardCharsets.UTF_8);
 
-            assertEquals(model.getId() + "__" + userChangeToken + "__" + utils.getContentHash(model), decoded);
-            assertEquals(userChangeToken, utils.getChangeToken(key));
-            assertEquals(utils.getContentHash(model), utils.getContentHash(key));
+            assertTrue(key, key.matches("[A-Za-z0-9_-]{43}"));
+            assertEquals("the same revision gives the same key", key,
+                    documentManager.getDocumentKey(model.getId(), false));
+        }
+    }
+
+    /**
+     * Without JWT, Document Server opens the editing session of whatever key it is given: a key computed from the
+     * id, the change token and the file of a document would give access to it.
+     */
+    @Test
+    public void documentKeyCannotBeComputedWithoutTheSecret() {
+        DocumentModel model = createDoc();
+        KeyValueStore store = Framework.getService(KeyValueService.class).getKeyValueStore(SECRET_STORE);
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            String key = documentManager.getDocumentKey(model.getId(), false);
+            byte[] secret = store.get(SECRET_KEY);
+            store.put(SECRET_KEY, new byte[SECRET_LENGTH]);
+            try {
+                assertNotEquals(key, documentManager.getDocumentKey(model.getId(), false));
+            } finally {
+                store.put(SECRET_KEY, secret);
+            }
+        }
+    }
+
+    @Test
+    public void documentsWithTheSameFileHaveDifferentKeys() {
+        DocumentModel first = TestHelper.createFile(session, "first", "blank.docx", "application/octet-stream", "x");
+        DocumentModel second = TestHelper.createFile(session, "second", "blank.docx", "application/octet-stream", "x");
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            assertNotEquals(documentManager.getDocumentKey(first.getId(), false),
+                    documentManager.getDocumentKey(second.getId(), false));
         }
     }
 
@@ -159,10 +194,8 @@ public class TestDocumentManager {
         try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             String key = documentManager.getDocumentKey(model.getId(), false);
             String embeddedKey = documentManager.getDocumentKey(model.getId(), true);
-            String decoded = new String(Base64.getDecoder().decode(embeddedKey), StandardCharsets.UTF_8);
 
             assertNotEquals(key, embeddedKey);
-            assertTrue(decoded.endsWith("_embedded"));
         }
     }
 

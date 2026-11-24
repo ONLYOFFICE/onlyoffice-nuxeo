@@ -15,6 +15,7 @@
 - data of the settings page (path to api.js) and unknown fields of the request stored as the "onlyoffice.extra" setting; a value stored by earlier versions is removed on the next save
 
 ## Security
+- the document key was built from the document id, its change token and the digest of its file, which anyone knowing the document could compute: without JWT, Document Server opens the editing session of whatever key it is given; the key is now a hash of these with a secret of the connector, and the callback accepts only the key of the current revision
 - the links handed to Document Server (download, callback, test file of the connection check) carried a Nuxeo authentication token of the user, which never expired and gave access to the whole REST API as that user; they now carry a token of the connector, valid only for one operation on one document (and, for the callback, one editing session); the tokens handed out by earlier versions are revoked on startup. Close all editing sessions before upgrading: the changes of a session left open during the upgrade cannot be saved back to Nuxeo
 - the download link handed to Document Server served any file of the document, inline when "inline=true" was added to it: an html or svg file uploaded by a user ran its scripts in the Nuxeo session of anyone who opened the link; the file is now always sent as an attachment with "X-Content-Type-Options: nosniff" and "Content-Security-Policy: sandbox", and only in a format known to Document Server
 

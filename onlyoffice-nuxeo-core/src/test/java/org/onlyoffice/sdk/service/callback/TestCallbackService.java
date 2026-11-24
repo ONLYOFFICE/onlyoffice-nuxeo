@@ -449,15 +449,18 @@ public class TestCallbackService {
     }
 
     @Test
-    public void saveAcceptsKeyWithWholeChangeToken() throws Exception {
+    public void saveRejectsKeyBuiltFromTheDocumentAlone() throws Exception {
         CoreSession userSession = coreFeature.getCoreSession(USER);
-        // keys of editing sessions opened before the key switched to the user change token
-        String legacyKey = Base64.getEncoder().encodeToString((model.getId() + "__"
+        // the format of the keys of earlier versions, which anyone knowing the document could build
+        String forged = Base64.getEncoder().encodeToString((model.getId() + "__"
                 + session.getDocument(model.getRef()).getChangeToken()).getBytes(StandardCharsets.UTF_8));
 
-        process(userSession, callback(Status.SAVE, legacyKey, FILE_URL));
-
-        assertEquals(SAVED_CONTENT, contentOf(session.getDocument(model.getRef())));
+        try {
+            process(userSession, callback(Status.SAVE, forged, FILE_URL));
+            fail("Only a key issued by Nuxeo for the current revision may be saved");
+        } catch (ConcurrentUpdateException e) {
+            assertEquals("original", contentOf(session.getDocument(model.getRef())));
+        }
     }
 
     @Test
