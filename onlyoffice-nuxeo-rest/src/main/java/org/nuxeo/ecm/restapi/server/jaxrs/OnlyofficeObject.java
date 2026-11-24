@@ -62,7 +62,6 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreInstance;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
@@ -331,31 +330,15 @@ public class OnlyofficeObject extends DefaultObject {
             return Response.status(Status.UNAUTHORIZED).build();
         }
 
+        if (!isSignedByDocumentServer("document " + id)) {
+            return Response.status(Status.UNAUTHORIZED).build();
+        }
+
         boolean isTransactionActive = false;
 
         try (NuxeoLoginContext ignored = loginAs(link.getUserName())) {
             if (!TransactionHelper.isTransactionActive()) {
                 isTransactionActive = TransactionHelper.startTransaction();
-            }
-
-            if (settingsManager.isSecurityEnabled()) {
-                String jwtHeader = settingsManager.getSecurityHeader();
-                List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-                String header = values == null || values.isEmpty() ? null : values.get(0);
-                String authorizationPrefix = settingsManager.getSecurityPrefix();
-                String token = (header != null && header.startsWith(authorizationPrefix))
-                        ? header.substring(authorizationPrefix.length()) : header;
-
-                if (token == null || token.isEmpty()) {
-                    throw new DocumentSecurityException("Expected JWT");
-                }
-
-                try {
-                    jwtManager.verify(token, JwtOperation.DOWNLOAD);
-                } catch (Exception e) {
-                    logger.warn("JWT verification failed while downloading document {}: {}", id, e.toString());
-                    throw new DocumentSecurityException("JWT verification failed");
-                }
             }
 
             IdRef docRef = new IdRef(id);
@@ -421,24 +404,8 @@ public class OnlyofficeObject extends DefaultObject {
             return Response.status(Status.UNAUTHORIZED).build();
         }
 
-        if (settingsManager.isSecurityEnabled()) {
-            String jwtHeader = settingsManager.getSecurityHeader();
-            List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
-            String header = values == null || values.isEmpty() ? null : values.get(0);
-            String authorizationPrefix = settingsManager.getSecurityPrefix();
-            String token = (header != null && header.startsWith(authorizationPrefix))
-                    ? header.substring(authorizationPrefix.length()) : header;
-
-            if (token == null || token.isEmpty()) {
-                return Response.status(Status.UNAUTHORIZED).build();
-            }
-
-            try {
-                jwtManager.verify(token, JwtOperation.DOWNLOAD);
-            } catch (Exception e) {
-                logger.warn("JWT verification failed while downloading test file: {}", e.toString());
-                return Response.status(Status.UNAUTHORIZED).build();
-            }
+        if (!isSignedByDocumentServer("the test file")) {
+            return Response.status(Status.UNAUTHORIZED).build();
         }
 
         String message = "Test file for conversion";
@@ -463,6 +430,32 @@ public class OnlyofficeObject extends DefaultObject {
         NuxeoLoginContext loginContext = NuxeoLoginContext.create(principal);
         loginContext.login();
         return loginContext;
+    }
+
+    private boolean isSignedByDocumentServer(final String target) {
+        if (!settingsManager.isSecurityEnabled()) {
+            return true;
+        }
+
+        String jwtHeader = settingsManager.getSecurityHeader();
+        List<String> values = getContext().getHttpHeaders().getRequestHeader(jwtHeader);
+        String header = values == null || values.isEmpty() ? null : values.get(0);
+        String authorizationPrefix = settingsManager.getSecurityPrefix();
+        String token = (header != null && header.startsWith(authorizationPrefix))
+                ? header.substring(authorizationPrefix.length()) : header;
+
+        if (token == null || token.isEmpty()) {
+            logger.warn("Download of {} refused: no JWT", target);
+            return false;
+        }
+
+        try {
+            jwtManager.verify(token, JwtOperation.DOWNLOAD);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Download of {} refused, JWT verification failed: {}", target, e.toString());
+            return false;
+        }
     }
 
     private void checkAdministrator() {
