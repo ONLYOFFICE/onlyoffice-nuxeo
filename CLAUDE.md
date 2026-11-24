@@ -30,6 +30,15 @@ mvn clean install -pl onlyoffice-nuxeo-core
 
 **Package output:** `onlyoffice-nuxeo-package/target/onlyoffice-nuxeo-package-*.zip`
 
+**After every code change**, before reporting it done or committing, run the tests of the affected modules and the style check, and fix whatever they report:
+
+```bash
+mvn test -pl <module>
+mvn checkstyle:check -pl <module>
+```
+
+Run them from the repository root (`checkstyle.xml` is resolved from there). Checkstyle is bound to the `verify` phase, so `mvn test` alone does not run it; it also covers test sources. Typical violations: magic numbers (extract a named constant), lines over 120 characters, missing `final` on parameters.
+
 Build requires Java 8 and Maven 3.8.6+. Tests use the Nuxeo testing framework (`NuxeoRunner` + `@Features(PlatformFeature.class)`).
 
 ## Module Structure
