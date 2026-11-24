@@ -73,7 +73,7 @@
             </template>
         </dom-if>
 
-        <nuxeo-dialog id="convertDialog" with-backdrop>
+        <nuxeo-dialog id="convertDialog" with-backdrop on-iron-overlay-closed="_onDialogClosed">
             <h2>[[i18n('onlyoffice.convert.action')]]</h2>
 
             <div class="convert">
@@ -139,7 +139,17 @@
                     type: Number,
                     value: 0,
                     readOnly: true
+                },
+
+                // how long to wait for Document Server to finish a conversion, in milliseconds
+                pollingTimeout: {
+                    type: Number,
+                    value: 300000
                 }
+            },
+
+            detached() {
+                this._stop();
             },
 
             _toggleDialog() {
@@ -171,26 +181,51 @@
                     language: window.nuxeo.I18n.language || 'en'
                 };
 
+                // every conversion started gets a number of its own: the answers to an earlier one, cancelled
+                // or replaced, must neither go on polling nor end this one
+                this._run = (this._run || 0) + 1;
+                this._started = Date.now();
                 this._setConverting(true);
-                this._executeConvert();
+                this._executeConvert(this._run);
             },
 
             _cancel() {
+                this._stop();
+            },
+
+            // closed by Cancel, Esc, a click on the backdrop or the end of the conversion
+            _onDialogClosed(e) {
+                if (e.target === this.$.convertDialog) {
+                    this._stop();
+                }
+            },
+
+            _stop() {
+                this._run = (this._run || 0) + 1;
+                clearTimeout(this._pollTimer);
                 this._clear();
             },
 
-            _executeConvert() {
-                if(!this.converting) {
+            _finish(message) {
+                this.fire("notify", { message: message });
+                this._stop();
+                this.$.convertDialog.close();
+            },
+
+            _executeConvert(run) {
+                if (run !== this._run || !this.converting) {
                     return;
                 }
 
                 this.$.opOnlyofficeConvert.execute().then((response) => {
+                    if (run !== this._run) {
+                        return;
+                    }
+
                     var data = JSON.parse(response.value);
 
                     if (data.error) {
-                        this.fire("notify", { message: this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage(data.error)) });
-                        this.$.convertDialog.toggle();
-                        this._clear();
+                        this._finish(this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage(data.error)));
                         return;
                     }
 
@@ -198,18 +233,20 @@
                       this._setConvertingProgress(data.percent);
                     }
 
-                    if (!data.endConvert) {
-                        setTimeout(function() { this._executeConvert() }.bind(this), 1000);
-                    } else {
-                        this.fire("notify", { message: this.i18n("onlyoffice.convert.message.success", this.getTitle(this.document)) });
-                        this.$.convertDialog.toggle();
+                    if (data.endConvert) {
+                        this._finish(this.i18n("onlyoffice.convert.message.success", this.getTitle(this.document)));
                         this.fire('document-updated');
-                        this._clear();
+                    } else if (Date.now() - this._started > this.pollingTimeout) {
+                        this._finish(this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage("TIMEOUT")));
+                    } else {
+                        this._pollTimer = setTimeout(() => this._executeConvert(run), 1000);
                     }
                 }).catch((err) => {
-                    this.fire("notify", { message: this.i18n("onlyoffice.convert.message.error.undefined") });
-                    this.$.convertDialog.toggle();
-                    this._clear();
+                    if (run !== this._run) {
+                        return;
+                    }
+
+                    this._finish(this.i18n("onlyoffice.convert.message.error.undefined"));
                     console.error(err);
                 })
             },
