@@ -107,6 +107,14 @@
                 this._testDocServiceApi();
             },
 
+            // A check can fail with an error code Document Server sent and the SDK does not know: the result then
+            // has no "error" at all
+            _checkError(prefix, result) {
+                return result.error
+                    ? this.i18n(prefix + result.error.toLowerCase())
+                    : this.i18n('onlyoffice.service.convert.error.unknown');
+            },
+
             _updateSettings() {
                 this.$.updateSettings.data = this.settings;
                 this.$.updateSettings.post().then((res) => {
@@ -118,7 +126,7 @@
                                 this.fire(
                                     "notify",
                                     {
-                                        message: `${this.i18n('onlyoffice.server.common.error.' + validationResults.documentServer.error.toLowerCase())}`,
+                                        message: this._checkError('onlyoffice.server.common.error.', validationResults.documentServer),
                                         commandId: "documentServer"
                                     }
                                 );
@@ -133,7 +141,7 @@
                                         message: `${this.i18n('onlyoffice.service.command.check.error-prefix')}`.
                                              replace(
                                                 "$",
-                                                `${this.i18n('onlyoffice.service.command.error.' + validationResults.commandService.error.toLowerCase())}`
+                                                this._checkError('onlyoffice.service.command.error.', validationResults.commandService)
                                              ),
                                         commandId: "commandService"
                                     }
@@ -149,7 +157,7 @@
                                         message: `${this.i18n('onlyoffice.service.convert.check.error-prefix')}`.
                                             replace(
                                                 "$",
-                                                `${this.i18n('onlyoffice.service.convert.error.' + validationResults.convertService.error.toLowerCase())}`
+                                                this._checkError('onlyoffice.service.convert.error.', validationResults.convertService)
                                             ),
                                         commandId: "convertService"
                                     }

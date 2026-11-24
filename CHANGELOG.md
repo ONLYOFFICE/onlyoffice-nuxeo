@@ -11,6 +11,7 @@
 - the download of a document by Document Server answering 500 instead of 401 when JWT is enabled and the request has no valid token
 - saving the settings page writing to nxserver/config/onlyoffice.properties every property whose name starts with "onlyoffice", including those of other addons (e.g. "onlyoffice-...")
 - the convert button shown for every attachment of a document, while the conversion always replaced the main file; it is now shown for the main file only
+- the settings page reporting "An error occurred while saving the settings" for saved settings when a connection check failed with an error code the SDK does not know; it now reports the check as failed with "Unknown error"
 - the Basque translation not installed; the Dutch translation of the download error of a conversion and the details of the conversion check error in Basque not shown; the "size limit exceeded" and "output format" conversion errors shown as their key or as "Unknown error"
 - callback answering 500 with the text of the exception to malformed requests (not a JSON object, unknown or missing status, header token without payload, save without file url), now 400 without the exception text
 - versions, proxies, documents in the trash and documents under retention or legal hold opened for editing: the changes could not be saved and were lost (or saved into a deleted document); they now open for viewing
