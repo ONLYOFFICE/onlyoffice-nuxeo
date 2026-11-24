@@ -20,6 +20,7 @@ package org.onlyoffice.service;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
+import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
 import org.nuxeo.ecm.core.repository.RepositoryService;
@@ -53,5 +54,18 @@ public class PermissionServiceImpl extends DefaultComponent implements Permissio
         } finally {
             LockSecurityPolicy.setIgnorePolicy(ignoreLockPolicy);
         }
+    }
+
+    @Override
+    public boolean canEdit(final DocumentModel model, final NuxeoPrincipal principal) {
+        // the rights of a version or a proxy are those of the live document, but the file of a version cannot be
+        // replaced: an editing session opened on it would lose all its changes on save, as would one on a document
+        // under retention; the changes of one on a document in the trash would land in a deleted document
+        if (model.isVersion() || model.isProxy() || model.isImmutable() || model.isTrashed()
+                || model.isUnderRetentionOrLegalHold()) {
+            return false;
+        }
+
+        return checkPermission(model, principal, SecurityConstants.WRITE_PROPERTIES);
     }
 }

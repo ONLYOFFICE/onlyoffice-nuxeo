@@ -31,8 +31,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.VersioningOption;
+import org.nuxeo.ecm.core.api.trash.TrashService;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.test.ActiveWebContext;
@@ -66,6 +70,73 @@ public class TestPermissionService {
         DocumentModel userModel = userSession.getDocument(model.getRef());
         return permissionService.checkPermission(userModel, userSession.getPrincipal(),
                 SecurityConstants.WRITE_PROPERTIES);
+    }
+
+    private boolean canEdit(final CoreSession userSession, final DocumentRef ref) {
+        return permissionService.canEdit(userSession.getDocument(ref), userSession.getPrincipal());
+    }
+
+    private DocumentModel createEditableDoc() {
+        DocumentModel model = createDoc();
+        TestHelper.grant(session, model, USER, SecurityConstants.READ_WRITE);
+        return model;
+    }
+
+    @Test
+    public void liveDocumentCanBeEdited() {
+        DocumentModel model = createEditableDoc();
+
+        assertTrue(canEdit(coreFeature.getCoreSession(USER), model.getRef()));
+    }
+
+    @Test
+    public void documentCannotBeEditedWithoutWritePermission() {
+        DocumentModel model = createDoc();
+        TestHelper.grant(session, model, USER, SecurityConstants.READ);
+
+        assertFalse(canEdit(coreFeature.getCoreSession(USER), model.getRef()));
+    }
+
+    @Test
+    public void versionCannotBeEdited() {
+        DocumentModel model = createEditableDoc();
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        session.save();
+
+        assertFalse(canEdit(coreFeature.getCoreSession(USER), version));
+    }
+
+    @Test
+    public void proxyCannotBeEdited() {
+        DocumentModel model = createEditableDoc();
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        DocumentModel versionProxy = session.createProxy(version, session.getRootDocument().getRef());
+        DocumentModel liveProxy = session.createProxy(model.getRef(), session.getRootDocument().getRef());
+        TestHelper.grant(session, versionProxy, USER, SecurityConstants.READ_WRITE);
+        TestHelper.grant(session, liveProxy, USER, SecurityConstants.READ_WRITE);
+
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        assertFalse(canEdit(userSession, versionProxy.getRef()));
+        assertFalse(canEdit(userSession, liveProxy.getRef()));
+    }
+
+    @Test
+    public void trashedDocumentCannotBeEdited() {
+        DocumentModel model = createEditableDoc();
+        Framework.getService(TrashService.class).trashDocument(model);
+        session.save();
+
+        assertFalse(canEdit(coreFeature.getCoreSession(USER), model.getRef()));
+    }
+
+    @Test
+    public void documentUnderLegalHoldCannotBeEdited() {
+        DocumentModel model = createEditableDoc();
+        session.makeRecord(model.getRef());
+        session.setLegalHold(model.getRef(), true, null);
+        session.save();
+
+        assertFalse(canEdit(coreFeature.getCoreSession(USER), model.getRef()));
     }
 
     @Test

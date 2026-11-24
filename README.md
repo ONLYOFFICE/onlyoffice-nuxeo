@@ -148,7 +148,7 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 1. Locate your file in *Nuxeo*.
 2. Click **Open with ONLYOFFICE** (or the editor icon).
-3. The file opens in the embedded editor for viewing or editing (per your permissions).
+3. The file opens in the embedded editor for viewing or editing (per your permissions). Versions, proxies, documents in the trash and documents under retention or legal hold always open for viewing.
 
 **Auto-save & versioning**: Changes are sent back to Nuxeo; Nuxeo handles repository updates/versioning.
 

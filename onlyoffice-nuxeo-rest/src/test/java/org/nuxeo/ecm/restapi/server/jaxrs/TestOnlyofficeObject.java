@@ -72,6 +72,9 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.VersioningOption;
+import org.nuxeo.ecm.core.api.trash.TrashService;
 import org.nuxeo.ecm.core.api.security.ACE;
 import org.nuxeo.ecm.core.api.security.ACL;
 import org.nuxeo.ecm.core.api.security.ACP;
@@ -379,6 +382,25 @@ public class TestOnlyofficeObject {
         DocumentModel model = createFile("archive.xyz");
 
         assertFalse(json((Response) endpoint(session).getFilter(model.getId())).has("mode"));
+    }
+
+    @Test
+    public void filterReturnsViewForVersion() throws Exception {
+        DocumentModel model = createFile("report.docx");
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        session.save();
+
+        String versionId = session.getDocument(version).getId();
+        assertEquals("view", json((Response) endpoint(session).getFilter(versionId)).get("mode").asText());
+    }
+
+    @Test
+    public void filterReturnsViewForTrashedDocument() throws Exception {
+        DocumentModel model = createFile("report.docx");
+        Framework.getService(TrashService.class).trashDocument(model);
+        session.save();
+
+        assertEquals("view", json((Response) endpoint(session).getFilter(model.getId())).get("mode").asText());
     }
 
     /**

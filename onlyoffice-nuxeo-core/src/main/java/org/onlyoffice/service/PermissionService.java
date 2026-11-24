@@ -23,4 +23,6 @@ import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 
 public interface PermissionService {
     Boolean checkPermission(DocumentModel model, NuxeoPrincipal principal, String permission);
+
+    boolean canEdit(DocumentModel model, NuxeoPrincipal principal);
 }
