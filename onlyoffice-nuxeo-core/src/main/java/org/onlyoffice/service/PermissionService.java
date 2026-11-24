@@ -25,4 +25,6 @@ public interface PermissionService {
     Boolean checkPermission(DocumentModel model, NuxeoPrincipal principal, String permission);
 
     boolean canEdit(DocumentModel model, NuxeoPrincipal principal);
+
+    boolean isModifiable(DocumentModel model);
 }

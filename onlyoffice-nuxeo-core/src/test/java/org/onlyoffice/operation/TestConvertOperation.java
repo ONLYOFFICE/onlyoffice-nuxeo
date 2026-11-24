@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,13 +58,18 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
+import org.nuxeo.ecm.core.api.trash.TrashService;
 import org.nuxeo.ecm.core.test.CoreFeature;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.mockito.RuntimeService;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.onlyoffice.service.LockService;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper;
@@ -78,6 +84,7 @@ public class TestConvertOperation {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final int HALF = 50;
     private static final int SC_BAD_REQUEST = 400;
+    private static final int SC_CONFLICT = 409;
 
     @Mock
     @RuntimeService
@@ -92,6 +99,9 @@ public class TestConvertOperation {
 
     @Inject
     private DocumentManager documentManager;
+
+    @Inject
+    private LockService lockService;
 
     @Inject
     private CoreSession session;
@@ -199,16 +209,95 @@ public class TestConvertOperation {
     }
 
     private String assertBadRequest(final DocumentModel model) throws Exception {
+        return assertRejected(model, SC_BAD_REQUEST);
+    }
+
+    private String assertRejected(final DocumentModel model, final int status) throws Exception {
         try {
             convert(session, model, null);
             fail("Conversion of " + model.getName() + " must be rejected");
             return null;
         } catch (NuxeoException e) {
-            assertEquals(SC_BAD_REQUEST, e.getStatusCode());
+            assertEquals(status, e.getStatusCode());
             return e.getMessage();
         } finally {
             verify(convertService, never()).processConvert(any(ConvertRequest.class), any(String.class));
         }
+    }
+
+    @Test
+    public void conversionKeepsTheOriginalFileInTheHistory() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        String original = ((Blob) model.getPropertyValue("file:content")).getString();
+        respond(true);
+
+        convert(session, model, null);
+
+        List<DocumentModel> versions = session.getVersions(model.getRef());
+        assertEquals(2, versions.size());
+        Blob before = (Blob) versions.get(0).getPropertyValue("file:content");
+        assertEquals("legacy.doc", before.getFilename());
+        assertEquals(original, before.getString());
+        Blob after = (Blob) versions.get(1).getPropertyValue("file:content");
+        assertEquals("legacy.docx", after.getFilename());
+        assertEquals(CONVERTED, after.getString());
+    }
+
+    @Test
+    public void userWithWritePermissionKeepsTheOriginalInTheHistory() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        TestHelper.grant(session, model, USER, SecurityConstants.READ_WRITE);
+        respond(true);
+
+        convert(coreFeature.getCoreSession(USER), model, null);
+
+        List<DocumentModel> versions = session.getVersions(model.getRef());
+        assertEquals(2, versions.size());
+        assertEquals("legacy.doc", ((Blob) versions.get(0).getPropertyValue("file:content")).getFilename());
+    }
+
+    @Test
+    public void conversionDoesNotVersionTheOriginalTwice() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        session.save();
+        respond(true);
+
+        convert(session, model, null);
+
+        assertEquals("the original was already a version", 2, session.getVersions(model.getRef()).size());
+    }
+
+    @Test
+    public void conversionOfDocumentOpenInOnlyofficeIsRejected() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        lockService.lock(session, model);
+        session.save();
+        respond(true);
+
+        assertRejected(model, SC_CONFLICT);
+        assertEquals("the editing session would lose its changes", "legacy.doc",
+                ((Blob) session.getDocument(model.getRef()).getPropertyValue("file:content")).getFilename());
+    }
+
+    @Test
+    public void conversionOfVersionIsRejected() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        session.save();
+        respond(true);
+
+        assertRejected(session.getDocument(version), SC_CONFLICT);
+    }
+
+    @Test
+    public void conversionOfTrashedDocumentIsRejected() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        Framework.getService(TrashService.class).trashDocument(model);
+        session.save();
+        respond(true);
+
+        assertRejected(session.getDocument(model.getRef()), SC_CONFLICT);
     }
 
     @Test

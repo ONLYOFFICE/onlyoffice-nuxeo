@@ -83,7 +83,7 @@ The download, callback and test-file URLs are open URLs (no Nuxeo authentication
 | `sdk.service.config` | Build editor config JSON |
 | `sdk.service.convert` | Document conversion requests |
 | `sdk.service.settings` | Connection checks of the settings page (`SettingsValidationService`) |
-| `service` | `PermissionService` (Nuxeo permission checks; `canEdit` refuses versions, proxies, trashed documents and documents under retention or legal hold), `LinkTokenService` (tokens of Document Server links), `LockService` (locks of editing sessions) |
+| `service` | `PermissionService` (Nuxeo permission checks; `isModifiable` refuses versions, proxies, trashed documents and documents under retention or legal hold, `canEdit` adds the write permission), `LinkTokenService` (tokens of Document Server links), `LockService` (locks of editing sessions) |
 | `utils` | `Utils` — shared helpers |
 | `operation` | `CreateOperation` (`ONLYOFFICE.Create`), `ConvertOperation` (`ONLYOFFICE.Convert`) — Nuxeo automation |
 | `web` | `Editor` — WebEngine editor page |

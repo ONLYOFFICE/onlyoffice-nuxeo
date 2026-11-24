@@ -58,14 +58,15 @@ public class PermissionServiceImpl extends DefaultComponent implements Permissio
 
     @Override
     public boolean canEdit(final DocumentModel model, final NuxeoPrincipal principal) {
-        // the rights of a version or a proxy are those of the live document, but the file of a version cannot be
-        // replaced: an editing session opened on it would lose all its changes on save, as would one on a document
-        // under retention; the changes of one on a document in the trash would land in a deleted document
-        if (model.isVersion() || model.isProxy() || model.isImmutable() || model.isTrashed()
-                || model.isUnderRetentionOrLegalHold()) {
-            return false;
-        }
+        return isModifiable(model) && checkPermission(model, principal, SecurityConstants.WRITE_PROPERTIES);
+    }
 
-        return checkPermission(model, principal, SecurityConstants.WRITE_PROPERTIES);
+    // The rights of a version or a proxy are those of the live document, but the file of a version cannot be
+    // replaced: an editing session opened on it would lose all its changes on save, as would one on a document under
+    // retention; the changes of one on a document in the trash would land in a deleted document
+    @Override
+    public boolean isModifiable(final DocumentModel model) {
+        return !(model.isVersion() || model.isProxy() || model.isImmutable() || model.isTrashed()
+                || model.isUnderRetentionOrLegalHold());
     }
 }
