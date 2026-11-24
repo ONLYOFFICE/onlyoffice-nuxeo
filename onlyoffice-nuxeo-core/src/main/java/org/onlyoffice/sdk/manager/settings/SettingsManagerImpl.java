@@ -95,7 +95,7 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
 
         Properties persistedProperties = new Properties();
         for (String propertyName : frameworkProperties.stringPropertyNames()) {
-            if (propertyName.startsWith(SETTINGS_PREFIX)) {
+            if (propertyName.startsWith(SETTINGS_PREFIX + ".")) {
                 persistedProperties.setProperty(propertyName, frameworkProperties.getProperty(propertyName));
             }
         }

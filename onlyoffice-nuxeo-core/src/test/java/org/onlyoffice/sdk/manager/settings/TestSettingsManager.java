@@ -55,6 +55,7 @@ public class TestSettingsManager {
     private static final String KEY_PROPERTY = "onlyoffice." + SettingsConstants.SECURITY_KEY;
     private static final String HEADER_PROPERTY = "onlyoffice." + SettingsConstants.SECURITY_HEADER;
     private static final String EXTRA_PROPERTY = "onlyoffice.extra";
+    private static final String OTHER_ADDON_PROPERTY = "onlyoffice-other-addon.password";
 
     @Inject
     private SettingsManager settingsManager;
@@ -89,7 +90,8 @@ public class TestSettingsManager {
                 .set(URL_PROPERTY, null)
                 .set(KEY_PROPERTY, null)
                 .set(HEADER_PROPERTY, null)
-                .set(EXTRA_PROPERTY, null);
+                .set(EXTRA_PROPERTY, null)
+                .set(OTHER_ADDON_PROPERTY, null);
         Files.deleteIfExists(settingsFile().toPath());
     }
 
@@ -122,6 +124,15 @@ public class TestSettingsManager {
         assertEquals("http://docs.example.com/", Framework.getProperty(URL_PROPERTY));
         assertEquals("secret", settingsManager.getSetting(SettingsConstants.SECURITY_KEY));
         assertEquals("AuthorizationJwt", settingsManager.getSetting(SettingsConstants.SECURITY_HEADER));
+    }
+
+    @Test
+    public void settingsFileHoldsOnlyTheSettingsOfThisAddon() throws Exception {
+        properties.set(OTHER_ADDON_PROPERTY, "not ours");
+
+        save("http://docs.example.com/", "secret");
+
+        assertFalse(loadPersistedSettings().containsKey(OTHER_ADDON_PROPERTY));
     }
 
     @Test
