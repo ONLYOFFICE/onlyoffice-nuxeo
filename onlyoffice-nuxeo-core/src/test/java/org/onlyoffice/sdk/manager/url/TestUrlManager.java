@@ -21,10 +21,9 @@ package org.onlyoffice.sdk.manager.url;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import jakarta.inject.Inject;
 
+import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.url.UrlManager;
 import com.onlyoffice.model.settings.SettingsConstants;
 import org.junit.After;
@@ -36,8 +35,10 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
 import org.nuxeo.runtime.test.runner.Features;
-import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.onlyoffice.service.LinkTokenService;
+import org.onlyoffice.service.LinkTokenService.LinkToken;
+import org.onlyoffice.service.LinkTokenService.Operation;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper.FrameworkProperties;
@@ -47,7 +48,6 @@ import org.onlyoffice.test.TestHelper.FrameworkProperties;
 public class TestUrlManager {
     private static final String PRODUCT_INNER_URL_PROPERTY = "onlyoffice." + SettingsConstants.PRODUCT_INNER_URL;
     private static final String INNER_URL = "http://nuxeo-internal:8080";
-    private static final long OTHER_REQUEST_TIMEOUT_MS = 10000;
 
     @Inject
     private UrlManager urlManager;
@@ -57,6 +57,12 @@ public class TestUrlManager {
 
     @Inject
     private TokenAuthenticationService tokenAuthenticationService;
+
+    @Inject
+    private LinkTokenService linkTokenService;
+
+    @Inject
+    private DocumentManager documentManager;
 
     private FrameworkProperties properties;
     private ActiveWebContext webContext;
@@ -89,39 +95,45 @@ public class TestUrlManager {
     }
 
     @Test
-    public void fileUrlPointsToDownloadEndpointWithUserToken() {
+    public void fileUrlPointsToDownloadEndpointWithDownloadToken() {
         String url = urlManager.getFileUrl(model.getId());
 
         assertTrue(url, url.startsWith(baseUrl(ActiveWebContext.SERVER_URL)
                 + "/api/v1/onlyoffice/download/" + model.getId() + "?token="));
-        assertEquals(session.getPrincipal().getName(), tokenAuthenticationService.getUserName(tokenOf(url)));
+        LinkToken link = linkTokenService.verifyToken(tokenOf(url), Operation.DOWNLOAD, model.getId());
+        assertEquals(session.getPrincipal().getName(), link.getUserName());
     }
 
     @Test
-    public void callbackUrlPointsToCallbackEndpointWithUserToken() {
+    public void callbackUrlPointsToCallbackEndpointWithCallbackTokenOfTheEditingSession() {
         String url = urlManager.getCallbackUrl(model.getId());
 
         assertTrue(url, url.startsWith(baseUrl(ActiveWebContext.SERVER_URL)
                 + "/api/v1/onlyoffice/callback/" + model.getId() + "?token="));
-        assertEquals(session.getPrincipal().getName(), tokenAuthenticationService.getUserName(tokenOf(url)));
+        LinkToken link = linkTokenService.verifyToken(tokenOf(url), Operation.CALLBACK, model.getId());
+        assertEquals(session.getPrincipal().getName(), link.getUserName());
+        assertEquals(documentManager.getDocumentKey(model.getId(), false), link.getDocumentKey());
+    }
+
+    @Test
+    public void testFileUrlHasTestFileToken() {
+        String url = urlManager.getTestConvertUrl(null);
+
+        LinkToken link = linkTokenService.verifyToken(tokenOf(url), Operation.TEST_FILE, null);
+        assertEquals(session.getPrincipal().getName(), link.getUserName());
     }
 
     /**
-     * BUG: the token was acquired in the transaction of the current request, so Document Server, which calls Nuxeo
-     * back while that request is still running (e.g. the settings validation), got a 401 for a new token.
+     * BUG: the links carried a Nuxeo authentication token of the user, which never expires and opens the whole REST
+     * API, and ended up in the database and the logs of Document Server.
      */
     @Test
-    public void tokenIsUsableBeforeCurrentTransactionCommits() throws Exception {
-        String token = tokenOf(urlManager.getTestConvertUrl(null));
+    public void noNuxeoAuthenticationTokenIsHandedOut() {
+        urlManager.getFileUrl(model.getId());
+        urlManager.getCallbackUrl(model.getId());
+        urlManager.getTestConvertUrl(null);
 
-        // what Document Server sees: another request, in another thread and transaction
-        AtomicReference<String> userName = new AtomicReference<>();
-        Thread documentServerRequest = new Thread(() -> userName.set(
-                TransactionHelper.runInTransaction(() -> tokenAuthenticationService.getUserName(token))));
-        documentServerRequest.start();
-        documentServerRequest.join(OTHER_REQUEST_TIMEOUT_MS);
-
-        assertEquals(session.getPrincipal().getName(), userName.get());
+        assertTrue(tokenAuthenticationService.getTokenBindings(session.getPrincipal().getName()).isEmpty());
     }
 
     @Test

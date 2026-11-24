@@ -57,6 +57,7 @@ import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.nuxeo.runtime.transaction.TransactionHelper;
@@ -135,7 +136,7 @@ public class TestCallbackService {
     }
 
     private void process(final CoreSession userSession, final Callback callback) throws Exception {
-        try (ActiveWebContext ignored = ActiveWebContext.activate(userSession)) {
+        try (NuxeoLoginContext ignored = TestHelper.loginAs(userSession)) {
             callbackService.processCallback(callback, model.getId());
         }
     }
@@ -363,7 +364,7 @@ public class TestCallbackService {
     public void saveFailsWithConflictWhenDocumentHasNoContent() throws Exception {
         DocumentModel empty = TestHelper.createFile(session, "empty", null, null, null);
 
-        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+        try (NuxeoLoginContext ignored = TestHelper.loginAs(session)) {
             callbackService.processCallback(callback(Status.SAVE, "key", FILE_URL), empty.getId());
             fail("Expected NuxeoException");
         } catch (NuxeoException e) {

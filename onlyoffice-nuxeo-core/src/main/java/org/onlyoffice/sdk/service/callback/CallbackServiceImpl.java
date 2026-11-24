@@ -27,6 +27,7 @@ import org.nuxeo.ecm.automation.core.util.DocumentHelper;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.ConcurrentUpdateException;
+import org.nuxeo.ecm.core.api.CoreInstance;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
@@ -42,8 +43,6 @@ import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
 import org.nuxeo.ecm.core.repository.RepositoryService;
 import org.nuxeo.ecm.core.schema.FacetNames;
-import org.nuxeo.ecm.webengine.WebEngine;
-import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.service.LockService;
 import org.onlyoffice.utils.Utils;
@@ -79,10 +78,15 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         this.lockService = Framework.getService(LockService.class);
     }
 
+    // The callback is not authenticated by Nuxeo but by its link token: the endpoint logs in as the user the link was
+    // issued to
+    private static CoreSession getSession() {
+        return CoreInstance.getCoreSession(null);
+    }
+
     @Override
     public void handlerEditing(final Callback callback, final String fileId) throws Exception {
-        WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession();
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
@@ -96,8 +100,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     @Override
     public void handlerSave(final Callback callback, final String fileId) throws Exception {
         logger.info("Document Updated, changing content");
-        WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession();
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
@@ -109,8 +112,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     @Override
     public void handlerClosed(final Callback callback, final String fileId) throws Exception {
         logger.info("No document updates, unlocking node");
-        WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession();
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 

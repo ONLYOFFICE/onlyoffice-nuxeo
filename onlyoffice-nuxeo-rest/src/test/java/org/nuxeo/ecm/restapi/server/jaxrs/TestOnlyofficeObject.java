@@ -20,6 +20,7 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -78,6 +80,7 @@ import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.ecm.core.test.DefaultRepositoryInit;
 import org.nuxeo.ecm.core.test.annotations.Granularity;
 import org.nuxeo.ecm.core.test.annotations.RepositoryConfig;
+import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.platform.web.common.RequestContext;
 import org.nuxeo.ecm.webengine.model.ResourceType;
 import org.nuxeo.ecm.webengine.model.WebContext;
@@ -89,7 +92,10 @@ import org.nuxeo.runtime.mockito.RuntimeService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.onlyoffice.sdk.service.settings.SettingsValidationService;
+import org.onlyoffice.service.LinkTokenService;
+import org.onlyoffice.service.LinkTokenService.Operation;
 
 @RunWith(FeaturesRunner.class)
 @Features({AutomationFeature.class, MockitoFeature.class})
@@ -104,6 +110,7 @@ public class TestOnlyofficeObject {
     private static final String URL_PROPERTY = "onlyoffice." + SettingsConstants.URL;
     private static final String EXTRA_PROPERTY = "onlyoffice.extra";
     private static final int SC_CONFLICT = 409;
+    private static final long OTHER_REQUEST_TIMEOUT_MS = 10000;
 
     @Mock
     @RuntimeService
@@ -120,6 +127,12 @@ public class TestOnlyofficeObject {
 
     @Inject
     private JwtManager jwtManager;
+
+    @Inject
+    private LinkTokenService linkTokenService;
+
+    @Inject
+    private UserManager userManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> originalProperties = new HashMap<>();
@@ -223,6 +236,24 @@ public class TestOnlyofficeObject {
 
     private static InputStream body(final String json) {
         return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String link(final Operation operation, final String documentId, final String userName,
+                        final String documentKey) {
+        return linkTokenService.createToken(operation, documentId, userName, documentKey);
+    }
+
+    /** The link token Document Server gets in the callback url of an editing session with the key "key". */
+    private String callbackLink(final DocumentModel model) {
+        return link(Operation.CALLBACK, model.getId(), session.getPrincipal().getName(), "key");
+    }
+
+    private String downloadLink(final String documentId) {
+        return link(Operation.DOWNLOAD, documentId, session.getPrincipal().getName(), null);
+    }
+
+    private String testFileLink() {
+        return link(Operation.TEST_FILE, null, session.getPrincipal().getName(), null);
     }
 
     private String downloadToken() {
@@ -374,7 +405,7 @@ public class TestOnlyofficeObject {
     public void callbackSucceeds() throws Exception {
         DocumentModel model = createFile("report.docx");
 
-        Response response = (Response) endpoint(session).postCallback(model.getId(),
+        Response response = (Response) endpoint(session).postCallback(model.getId(), callbackLink(model),
                 body("{\"status\":1,\"key\":\"key\"}"));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -387,7 +418,7 @@ public class TestOnlyofficeObject {
         Framework.getProperties().put(KEY_PROPERTY, SECRET);
         DocumentModel model = createFile("report.docx");
 
-        Response response = (Response) endpoint(session).postCallback(model.getId(),
+        Response response = (Response) endpoint(session).postCallback(model.getId(), callbackLink(model),
                 body("{\"status\":1,\"key\":\"key\"}"));
 
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
@@ -407,7 +438,8 @@ public class TestOnlyofficeObject {
 
         OnlyofficeObject endpoint = endpoint(session);
         header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + token);
-        Response response = (Response) endpoint.postCallback(model.getId(), body("{\"status\":4}"));
+        Response response = (Response) endpoint.postCallback(model.getId(), callbackLink(model),
+                body("{\"status\":4}"));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         assertTrue("status from the signed payload is used", (session.getLockInfo(model.getRef()) != null));
@@ -417,7 +449,7 @@ public class TestOnlyofficeObject {
     public void permanentNuxeoErrorKeepsItsStatus() throws Exception {
         DocumentModel model = createFile(null);
 
-        Response response = (Response) endpoint(session).postCallback(model.getId(),
+        Response response = (Response) endpoint(session).postCallback(model.getId(), callbackLink(model),
                 body("{\"status\":2,\"key\":\"key\",\"url\":\"http://docs.example.com/file\"}"));
 
         assertEquals(SC_CONFLICT, response.getStatus());
@@ -433,7 +465,7 @@ public class TestOnlyofficeObject {
         doThrow(new IllegalStateException("boom")).when(failing).processCallback(any(), any());
         setField(endpoint, "callbackService", failing);
 
-        Response response = (Response) endpoint.postCallback(model.getId(),
+        Response response = (Response) endpoint.postCallback(model.getId(), callbackLink(model),
                 body("{\"status\":2,\"key\":\"key\",\"url\":\"http://docs.example.com/file\"}"));
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
@@ -443,7 +475,7 @@ public class TestOnlyofficeObject {
 
     private void assertBadRequest(final OnlyofficeObject endpoint, final DocumentModel model, final String body)
             throws IOException {
-        Response response = (Response) endpoint.postCallback(model.getId(), body(body));
+        Response response = (Response) endpoint.postCallback(model.getId(), callbackLink(model), body(body));
 
         assertEquals(body, Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         assertEquals(body, 1, json(response).get("error").asInt());
@@ -498,13 +530,141 @@ public class TestOnlyofficeObject {
         assertBadRequest(endpoint, model, "{\"status\":1}");
     }
 
+    private void assertUnauthorized(final DocumentModel model, final String linkToken) throws IOException {
+        Response response = (Response) endpoint(session).postCallback(model.getId(), linkToken,
+                body("{\"status\":1,\"key\":\"key\"}"));
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        assertEquals(1, json(response).get("error").asInt());
+        assertNull(session.getLockInfo(model.getRef()));
+    }
+
+    @Test
+    public void callbackRequiresItsLinkToken() throws Exception {
+        DocumentModel model = createFile("report.docx");
+        String user = session.getPrincipal().getName();
+
+        assertUnauthorized(model, null);
+        assertUnauthorized(model, downloadLink(model.getId()));
+        assertUnauthorized(model, testFileLink());
+        assertUnauthorized(model, link(Operation.CALLBACK, createFile("other.docx").getId(), user, "key"));
+        assertUnauthorized(model, link(Operation.CALLBACK, model.getId(), "nobody", "key"));
+    }
+
+    @Test
+    public void callbackOfAnotherEditingSessionIsUnauthorized() throws Exception {
+        DocumentModel model = createFile("report.docx");
+
+        assertUnauthorized(model, link(Operation.CALLBACK, model.getId(), session.getPrincipal().getName(), "old"));
+    }
+
+    private void createUser() {
+        DocumentModel user = userManager.getBareUserModel();
+        user.setPropertyValue("user:username", USER);
+        userManager.createUser(user);
+    }
+
+    // Outside of a login, a session is a system one in test mode (not in production): these tests fail if the
+    // endpoints did not log in as the user of the link
+    @Test
+    public void callbackOfUserWhoMayOnlyReadIsForbidden() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        grant(model, SecurityConstants.READ);
+
+        Response response = (Response) endpoint(session).postCallback(model.getId(),
+                link(Operation.CALLBACK, model.getId(), USER, "key"), body("{\"status\":1,\"key\":\"key\"}"));
+
+        assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
+        assertNull(session.getLockInfo(model.getRef()));
+    }
+
+    @Test
+    public void callbackIsProcessedAsTheUserTheLinkWasIssuedTo() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        grant(model, SecurityConstants.READ_WRITE);
+
+        Response response = (Response) endpoint(session).postCallback(model.getId(),
+                link(Operation.CALLBACK, model.getId(), USER, "key"), body("{\"status\":1,\"key\":\"key\"}"));
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(USER, session.getLockInfo(model.getRef()).getOwner());
+    }
+
     // ------------------------------------------------------------------ download
+
+    /**
+     * BUG: Document Server's requests have no principal, and the user directory is not readable without one, so the
+     * user of the link was found only while in the principal cache, e.g. not after a restart.
+     */
+    @Test
+    public void linkUserIsFoundWhileNobodyIsLoggedIn() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        grant(model, SecurityConstants.READ);
+        String linkToken = link(Operation.DOWNLOAD, model.getId(), USER, null);
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
+
+        AtomicReference<Object> status = new AtomicReference<>();
+        Thread documentServerRequest = new Thread(() -> {
+            try {
+                status.set(((Response) endpoint(session).getDownload(model.getId(), linkToken,
+                        mock(HttpServletRequest.class), mock(HttpServletResponse.class))).getStatus());
+            } catch (Exception e) {
+                status.set(e);
+            }
+        });
+        documentServerRequest.start();
+        documentServerRequest.join(OTHER_REQUEST_TIMEOUT_MS);
+
+        assertEquals(Response.Status.OK.getStatusCode(), status.get());
+    }
+
+    @Test
+    public void downloadOfUserWhoMayNotReadIsRefused() throws Exception {
+        createUser();
+        DocumentModel model = createFile("report.docx");
+        ACP acp = model.getACP();
+        ACL acl = acp.getOrCreateACL(ACL.LOCAL_ACL);
+        acl.add(new ACE(session.getPrincipal().getName(), SecurityConstants.EVERYTHING, true));
+        acl.add(ACE.BLOCK);
+        session.setACP(model.getRef(), acp, true);
+        session.save();
+
+        try {
+            Response response = (Response) endpoint(session).getDownload(model.getId(),
+                    link(Operation.DOWNLOAD, model.getId(), USER, null), mock(HttpServletRequest.class),
+                    mock(HttpServletResponse.class));
+            assertNotEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        } catch (IOException e) {
+            // refused by the repository
+        }
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadRequiresItsLinkToken() throws Exception {
+        DocumentModel model = createFile("report.docx");
+
+        String otherDocument = downloadLink(createFile("other.docx").getId());
+        String unknownUser = link(Operation.DOWNLOAD, model.getId(), "nobody", null);
+
+        for (String linkToken : new String[] {null, callbackLink(model), testFileLink(), otherDocument, unknownUser}) {
+            Response response = (Response) endpoint(session).getDownload(model.getId(), linkToken,
+                    mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        }
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
 
     @Test
     public void downloadStreamsDocumentContent() throws Exception {
         DocumentModel model = createFile("report.docx");
 
-        Response response = (Response) endpoint(session).getDownload(model.getId(),
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
                 mock(HttpServletRequest.class), mock(HttpServletResponse.class));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -513,7 +673,8 @@ public class TestOnlyofficeObject {
 
     @Test
     public void downloadOfMissingDocumentIsNotFound() throws Exception {
-        Response response = (Response) endpoint(session).getDownload(UUID.randomUUID().toString(),
+        String id = UUID.randomUUID().toString();
+        Response response = (Response) endpoint(session).getDownload(id, downloadLink(id),
                 mock(HttpServletRequest.class), mock(HttpServletResponse.class));
 
         assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatus());
@@ -525,7 +686,7 @@ public class TestOnlyofficeObject {
         DocumentModel model = createFile("report.docx");
 
         try {
-            endpoint(session).getDownload(model.getId(), mock(HttpServletRequest.class),
+            endpoint(session).getDownload(model.getId(), downloadLink(model.getId()), mock(HttpServletRequest.class),
                     mock(HttpServletResponse.class));
             fail("Download without JWT must be rejected");
         } catch (IOException e) {
@@ -540,7 +701,8 @@ public class TestOnlyofficeObject {
 
         OnlyofficeObject endpoint = endpoint(session);
         header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + downloadToken());
-        Response response = (Response) endpoint.getDownload(model.getId(), mock(HttpServletRequest.class),
+        Response response = (Response) endpoint.getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class),
                 mock(HttpServletResponse.class));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -555,7 +717,8 @@ public class TestOnlyofficeObject {
         OnlyofficeObject endpoint = endpoint(session);
         header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + downloadToken());
         try {
-            endpoint.getDownload(model.getId(), mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+            endpoint.getDownload(model.getId(), downloadLink(model.getId()), mock(HttpServletRequest.class),
+                    mock(HttpServletResponse.class));
             fail("Download with invalid JWT must be rejected");
         } catch (IOException e) {
             verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
@@ -566,7 +729,7 @@ public class TestOnlyofficeObject {
 
     @Test
     public void testFileIsServed() throws Exception {
-        Response response = (Response) endpoint(session).getTestFile();
+        Response response = (Response) endpoint(session).getTestFile(testFileLink());
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         assertEquals("Test file for conversion", response.getEntity());
@@ -576,7 +739,7 @@ public class TestOnlyofficeObject {
     public void testFileRequiresJwtWhenSecurityEnabled() throws Exception {
         Framework.getProperties().put(KEY_PROPERTY, SECRET);
 
-        Response response = (Response) endpoint(session).getTestFile();
+        Response response = (Response) endpoint(session).getTestFile(testFileLink());
 
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
@@ -588,11 +751,16 @@ public class TestOnlyofficeObject {
         OnlyofficeObject endpoint = endpoint(session);
         header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + downloadToken());
 
-        assertEquals(Response.Status.OK.getStatusCode(), ((Response) endpoint.getTestFile()).getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), ((Response) endpoint.getTestFile(testFileLink())).getStatus());
     }
 
-    @Test(expected = WebSecurityException.class)
-    public void testFileRequiresAdministrator() throws Exception {
-        endpoint(coreFeature.getCoreSession(USER)).getTestFile();
+    @Test
+    public void testFileRequiresItsLinkToken() throws Exception {
+        String download = downloadLink(createFile("report.docx").getId());
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(),
+                ((Response) endpoint(session).getTestFile(null)).getStatus());
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(),
+                ((Response) endpoint(session).getTestFile(download)).getStatus());
     }
 }
