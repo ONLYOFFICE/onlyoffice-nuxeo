@@ -23,7 +23,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -815,13 +814,11 @@ public class TestOnlyofficeObject {
         Framework.getProperties().put(KEY_PROPERTY, SECRET);
         DocumentModel model = createFile("report.docx");
 
-        try {
-            endpoint(session).getDownload(model.getId(), downloadLink(model.getId()), mock(HttpServletRequest.class),
-                    mock(HttpServletResponse.class));
-            fail("Download without JWT must be rejected");
-        } catch (IOException e) {
-            verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
-        }
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
     }
 
     @Test
@@ -846,13 +843,25 @@ public class TestOnlyofficeObject {
 
         OnlyofficeObject endpoint = endpoint(session);
         header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + downloadToken());
-        try {
-            endpoint.getDownload(model.getId(), downloadLink(model.getId()), mock(HttpServletRequest.class),
-                    mock(HttpServletResponse.class));
-            fail("Download with invalid JWT must be rejected");
-        } catch (IOException e) {
-            verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
-        }
+        Response response = (Response) endpoint.getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
+    public void downloadRejectsMalformedJwt() throws Exception {
+        Framework.getProperties().put(KEY_PROPERTY, SECRET);
+        DocumentModel model = createFile("report.docx");
+
+        OnlyofficeObject endpoint = endpoint(session);
+        header(settingsManager.getSecurityHeader(), settingsManager.getSecurityPrefix() + "not-a-jwt");
+        Response response = (Response) endpoint.getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
     }
 
     // ------------------------------------------------------------------ test-txt
