@@ -65,6 +65,14 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
     private static final String LEGACY_TOKENS_DIRECTORY = "authTokens";
     private static final String LEGACY_TOKENS_APPLICATION = "onlyoffice-nuxeo";
 
+    // After DirectoryService (97), which initializes the directories in its start()
+    private static final int APPLICATION_STARTED_ORDER = 1000;
+
+    @Override
+    public int getApplicationStartedOrder() {
+        return APPLICATION_STARTED_ORDER;
+    }
+
     @Override
     public void start(final ComponentContext context) {
         revokeLegacyTokens();
@@ -158,8 +166,8 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
                         revoked);
             }
         } catch (RuntimeException e) {
-            logger.warn("Could not revoke the Nuxeo authentication tokens handed to Document Server by earlier "
-                    + "versions: {}", e.toString());
+            logger.error("Could not revoke the Nuxeo authentication tokens handed to Document Server by earlier "
+                    + "versions", e);
         }
     }
 }
