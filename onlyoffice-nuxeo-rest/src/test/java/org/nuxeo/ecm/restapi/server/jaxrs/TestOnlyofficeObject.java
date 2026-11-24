@@ -720,6 +720,21 @@ public class TestOnlyofficeObject {
     }
 
     @Test
+    public void downloadOfContentWithoutFileNameIsForbidden() throws Exception {
+        DocumentModel model = session.createDocumentModel("/", "doc", "File");
+        model.setPropertyValue("file:content", (Serializable) Blobs.createBlob("content"));
+        model = session.createDocument(model);
+        session.save();
+        assertNull(((Blob) model.getPropertyValue("file:content")).getFilename());
+
+        Response response = (Response) endpoint(session).getDownload(model.getId(), downloadLink(model.getId()),
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
+    }
+
+    @Test
     public void downloadOfDocumentWithoutContentIsNotFound() throws Exception {
         DocumentModel model = createFile(null);
 
