@@ -34,7 +34,7 @@
   "onlyoffice.service.convert.error.unknown": "Onbekende fout",
   "onlyoffice.service.convert.error.timeout": "Conversie time-out fout",
   "onlyoffice.service.convert.error.conversion": "Conversiefout",
-  "onlyoffice.service.convert.error.download": "Fout bij het downloaden van het te converteren documentbestand",
+  "onlyoffice.service.convert.error.downloading": "Fout bij het downloaden van het te converteren documentbestand",
   "onlyoffice.service.convert.error.password": "Onjuist wachtwoord",
   "onlyoffice.service.convert.error.database": "Fout bij de toegang tot de database met conversieresultaten",
   "onlyoffice.service.convert.error.input": "Invoerfout",
