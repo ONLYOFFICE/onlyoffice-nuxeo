@@ -39,10 +39,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.VersioningOption;
+import org.nuxeo.ecm.core.api.trash.TrashService;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.api.impl.UserPrincipal;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.test.ActiveWebContext;
@@ -107,6 +111,28 @@ public class TestConfigService {
         TestHelper.grant(session, model, USER, SecurityConstants.READ);
 
         try (ActiveWebContext ignored = ActiveWebContext.activate(coreFeature.getCoreSession(USER))) {
+            assertFalse(configService.getPermissions(model.getId()).getEdit());
+        }
+    }
+
+    @Test
+    public void editDeniedForVersion() {
+        DocumentModel model = createDoc("report.docx");
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        session.save();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            assertFalse(configService.getPermissions(session.getDocument(version).getId()).getEdit());
+        }
+    }
+
+    @Test
+    public void editDeniedForTrashedDocument() {
+        DocumentModel model = createDoc("report.docx");
+        Framework.getService(TrashService.class).trashDocument(model);
+        session.save();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             assertFalse(configService.getPermissions(model.getId()).getEdit());
         }
     }

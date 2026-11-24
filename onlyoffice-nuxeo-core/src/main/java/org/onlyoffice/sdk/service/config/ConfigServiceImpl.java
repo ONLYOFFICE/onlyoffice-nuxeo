@@ -30,7 +30,6 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
-import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.runtime.api.Framework;
@@ -60,11 +59,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
         DocumentModel model = session.getDocument(new IdRef(fileId));
         String fileName = getDocumentManager().getDocumentName(fileId);
 
-        Boolean editPermission = permissionService.checkPermission(
-                model,
-                ctx.getPrincipal(),
-                SecurityConstants.WRITE_PROPERTIES
-        );
+        boolean editPermission = permissionService.canEdit(model, ctx.getPrincipal());
         Boolean isEditable = getDocumentManager().isEditable(fileName) || getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()

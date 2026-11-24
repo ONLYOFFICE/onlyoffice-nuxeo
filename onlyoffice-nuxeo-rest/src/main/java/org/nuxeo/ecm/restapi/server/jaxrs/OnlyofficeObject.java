@@ -67,7 +67,6 @@ import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
-import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.io.download.DownloadService;
 import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.webengine.model.WebObject;
@@ -220,11 +219,7 @@ public class OnlyofficeObject extends DefaultObject {
                 response.put("mode", "view");
             }
 
-            if (documentManager.isEditable(fileName) && permissionService.checkPermission(
-                    model,
-                    session.getPrincipal(),
-                    SecurityConstants.WRITE_PROPERTIES
-            )) {
+            if (documentManager.isEditable(fileName) && permissionService.canEdit(model, session.getPrincipal())) {
                 response.put("mode", "edit");
             }
         }
