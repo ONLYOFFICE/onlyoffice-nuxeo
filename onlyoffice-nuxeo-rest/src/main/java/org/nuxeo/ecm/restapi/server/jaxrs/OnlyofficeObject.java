@@ -279,6 +279,12 @@ public class OnlyofficeObject extends DefaultObject {
             logger.error("Error while saving document " + id, ex);
         }
 
+        // Document Server retries a 5xx answer: nothing done before the failure (such as releasing the lock of the
+        // editing session) may be committed. A 4xx answer is final and keeps what was done.
+        if (code.getFamily() == Status.Family.SERVER_ERROR) {
+            TransactionHelper.setTransactionRollbackOnly();
+        }
+
         // Document Server reads only "error"; the reason stays in the log, not in the answer to the caller
         HashMap<String, Object> response = new HashMap<String, Object>();
         response.put("error", code == Status.OK ? 0 : 1);

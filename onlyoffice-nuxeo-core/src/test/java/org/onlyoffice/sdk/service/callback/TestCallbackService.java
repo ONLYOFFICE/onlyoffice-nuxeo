@@ -21,12 +21,14 @@ package org.onlyoffice.sdk.service.callback;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -65,6 +67,7 @@ import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.nuxeo.runtime.transaction.TransactionHelper;
+import org.onlyoffice.service.LockService;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper;
@@ -96,6 +99,9 @@ public class TestCallbackService {
 
     @Inject
     private CoreFeature coreFeature;
+
+    @Inject
+    private LockService lockService;
 
     private DocumentServerClient documentServerClient;
     private FieldOverrides overrides;
@@ -213,6 +219,47 @@ public class TestCallbackService {
         assertEquals(MIME_TYPE, blob.getMimeType());
         assertNull(session.getLockInfo(model.getRef()));
         assertFalse("a minor version is created", session.getVersions(model.getRef()).isEmpty());
+    }
+
+    @Test
+    public void failedDownloadOfTheSavedFileKeepsTheEditingLock() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+        process(userSession, callback(Status.EDITING, key, null));
+        doThrow(new IllegalStateException("Document Server unreachable")).when(documentServerClient)
+                .getFile(eq(FILE_URL), any(OutputStream.class));
+
+        try {
+            process(coreFeature.getCoreSession(CO_EDITOR), callback(Status.SAVE, key, FILE_URL));
+            fail("The failure must be reported for Document Server to retry");
+        } catch (IllegalStateException e) {
+            DocumentModel current = session.getDocument(model.getRef());
+            assertEquals("original", contentOf(current));
+            assertNotNull("the document must stay locked until the save succeeds", current.getLockInfo());
+            assertEquals(USER, current.getLockInfo().getOwner());
+            assertTrue(lockService.isEditingSessionLock(model.getId(), current.getLockInfo()));
+        }
+    }
+
+    @Test
+    public void saveRefusedForGoodReleasesTheEditingLock() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+        process(userSession, callback(Status.EDITING, key, null));
+
+        DocumentModel concurrent = session.getDocument(model.getRef());
+        concurrent.setPropertyValue("dc:description", "changed outside ONLYOFFICE");
+        concurrent.putContextData(CoreSession.USER_CHANGE, Boolean.TRUE);
+        session.saveDocument(concurrent);
+        session.save();
+
+        try {
+            process(userSession, callback(Status.SAVE, key, FILE_URL));
+            fail("Stale document key must be rejected");
+        } catch (ConcurrentUpdateException e) {
+            assertNull("Document Server does not retry, the editing session is over",
+                    session.getLockInfo(model.getRef()));
+        }
     }
 
     @Test

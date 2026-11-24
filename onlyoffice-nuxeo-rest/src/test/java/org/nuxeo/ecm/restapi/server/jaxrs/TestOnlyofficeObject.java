@@ -497,6 +497,40 @@ public class TestOnlyofficeObject {
         assertFalse("the exception text is not sent back", json(response).has("message"));
     }
 
+    @Test
+    public void transientErrorRollsBackTheTransaction() throws Exception {
+        DocumentModel model = createFile("report.docx");
+        OnlyofficeObject endpoint = endpoint(session);
+        CallbackService failing = mock(CallbackService.class);
+        when(failing.verifyCallback(any(), any())).thenAnswer(invocation -> invocation.getArgument(0));
+        doThrow(new IOException("Document Server unreachable")).when(failing).processCallback(any(), any());
+        setField(endpoint, "callbackService", failing);
+
+        try {
+            Response response = (Response) endpoint.postCallback(model.getId(), callbackLink(model),
+                    body("{\"status\":2,\"key\":\"key\",\"url\":\"http://docs.example.com/file\"}"));
+
+            assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+            assertTrue("whatever was done before the failure must not be committed",
+                    TransactionHelper.isTransactionMarkedRollback());
+        } finally {
+            TransactionHelper.commitOrRollbackTransaction();
+            TransactionHelper.startTransaction();
+        }
+    }
+
+    @Test
+    public void permanentErrorCommitsTheTransaction() throws Exception {
+        DocumentModel model = createFile(null);
+
+        Response response = (Response) endpoint(session).postCallback(model.getId(), callbackLink(model),
+                body("{\"status\":2,\"key\":\"key\",\"url\":\"http://docs.example.com/file\"}"));
+
+        assertEquals(SC_CONFLICT, response.getStatus());
+        assertFalse("Document Server does not retry: the end of the editing session must be committed",
+                TransactionHelper.isTransactionMarkedRollback());
+    }
+
     private void assertBadRequest(final OnlyofficeObject endpoint, final DocumentModel model, final String body)
             throws IOException {
         Response response = (Response) endpoint.postCallback(model.getId(), callbackLink(model), body(body));
