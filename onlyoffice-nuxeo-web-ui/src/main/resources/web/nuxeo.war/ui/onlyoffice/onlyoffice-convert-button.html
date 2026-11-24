@@ -63,7 +63,7 @@
 
         <nuxeo-document id="doc" doc-id="[[document.uid]]" response="{{document}}" sync-indexing></nuxeo-document>
 
-        <dom-if if="[[_isAvailable(document,onlyofficeFormats)]]">
+        <dom-if if="[[_isAvailable(document,onlyofficeFormats,xpath)]]">
             <template>
                 <div class="action" on-tap="_toggleDialog">
                     <paper-icon-button id="convertBtn" src="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
@@ -151,14 +151,15 @@
             },
 
             _isAvailable(doc) {
+                // the slot is rendered for every blob of the document, but the conversion replaces the main file
                 return (
                     doc &&
+                    this.xpath === 'file:content' &&
                     this.hasPermission(doc, 'WriteProperties') &&
                     !this.isImmutable(doc) &&
                     !this.hasType(doc, 'Root') &&
                     !this.isTrashed(doc) &&
-                    !(doc.isRecord && this.xpath !== 'file:content') &&
-                    !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content') &&
+                    !this.isUnderRetentionOrLegalHold(doc) &&
                     !(this.hasFacet(doc, 'ColdStorage') && this.hasContent(doc, 'coldstorage:coldContent')) &&
                     this.isConvertible(doc)
                 );

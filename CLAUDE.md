@@ -104,7 +104,7 @@ Web components are Polymer elements under `onlyoffice-nuxeo-web-ui/src/main/reso
 |---|---|
 | `DOCUMENT_ACTIONS` | `onlyoffice-editor-button.html` — open editor |
 | `CREATE_POPUP_ITEMS/PAGES` | `onlyoffice-create.html` — new document dialog |
-| `BLOB_ACTIONS` | `onlyoffice-convert-button.html` — format conversion |
+| `BLOB_ACTIONS` | `onlyoffice-convert-button.html` — format conversion (main file `file:content` only) |
 | `ADMINISTRATION_MENU/PAGES` | `onlyoffice-settings.html` — admin settings |
 
 Translations are in `ui/i18n/messages.json` (English base) and `ui/i18n/messages-{locale}.json`. Each locale file must also be added as an `<append>` in `onlyoffice-nuxeo-web-ui/src/main/resources/OSGI-INF/deployment-fragment.xml`, otherwise it is not installed.
