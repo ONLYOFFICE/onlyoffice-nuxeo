@@ -55,8 +55,10 @@ import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.ConcurrentUpdateException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.runtime.api.login.NuxeoLoginContext;
@@ -141,6 +143,14 @@ public class TestCallbackService {
         try (NuxeoLoginContext ignored = TestHelper.loginAs(userSession)) {
             callbackService.processCallback(callback, model.getId());
         }
+    }
+
+    private void replaceContent(final String content) {
+        DocumentModel current = session.getDocument(model.getRef());
+        current.setPropertyValue("file:content", (Serializable) Blobs.createBlob(content, MIME_TYPE,
+                StandardCharsets.UTF_8.name(), "report.docx"));
+        session.saveDocument(current);
+        session.save();
     }
 
     private String contentOf(final DocumentModel document) throws IOException {
@@ -302,6 +312,27 @@ public class TestCallbackService {
             fail("Content replaced while the document was edited must not be overwritten");
         } catch (ConcurrentUpdateException e) {
             assertEquals("replaced outside ONLYOFFICE", contentOf(session.getDocument(model.getRef())));
+        }
+    }
+
+    @Test
+    public void saveRejectsKeyOfOtherContentWithSameChangeToken() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MAJOR, null);
+        session.save();
+        replaceContent("replaced");
+        String key = currentKey(userSession);
+
+        // restoring brings back the change token of the version, so the next replacement repeats the token of key
+        session.restoreToVersion(model.getRef(), version);
+        session.save();
+        replaceContent("replaced again");
+
+        try {
+            process(userSession, callback(Status.SAVE, key, FILE_URL));
+            fail("A key of other content must be rejected even with the same change token");
+        } catch (ConcurrentUpdateException e) {
+            assertEquals("replaced again", contentOf(session.getDocument(model.getRef())));
         }
     }
 

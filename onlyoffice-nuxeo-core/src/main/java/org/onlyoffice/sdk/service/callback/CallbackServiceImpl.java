@@ -132,6 +132,10 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         if (keyChangeToken != null && !keyChangeToken.equals(utils.getUserChangeToken(model.getChangeToken()))) {
             throw new ConcurrentUpdateException("Invalid change token").addInfo(model.getId());
         }
+        String keyContentHash = utils.getContentHash(key);
+        if (keyContentHash != null && !keyContentHash.equals(utils.getContentHash(model))) {
+            throw new ConcurrentUpdateException("Content changed").addInfo(model.getId());
+        }
 
         File tempFile = File.createTempFile("onlyoffice", null);
         try {

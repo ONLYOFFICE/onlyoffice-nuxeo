@@ -4,7 +4,7 @@
 ## Fixed
 - Nuxeo failing to start alongside other addons (e.g. OpenSearch) because the package replaced httpclient5 in nxserver/lib
 - users opening the same document ending up in separate editing sessions after a background update of the document (thumbnail, fulltext, ...), with all but the first one to save losing their changes (Invalid change token)
-- the file of a document replaced by other means than the editor (Blob.AttachOnDocument, WebDAV, Drive, ONLYOFFICE.Convert, ...) keeping the same document key: Document Server served the previous file from its cache, and an editing session saved over the new file; every save that replaces the file now changes the key
+- the file of a document replaced by other means than the editor (Blob.AttachOnDocument, WebDAV, Drive, ONLYOFFICE.Convert, ...) keeping the same document key: Document Server served the previous file from its cache, and an editing session saved over the new file; the key now also carries a hash of the file, so that any change of the file (including restoring a version) changes it
 - callback answering 500 with the text of the exception to malformed requests (not a JSON object, unknown or missing status, header token without payload, save without file url), now 400 without the exception text
 - versions, proxies, documents in the trash and documents under retention or legal hold opened for editing: the changes could not be saved and were lost (or saved into a deleted document); they now open for viewing
 - ONLYOFFICE.Convert answering 500 for a document that cannot be converted (unsupported format, no content) and ONLYOFFICE.Create for an unknown document type, now 400 with the reason

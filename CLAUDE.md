@@ -74,7 +74,7 @@ The download, callback and test-file URLs are open URLs (no Nuxeo authentication
 
 | Package | Role |
 |---|---|
-| `sdk.manager.document` | Document type/format detection, document key (`docId__userChangeToken`, base64) |
+| `sdk.manager.document` | Document type/format detection, document key (`docId__userChangeToken__contentHash`, base64; the hash is the first 16 hex characters of the SHA-256 of the blob digest) |
 | `sdk.manager.security` | Document Server JWT sign/verify |
 | `sdk.manager.settings` | Read/write plugin configuration |
 | `sdk.manager.url` | Generate download, callback and editor URLs |
@@ -85,7 +85,6 @@ The download, callback and test-file URLs are open URLs (no Nuxeo authentication
 | `sdk.service.settings` | Connection checks of the settings page (`SettingsValidationService`) |
 | `service` | `PermissionService` (Nuxeo permission checks; `canEdit` refuses versions, proxies, trashed documents and documents under retention or legal hold), `LinkTokenService` (tokens of Document Server links), `LockService` (locks of editing sessions) |
 | `utils` | `Utils` — shared helpers |
-| `listener` | `ContentChangeListener` — marks every save that replaces `file:content` as a user change, so that the document key changes |
 | `operation` | `CreateOperation` (`ONLYOFFICE.Create`), `ConvertOperation` (`ONLYOFFICE.Convert`) — Nuxeo automation |
 | `web` | `Editor` — WebEngine editor page |
 
