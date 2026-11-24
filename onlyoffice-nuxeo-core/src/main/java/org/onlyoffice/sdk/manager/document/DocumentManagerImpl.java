@@ -28,9 +28,6 @@ import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.utils.Utils;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-
 public class DocumentManagerImpl extends DefaultDocumentManager {
     private final Utils utils;
 
@@ -44,22 +41,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     public String getDocumentKey(final String fileId, final boolean embedded) {
         CoreSession session = WebEngine.getActiveContext().getCoreSession();
 
-        DocumentModel model = session.getDocument(new IdRef(fileId));
-        try {
-            // background updates of the document must not change the key: users opening it in between would end up
-            // in separate editing sessions, and all but the first one to save would lose their changes
-            String key = model.getId() + "__" + utils.getUserChangeToken(model.getChangeToken());
-            // the user change token alone misses most replacements of the file (Blob.AttachOnDocument, WebDAV,
-            // Drive, ...) and repeats after restoring a version: Document Server would serve a cached previous file
-            String contentHash = utils.getContentHash(model);
-            if (contentHash != null) {
-                key = key + "__" + contentHash;
-            }
-            key = embedded ? key + "_embedded" : key;
-            return Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return utils.getDocumentKey(session.getDocument(new IdRef(fileId)), embedded);
     }
 
     @Override

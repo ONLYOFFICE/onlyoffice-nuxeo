@@ -74,7 +74,7 @@ The download, callback and test-file URLs are open URLs (no Nuxeo authentication
 
 | Package | Role |
 |---|---|
-| `sdk.manager.document` | Document type/format detection, document key (`docId__userChangeToken__contentHash`, base64; the hash is the first 16 hex characters of the SHA-256 of the blob digest) |
+| `sdk.manager.document` | Document type/format detection, document key (opaque: HMAC-SHA256, with the secret of the link tokens, of the document id, the user change token and the blob digest, in base64url; the callback compares it with the key of the current revision, built by `Utils.getDocumentKey`) |
 | `sdk.manager.security` | Document Server JWT sign/verify |
 | `sdk.manager.settings` | Read/write plugin configuration |
 | `sdk.manager.url` | Generate download, callback and editor URLs |

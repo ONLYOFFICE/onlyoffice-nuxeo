@@ -18,11 +18,7 @@
 
 package org.onlyoffice.utils;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.HexFormat;
+import java.util.Arrays;
 
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
@@ -35,24 +31,12 @@ import org.nuxeo.ecm.platform.mimetype.MimetypeNotFoundException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.onlyoffice.service.LinkTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UtilsImpl extends DefaultComponent implements Utils {
     private static final Logger logger = LoggerFactory.getLogger(UtilsImpl.class);
-    // Document Server accepts keys of up to 128 characters, and the digest of a blob can be a long SHA-256
-    private static final int CONTENT_HASH_LENGTH = 16;
-    private static final int CONTENT_HASH_PART = 2;
-
-    @Override
-    public String getChangeToken(final String key) {
-        try {
-            String decoded = new String(Base64.getDecoder().decode(key), "UTF-8");
-            return decoded.split("__")[1];
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     // Nuxeo's change token is "<system change token>-<user change token>" (just a timestamp when change tokens are
     // disabled); only the user part is what Nuxeo checks for concurrent updates, the system part also moves on
@@ -65,34 +49,22 @@ public class UtilsImpl extends DefaultComponent implements Utils {
         return changeToken.substring(changeToken.lastIndexOf('-') + 1);
     }
 
+    // - only the user part of the change token: background updates of the document (thumbnails, fulltext, ...) must
+    //   not change the key, users opening it in between would end up in separate editing sessions, and all but the
+    //   first one to save would lose their changes;
+    // - the digest of the file: the user change token misses most replacements of the file (Blob.AttachOnDocument,
+    //   WebDAV, Drive, ...) and repeats after restoring a version, and Document Server would serve a cached file;
+    // - a hash with a secret: without JWT, Document Server opens the editing session of whatever key it is given
     @Override
-    public String getContentHash(final String key) {
-        try {
-            String[] parts = new String(Base64.getDecoder().decode(key), StandardCharsets.UTF_8).split("__");
-            if (parts.length <= CONTENT_HASH_PART) {
-                return null;
-            }
-            return parts[CONTENT_HASH_PART].replace("_embedded", "");
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Override
-    public String getContentHash(final DocumentModel model) {
+    public String getDocumentKey(final DocumentModel model, final boolean embedded) {
         BlobHolder holder = model.getAdapter(BlobHolder.class);
         Blob blob = holder == null ? null : holder.getBlob();
-        if (blob == null || blob.getDigest() == null) {
-            return null;
-        }
 
-        try {
-            byte[] hash = MessageDigest.getInstance("SHA-256")
-                    .digest(blob.getDigest().getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash).substring(0, CONTENT_HASH_LENGTH);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        return Framework.getService(LinkTokenService.class).hash(Arrays.asList(
+                model.getId(),
+                getUserChangeToken(model.getChangeToken()),
+                blob == null ? null : blob.getDigest(),
+                embedded ? "embedded" : null));
     }
 
     @Override

@@ -18,6 +18,8 @@
 
 package org.onlyoffice.service;
 
+import java.util.List;
+
 /**
  * Signs the links handed to Document Server. A token is valid only for the operation and the document it was issued
  * for, so a leaked link gives access to nothing else.
@@ -41,6 +43,11 @@ public interface LinkTokenService {
      * @throws SecurityException if the token is not one issued for this operation and this document, or has expired
      */
     LinkToken verifyToken(String token, Operation operation, String documentId);
+
+    /**
+     * A hash of the parts that cannot be computed without the secret of the links, in base64url.
+     */
+    String hash(List<String> parts);
 
     final class LinkToken {
         private final String userName;

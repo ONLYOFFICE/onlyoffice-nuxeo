@@ -23,6 +23,8 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.directory.Session;
 import org.nuxeo.ecm.directory.api.DirectoryService;
@@ -36,11 +38,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenService {
     private static final Logger logger = LoggerFactory.getLogger(LinkTokenServiceImpl.class);
@@ -52,6 +61,9 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
     private static final String OPERATION_CLAIM = "op";
     private static final String DOCUMENT_CLAIM = "doc";
     private static final String KEY_CLAIM = "key";
+    private static final String HASH_ALGORITHM = "HmacSHA256";
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     // Document Server fetches the file as soon as the editor or the conversion starts; a callback link has no expiry,
     // the save comes when the last user leaves the editor, however long the session lasted
@@ -123,12 +135,26 @@ public class LinkTokenServiceImpl extends DefaultComponent implements LinkTokenS
         return new LinkToken(jwt.getSubject(), jwt.getClaim(KEY_CLAIM).asString());
     }
 
+    @Override
+    public String hash(final List<String> parts) {
+        try {
+            Mac mac = Mac.getInstance(HASH_ALGORITHM);
+            mac.init(new SecretKeySpec(getSecret(), HASH_ALGORITHM));
+            // as a JSON array, so that ("a_b", "c") and ("a", "b_c") do not give the same hash
+            byte[] input = OBJECT_MAPPER.writeValueAsString(parts).getBytes(StandardCharsets.UTF_8);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(input));
+        } catch (GeneralSecurityException | JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private static Algorithm getAlgorithm() {
         return Algorithm.HMAC256(getSecret());
     }
 
     // Kept in the key/value store, shared by the nodes of a cluster and persisted by the database (SQL or MongoDB),
-    // so that the links of open editing sessions stay valid across restarts; removing it invalidates all the links
+    // so that the links and the document keys of open editing sessions stay valid across restarts; removing it
+    // invalidates all the links and changes all the document keys
     private static byte[] getSecret() {
         KeyValueStore store = Framework.getService(KeyValueService.class).getKeyValueStore(STORE_NAME);
 
