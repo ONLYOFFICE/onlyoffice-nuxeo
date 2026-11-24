@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -50,6 +51,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.ConcurrentUpdateException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
@@ -280,6 +282,26 @@ public class TestCallbackService {
             fail("Stale document key must be rejected");
         } catch (ConcurrentUpdateException e) {
             assertEquals("original", contentOf(session.getDocument(model.getRef())));
+        }
+    }
+
+    @Test
+    public void saveRejectsContentReplacedOutsideEditorMeanwhile() throws Exception {
+        CoreSession userSession = coreFeature.getCoreSession(USER);
+        String key = currentKey(userSession);
+
+        // what Blob.AttachOnDocument, WebDAV and others do: a save not marked as a user change
+        DocumentModel concurrent = session.getDocument(model.getRef());
+        concurrent.setPropertyValue("file:content", (Serializable) Blobs.createBlob("replaced outside ONLYOFFICE",
+                MIME_TYPE, StandardCharsets.UTF_8.name(), "report.docx"));
+        session.saveDocument(concurrent);
+        session.save();
+
+        try {
+            process(userSession, callback(Status.SAVE, key, FILE_URL));
+            fail("Content replaced while the document was edited must not be overwritten");
+        } catch (ConcurrentUpdateException e) {
+            assertEquals("replaced outside ONLYOFFICE", contentOf(session.getDocument(model.getRef())));
         }
     }
 

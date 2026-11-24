@@ -19,6 +19,7 @@
 package org.onlyoffice.operation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -41,6 +42,7 @@ import jakarta.inject.Inject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.client.DocumentServerClient;
+import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.service.convert.ConvertService;
@@ -62,6 +64,7 @@ import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.runtime.mockito.RuntimeService;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper;
 
@@ -86,6 +89,9 @@ public class TestConvertOperation {
 
     @Inject
     private AutomationService automationService;
+
+    @Inject
+    private DocumentManager documentManager;
 
     @Inject
     private CoreSession session;
@@ -135,6 +141,20 @@ public class TestConvertOperation {
         assertEquals("legacy.docx", blob.getFilename());
         assertEquals(CONVERTED, blob.getString());
         assertEquals(true, new ObjectMapper().readTree(json).get("endConvert").asBoolean());
+    }
+
+    @Test
+    public void finishedConversionChangesDocumentKey() throws Exception {
+        DocumentModel model = createDoc("legacy.doc");
+        respond(true);
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            String before = documentManager.getDocumentKey(model.getId(), false);
+
+            convert(session, model, null);
+
+            assertNotEquals(before, documentManager.getDocumentKey(model.getId(), false));
+        }
     }
 
     /**
