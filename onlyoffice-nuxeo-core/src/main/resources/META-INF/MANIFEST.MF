@@ -9,6 +9,7 @@ Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-core;singleton=true
 Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=onlyedit
 Nuxeo-Component: OSGI-INF/utils-service.xml,
  OSGI-INF/lock-service.xml,
+ OSGI-INF/content-change-listener.xml,
  OSGI-INF/link-token-service.xml,
  OSGI-INF/permission-service.xml,
  OSGI-INF/onlyoffice-operation-contrib.xml,

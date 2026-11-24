@@ -22,14 +22,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.inject.Inject;
 
 import com.onlyoffice.manager.document.DocumentManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nuxeo.ecm.automation.AutomationService;
+import org.nuxeo.ecm.automation.OperationContext;
+import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.runtime.test.runner.Features;
@@ -52,8 +59,49 @@ public class TestDocumentManager {
     @Inject
     private CoreSession session;
 
+    @Inject
+    private AutomationService automationService;
+
     private DocumentModel createDoc() {
         return TestHelper.createFile(session, "doc", "report.docx", "application/octet-stream", "x");
+    }
+
+    private static Blob newContent() {
+        return Blobs.createBlob("replaced", "application/octet-stream", StandardCharsets.UTF_8.name(), "report.docx");
+    }
+
+    @Test
+    public void documentKeyChangesWhenContentIsReplacedWithoutUserChangeFlag() {
+        DocumentModel model = createDoc();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            String before = documentManager.getDocumentKey(model.getId(), false);
+
+            model.setPropertyValue("file:content", (Serializable) newContent());
+            session.saveDocument(model);
+            session.save();
+
+            assertNotEquals(before, documentManager.getDocumentKey(model.getId(), false));
+        }
+    }
+
+    @Test
+    public void documentKeyChangesWhenContentIsAttachedByAutomation() throws Exception {
+        DocumentModel model = createDoc();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            String before = documentManager.getDocumentKey(model.getId(), false);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("document", model.getRef());
+            try (OperationContext ctx = new OperationContext(session)) {
+                ctx.setInput(newContent());
+                automationService.run(ctx, "Blob.AttachOnDocument", params);
+            }
+            session.save();
+
+            assertNotEquals(before, documentManager.getDocumentKey(model.getId(), false));
+        }
     }
 
     @Test
