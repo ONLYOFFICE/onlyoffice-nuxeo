@@ -94,19 +94,33 @@ JWT is used to restrict access to ONLYOFFICE Docs and to guarantee data integrit
 To enable it, set the shared secret key by adding the `onlyoffice.security.key=yoursecret` line to the **nuxeo.conf** file.
 In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/docs/docs-api/additional-api/signature/), specify the same secret key and enable the validation.
 If your Document Server expects a non-default JWT header or prefix, override `onlyoffice.security.header` (default `Authorization`) and `onlyoffice.security.prefix` (default `Bearer `).
+If the secret key is not set, JWT is disabled; it is strongly recommended to enable it.
+
+If Nuxeo and ONLYOFFICE Docs must reach each other through addresses other than the public ones (for example, inside a Docker network), set:
+
+```
+onlyoffice.innerUrl=http://documentserver-internal/
+onlyoffice.productInnerUrl=http://nuxeo-internal:8080/
+```
+
+where `onlyoffice.innerUrl` is the ONLYOFFICE Docs address used by the Nuxeo server, and `onlyoffice.productInnerUrl` is the Nuxeo address used by ONLYOFFICE Docs.
+
+All these settings can also be changed by an administrator on the ONLYOFFICE settings page of the Nuxeo administration menu. Settings saved there are stored in `nxserver/config/onlyoffice.properties`.
 
 ## Compiling the ONLYOFFICE addon package for Nuxeo
 
 To build Nuxeo package, the following steps must be performed for Ubuntu:
 
-1. The stable Java version is necessary for the successful build. If you do not have it installed, use the following commands to install Open JDK 8:
+1. Java 21 is necessary for the successful build. If you do not have it installed, use the following commands to install OpenJDK 21:
     ```bash
     sudo apt-get update
-    sudo apt-get install openjdk-8-jdk
+    sudo apt-get install openjdk-21-jdk
     ```
 
-2. Install latest Maven:
+2. Install Maven 3.8.6 or later:
 Installation process is described [here](https://maven.apache.org/install.html)
+
+    Some Nuxeo artifacts are downloaded from the `maven-private` repository at packages.nuxeo.com, so add your Nuxeo credentials for it to `~/.m2/settings.xml`.
 
 3. Download the ONLYOFFICE addon package for Nuxeo source code:
     ```bash
