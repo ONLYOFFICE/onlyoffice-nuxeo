@@ -93,7 +93,7 @@ REST endpoints live in `org.nuxeo.ecm.restapi.server.jaxrs.OnlyofficeObject` (mo
 - `GET /formats` — supported formats list
 - `GET /filter/{id}` — edit/view capability check
 - `POST /callback/{id}` — ONLYOFFICE callback (open URL, link token)
-- `GET /download/{id}` — file download for Document Server (open URL, link token)
+- `GET /download/{id}` — file download for Document Server (open URL, link token); only formats known to Document Server, always as an attachment with `nosniff` and `CSP: sandbox`
 - `GET /test-txt` — test file for the connection check of the settings page (open URL, link token)
 
 ### Frontend

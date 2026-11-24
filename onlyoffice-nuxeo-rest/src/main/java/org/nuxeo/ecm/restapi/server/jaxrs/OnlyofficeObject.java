@@ -367,11 +367,26 @@ public class OnlyofficeObject extends DefaultObject {
             DocumentModel model = session.getDocument(docRef);
             Blob blob = getBlob(model, "file:content");
 
+            if (blob == null) {
+                return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
+            }
+
+            if (!isKnownFormat(blob.getFilename())) {
+                return Response.status(Status.FORBIDDEN).build();
+            }
+
+            // The link is open and served from the Nuxeo origin: a browser following it must never render the file
+            // (an html or svg file would run its scripts with the session of whoever opens the link), whatever
+            // "inline" parameter is added to it
+            response.setHeader("X-Content-Type-Options", "nosniff");
+            response.setHeader("Content-Security-Policy", "sandbox");
+
             DownloadService.DownloadContext context = DownloadService.DownloadContext.builder(request, response)
                     .doc(model)
                     .xpath("file:content")
                     .filename(blob.getFilename())
                     .reason("download")
+                    .inline(false)
                     .build();
 
             DownloadService downloadService = Framework.getService(DownloadService.class);
@@ -454,6 +469,20 @@ public class OnlyofficeObject extends DefaultObject {
         if (!currentUser.isAdministrator()) {
             throw new WebSecurityException("You don't have the permission to ONLYOFFICE settings!");
         }
+    }
+
+    private boolean isKnownFormat(final String fileName) {
+        String extension = documentManager.getExtension(fileName);
+        if (extension == null) {
+            return false;
+        }
+
+        for (Format format : documentManager.getFormats()) {
+            if (extension.equals(format.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Blob getBlob(final DocumentModel model, final String xpath) {
