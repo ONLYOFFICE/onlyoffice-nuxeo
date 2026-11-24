@@ -30,7 +30,7 @@
   "onlyoffice.server.common.error.mixed-content": "Eduki aktibo mistoa ez da onartzen. Dokumentu-zerbitzariarentzako HTTPS helbidea beharrezkoa da.",
   "onlyoffice.server.common.error.healthcheck": "Dokumentu-zerbitzariak osasun egiaztapen negatiboa itzuli du.",
 
-  "onlyoffice.service.convert.check.error-prefix": "Errorea ConvertService egiaztatzen saiatzean",
+  "onlyoffice.service.convert.check.error-prefix": "Errorea ConvertService egiaztatzen saiatzean ($).",
   "onlyoffice.service.convert.error.unknown": "Errore ezezaguna",
   "onlyoffice.service.convert.error.timeout": "Bihurketa-epearen errorea",
   "onlyoffice.service.convert.error.conversion": "Bihurketa-errorea",
@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Marka-ikurra ez da zuzena",
   "onlyoffice.service.convert.error.connection": "Konexio-errorea",
   "onlyoffice.service.convert.error.download_result": "Errorea emaitzen fitxategiaren deskargan",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Errorea irteerako fitxategiaren formatua automatikoki zehaztean",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "Fitxategia handiegia da bihurtzeko",
 
   "onlyoffice.service.command.check.error-prefix": "Errorea CommandService egiaztatzen saiatzean ($).",
   "onlyoffice.service.command.error.no": "Akatsik ez",

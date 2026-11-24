@@ -41,6 +41,8 @@
   "onlyoffice.service.convert.error.token": "Ogiltig token",
   "onlyoffice.service.convert.error.connection": "Anslutningsfel",
   "onlyoffice.service.convert.error.download_result": "Fel vid nedladdning av resultatfil",
+  "onlyoffice.service.convert.error.ooxml_output_type": "Fel vid automatisk bestämning av utdatafilens format",
+  "onlyoffice.service.convert.error.size_limit_exceeded": "Filen är för stor för att konverteras",
 
   "onlyoffice.service.command.check.error-prefix": "Fel när CommandService ($) skulle kontrolleras.",
   "onlyoffice.service.command.error.no": "Inga fel.",

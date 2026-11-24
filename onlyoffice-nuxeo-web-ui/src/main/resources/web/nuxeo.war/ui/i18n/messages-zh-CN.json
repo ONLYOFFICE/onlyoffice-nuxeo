@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "无效令牌",
     "onlyoffice.service.convert.error.connection": "连接错误",
     "onlyoffice.service.convert.error.download_result": "下载结果文件错误",
+    "onlyoffice.service.convert.error.ooxml_output_type": "自动确定输出文件格式时出错",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "文件过大，无法转换",
 
     "onlyoffice.service.command.check.error-prefix": "尝试检查 CommandService ($) 时出错",
     "onlyoffice.service.command.error.no": "无错误",

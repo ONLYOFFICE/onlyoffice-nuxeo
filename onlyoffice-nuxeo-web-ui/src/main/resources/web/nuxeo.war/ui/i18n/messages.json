@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "Invalid token",
     "onlyoffice.service.convert.error.connection": "Connection error",
     "onlyoffice.service.convert.error.download_result": "Download result file error",
+    "onlyoffice.service.convert.error.ooxml_output_type": "Error while determining the output file format automatically",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "The file is too large to be converted",
 
     "onlyoffice.service.command.check.error-prefix": "Error when trying to check CommandService ($).",
     "onlyoffice.service.command.error.no": "No errors",

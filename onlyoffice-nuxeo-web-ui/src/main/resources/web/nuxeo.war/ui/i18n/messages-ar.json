@@ -1,4 +1,4 @@
-﻿{
+{
     "app.title.admin.onlyoffice-settings": "إعدادات ONLYOFFICE",
     "label.onlyoffice.settings": "إعدادات ONLYOFFICE",
     "label.onlyoffice.settings.server": "إعدادات الخادم",
@@ -41,6 +41,8 @@
     "onlyoffice.service.convert.error.token": "رمز مميز غير صالح",
     "onlyoffice.service.convert.error.connection": "خطأ في الاتصال",
     "onlyoffice.service.convert.error.download_result": "خطأ في تنزيل ملف النتيجة.",
+    "onlyoffice.service.convert.error.ooxml_output_type": "خطأ أثناء تحديد تنسيق ملف الإخراج تلقائيًا",
+    "onlyoffice.service.convert.error.size_limit_exceeded": "الملف كبير جدًا بحيث لا يمكن تحويله",
 
     "onlyoffice.service.command.check.error-prefix": "حدث خطأ عند محاولة التحقق من خدمة الأوامر ($).",
     "onlyoffice.service.command.error.no": "لا توجد أخطاء",

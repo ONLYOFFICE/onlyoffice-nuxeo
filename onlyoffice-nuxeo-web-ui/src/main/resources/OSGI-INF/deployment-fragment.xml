@@ -30,6 +30,8 @@
       to="nuxeo.war/ui/i18n/messages-es.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-es-ES.json"
             to="nuxeo.war/ui/i18n/messages-es-ES.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-eu.json"
+            to="nuxeo.war/ui/i18n/messages-eu.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-fr.json"
       to="nuxeo.war/ui/i18n/messages-fr.json"/>
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-he.json"
