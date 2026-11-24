@@ -42,6 +42,7 @@ import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
 import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
 import org.nuxeo.ecm.core.repository.RepositoryService;
+import org.nuxeo.ecm.core.security.LockSecurityPolicy;
 import org.nuxeo.ecm.core.schema.FacetNames;
 import org.nuxeo.runtime.api.Framework;
 import org.onlyoffice.service.LockService;
@@ -58,7 +59,9 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 public class CallbackServiceImpl extends DefaultCallbackService {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
@@ -104,9 +107,27 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
-        this.removeLock(session, model);
+        // The lock is released only once the file is saved: Document Server retries a save that failed for a
+        // transient reason, and the document must stay locked meanwhile. A save refused for good (4xx) is not
+        // retried, so the editing session is over and its lock goes.
+        try {
+            updateDocument(session, model, callback.getKey(), callback.getUrl());
+        } catch (NuxeoException e) {
+            if (isClientError(e)) {
+                try {
+                    removeLock(session, session.getDocument(model.getRef()));
+                } catch (Exception unlockFailure) {
+                    e.addSuppressed(unlockFailure);
+                }
+            }
+            throw e;
+        }
 
-        updateDocument(session, model, callback.getKey(), callback.getUrl());
+        removeLock(session, session.getDocument(model.getRef()));
+    }
+
+    private static boolean isClientError(final NuxeoException e) {
+        return e.getStatusCode() >= SC_BAD_REQUEST && e.getStatusCode() < SC_INTERNAL_SERVER_ERROR;
     }
 
     @Override
@@ -157,8 +178,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             // and the next editing session would reopen the previous one
             model.putContextData(CoreSession.USER_CHANGE, Boolean.TRUE);
 
-            session.saveDocument(model);
-            session.save();
+            saveDocument(session, model);
         } finally {
             try {
                 Files.deleteIfExists(tempFile.toPath());
@@ -166,6 +186,25 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 logger.warn("Could not delete temporary file {}: {}", tempFile, e.toString());
                 tempFile.deleteOnExit();
             }
+        }
+    }
+
+    // The editing session holds the lock in the name of the user who opened it first; any co-editor may save
+    private void saveDocument(final CoreSession session, final DocumentModel model) {
+        Lock lock = session.getLockInfo(model.getRef());
+        if (lock == null || !lockService.isEditingSessionLock(model.getId(), lock)) {
+            session.saveDocument(model);
+            session.save();
+            return;
+        }
+
+        boolean ignoreLockPolicy = LockSecurityPolicy.isIgnorePolicy();
+        LockSecurityPolicy.setIgnorePolicy(true);
+        try {
+            session.saveDocument(model);
+            session.save();
+        } finally {
+            LockSecurityPolicy.setIgnorePolicy(ignoreLockPolicy);
         }
     }
 
