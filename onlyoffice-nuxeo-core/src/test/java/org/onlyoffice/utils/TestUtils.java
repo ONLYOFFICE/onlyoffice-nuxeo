@@ -19,8 +19,11 @@
 package org.onlyoffice.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -28,6 +31,7 @@ import jakarta.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
@@ -42,6 +46,7 @@ import org.onlyoffice.test.TestHelper;
 @RunWith(FeaturesRunner.class)
 @Features(OnlyofficeFeature.class)
 public class TestUtils {
+    private static final int CONTENT_HASH_LENGTH = 16;
 
     @Inject
     private Utils utils;
@@ -82,6 +87,40 @@ public class TestUtils {
         assertEquals("1", utils.getUserChangeToken("1"));
         assertEquals("1700000000000", utils.getUserChangeToken("1700000000000"));
         assertNull(utils.getUserChangeToken(null));
+    }
+
+    @Test
+    public void getContentHashExtractsHashFromDocumentKey() {
+        assertEquals("0123456789abcdef", utils.getContentHash(encode("0b6e2c4a-uuid__1__0123456789abcdef")));
+        assertEquals("0123456789abcdef",
+                utils.getContentHash(encode("0b6e2c4a-uuid__1__0123456789abcdef_embedded")));
+    }
+
+    @Test
+    public void getContentHashReturnsNullForKeyWithoutHash() {
+        assertNull(utils.getContentHash(encode("0b6e2c4a-uuid__1")));
+        assertNull(utils.getContentHash(encode("0b6e2c4a-uuid__1_embedded")));
+        assertNull(utils.getContentHash("%%% not base64 %%%"));
+        assertNull(utils.getContentHash((String) null));
+    }
+
+    @Test
+    public void getContentHashOfDocumentFollowsItsFile() {
+        DocumentModel model = TestHelper.createFile(session, "doc", "doc.docx", "application/octet-stream", "x");
+        String hash = utils.getContentHash(model);
+
+        model.setPropertyValue("file:content", (Serializable) Blobs.createBlob("y", "application/octet-stream",
+                StandardCharsets.UTF_8.name(), "doc.docx"));
+        model = session.saveDocument(model);
+
+        assertNotNull(hash);
+        assertEquals(CONTENT_HASH_LENGTH, hash.length());
+        assertNotEquals(hash, utils.getContentHash(model));
+    }
+
+    @Test
+    public void getContentHashOfDocumentWithoutFileIsNull() {
+        assertNull(utils.getContentHash(TestHelper.createFile(session, "empty", null, null, null)));
     }
 
     @Test

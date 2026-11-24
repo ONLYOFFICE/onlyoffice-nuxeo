@@ -18,6 +18,7 @@
 
 package org.onlyoffice.utils;
 
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.model.Document;
 import org.nuxeo.ecm.core.model.Session;
@@ -25,6 +26,8 @@ import org.nuxeo.ecm.core.model.Session;
 public interface Utils {
     String getChangeToken(String key);
     String getUserChangeToken(String changeToken);
+    String getContentHash(String key);
+    String getContentHash(DocumentModel model);
     Document resolveReference(Session session, DocumentRef docRef);
     String getMimeType(String extension);
 }

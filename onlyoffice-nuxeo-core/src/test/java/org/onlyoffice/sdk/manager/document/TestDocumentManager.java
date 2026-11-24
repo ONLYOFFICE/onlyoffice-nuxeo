@@ -39,6 +39,8 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.test.ActiveWebContext;
@@ -67,7 +69,38 @@ public class TestDocumentManager {
     }
 
     private static Blob newContent() {
-        return Blobs.createBlob("replaced", "application/octet-stream", StandardCharsets.UTF_8.name(), "report.docx");
+        return newContent("replaced");
+    }
+
+    private static Blob newContent(final String content) {
+        return Blobs.createBlob(content, "application/octet-stream", StandardCharsets.UTF_8.name(), "report.docx");
+    }
+
+    private DocumentModel replaceContent(final DocumentModel model, final String content) {
+        DocumentModel current = session.getDocument(model.getRef());
+        current.setPropertyValue("file:content", (Serializable) newContent(content));
+        current = session.saveDocument(current);
+        session.save();
+        return current;
+    }
+
+    @Test
+    public void documentKeyIsNotReusedForOtherContentAfterVersionRestore() {
+        DocumentModel model = createDoc();
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MAJOR, null);
+            session.save();
+            replaceContent(model, "replaced");
+            String replacedKey = documentManager.getDocumentKey(model.getId(), false);
+
+            // restoring brings back the change token of the version, so the next replacement repeats a token
+            session.restoreToVersion(model.getRef(), version);
+            session.save();
+            replaceContent(model, "replaced again");
+
+            assertNotEquals(replacedKey, documentManager.getDocumentKey(model.getId(), false));
+        }
     }
 
     @Test
@@ -105,7 +138,7 @@ public class TestDocumentManager {
     }
 
     @Test
-    public void documentKeyEncodesIdAndUserChangeToken() {
+    public void documentKeyEncodesIdUserChangeTokenAndContentHash() {
         DocumentModel model = createDoc();
         String userChangeToken = utils.getUserChangeToken(model.getChangeToken());
 
@@ -113,8 +146,9 @@ public class TestDocumentManager {
             String key = documentManager.getDocumentKey(model.getId(), false);
             String decoded = new String(Base64.getDecoder().decode(key), StandardCharsets.UTF_8);
 
-            assertEquals(model.getId() + "__" + userChangeToken, decoded);
+            assertEquals(model.getId() + "__" + userChangeToken + "__" + utils.getContentHash(model), decoded);
             assertEquals(userChangeToken, utils.getChangeToken(key));
+            assertEquals(utils.getContentHash(model), utils.getContentHash(key));
         }
     }
 
