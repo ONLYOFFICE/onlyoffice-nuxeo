@@ -9,6 +9,7 @@
 - ONLYOFFICE.Convert replacing the file without keeping the original: unless the document type had an automatic versioning policy, the file in its original format was lost; the original is now kept as a version, and the converted file is saved as a minor version
 - ONLYOFFICE.Convert replacing the file of a document open in ONLYOFFICE (the changes of the editing session were then lost), of a version, of a document in the trash or under retention; it now answers 409
 - the download of a document by Document Server answering 500 instead of 401 when JWT is enabled and the request has no valid token
+- saving the settings page writing to nxserver/config/onlyoffice.properties every property whose name starts with "onlyoffice", including those of other addons (e.g. "onlyoffice-...")
 - callback answering 500 with the text of the exception to malformed requests (not a JSON object, unknown or missing status, header token without payload, save without file url), now 400 without the exception text
 - versions, proxies, documents in the trash and documents under retention or legal hold opened for editing: the changes could not be saved and were lost (or saved into a deleted document); they now open for viewing
 - ONLYOFFICE.Convert answering 500 for a document that cannot be converted (unsupported format, no content) and ONLYOFFICE.Create for an unknown document type, now 400 with the reason
