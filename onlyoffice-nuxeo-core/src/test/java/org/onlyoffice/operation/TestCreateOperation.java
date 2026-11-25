@@ -132,6 +132,29 @@ public class TestCreateOperation {
         }
     }
 
+    @Test
+    public void titleWithTheExtensionOfItsTypeDoesNotGetItTwice() throws Exception {
+        assertEquals("report.docx", blobOf(create(session, "report.docx", "word", null)).getFilename());
+        assertEquals("Budget.XLSX", blobOf(create(session, "Budget.XLSX", "cell", null)).getFilename());
+    }
+
+    @Test
+    public void titleWithAnotherExtensionKeepsIt() throws Exception {
+        assertEquals("notes.txt.docx", blobOf(create(session, "notes.txt", "word", null)).getFilename());
+    }
+
+    @Test
+    public void blankTitleIsRejected() throws Exception {
+        for (String title : new String[] {"", "   "}) {
+            try {
+                create(session, title, "word", null);
+                fail("A blank title must be rejected");
+            } catch (NuxeoException e) {
+                assertEquals(SC_BAD_REQUEST, e.getStatusCode());
+            }
+        }
+    }
+
     /**
      * BUG: {@code type.toUpperCase()} depends on the JVM default locale; with a Turkish locale "slide" becomes
      * "SLIDE" with a dotted capital I (U+0130) and no document type matches.

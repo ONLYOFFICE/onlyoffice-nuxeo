@@ -19,14 +19,11 @@
 <dom-module id="onlyoffice-editor-button">
     <template>
         <nuxeo-resource
-                auto
                 id="filterONLYOFFICE"
-                path="[[_getPath(document)]]"
                 headers='{"Content-Type": "application/json"}'
-                response="{{config}}"
         ></nuxeo-resource>
 
-        <template is="dom-if" if="[[_isAvailable(document,config)]]">
+        <template is="dom-if" if="[[_isAvailable(document,config)]]" restamp>
             <div class="action" on-click="_openEditor">
                 <paper-icon-button src="[[icon]]" noink></paper-icon-button>
                 <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
@@ -39,9 +36,7 @@
             is: 'onlyoffice-editor-button',
             behaviors: [
                 Nuxeo.I18nBehavior,
-                Nuxeo.FiltersBehavior,
-                Nuxeo.ONLYOFFICE,
-                Nuxeo.ONLYOFFICEUtils
+                Nuxeo.FiltersBehavior
             ],
             properties: {
                 document: Object,
@@ -67,12 +62,31 @@
 
                 config: {
                     type: Object,
-                    value: {},
+                    value: () => ({}),
                 },
             },
 
-            _getPath(document) {
-               return `/onlyoffice/filter/${document.uid}`;
+            observers: ['_documentChanged(document)'],
+
+            detached() {
+                this.cancelAsync(this._closedCheck);
+            },
+
+            // the answer for the previous document must not show until the one for this document arrives, nor
+            // instead of it when it fails or comes after the answer of a later document
+            _documentChanged(document) {
+                this.config = {};
+                if (!document || !document.uid) {
+                    return;
+                }
+
+                const uid = document.uid;
+                this.$.filterONLYOFFICE.path = `/onlyoffice/filter/${uid}`;
+                this.$.filterONLYOFFICE.get().then((response) => {
+                    if (this.document && this.document.uid === uid) {
+                        this.config = response || {};
+                    }
+                }).catch(() => {});
             },
 
             getEditUrl: function() {
@@ -93,17 +107,18 @@
             },
 
             _openEditor: function() {
+                this.cancelAsync(this._closedCheck);
                 this.editor = window.open(this.getEditUrl(), '_blank');
-                this.async(this._editorClosed, 1500);
+                this._closedCheck = this.async(this._editorClosed, 1500);
             },
 
             _editorClosed: function() {
                 if (!this.editor) return;
                 if (this.editor.closed) {
                     this.editor = null;
-                    this.async(this._refresh, 10500);
+                    this._closedCheck = this.async(this._refresh, 10500);
                 } else {
-                    this.async(this._editorClosed, 1500);
+                    this._closedCheck = this.async(this._editorClosed, 1500);
                 }
             },
 

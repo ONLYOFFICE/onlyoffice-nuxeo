@@ -281,16 +281,13 @@
                 return this.canCreate && !this.creating && this.selectedDocType != null;
             },
 
+            _submitKeyHandler() {
+                if (this._canCreate()) {
+                    this._create();
+                }
+            },
+
             _create() {
-                this.$.opOnlyofficeCreate.params = {
-                    path: this.targetPath,
-                    title: this.$.title.value,
-                    type: this.selectedDocType,
-                    language: window.nuxeo.I18n.language || 'en'
-                };
-
-                this._setCreating(true);
-
                 const valid = this.$.form.validate();
 
                 if (!valid) {
@@ -299,15 +296,43 @@
                     if (invalidField) {
                       invalidField.scrollIntoView();
                       invalidField.focus();
-                      this._setCreating(false);
                       return;
                     }
                 }
+
+                // "required" takes a title of spaces only
+                const title = (this.$.title.value || '').trim();
+                if (!title) {
+                    this.$.title.invalid = true;
+                    this.$.title.focus();
+                    return;
+                }
+
+                this.$.opOnlyofficeCreate.params = {
+                    path: this.targetPath,
+                    title: title,
+                    type: this.selectedDocType,
+                    language: window.nuxeo.I18n.language || 'en'
+                };
+
+                this._setCreating(true);
+
                 this.$.opOnlyofficeCreate.execute().then((res) => {
                     document.location.href = "../site/onlyedit/" + res.value;
-                }).catch((err) => {
-                    this.fire("notify", { message: this.i18n("documentCreationForm.createError") });
-                }).finally(() => this._setCreating(false));
+                }).catch((err) => this._reason(err).then((reason) => {
+                    const message = this.i18n("documentCreationForm.createError");
+                    this.fire("notify", { message: reason ? `${message}: ${reason}` : message });
+                })).finally(() => this._setCreating(false));
+            },
+
+            // the message of the exception the server answered with, if any
+            _reason(err) {
+                if (err && err.response && typeof err.response.json === 'function') {
+                    return err.response.clone().json()
+                        .then((body) => (body && body.message) || null)
+                        .catch(() => null);
+                }
+                return Promise.resolve(err && err['entity-type'] === 'exception' ? err.message : null);
             },
 
             _cancel() {
