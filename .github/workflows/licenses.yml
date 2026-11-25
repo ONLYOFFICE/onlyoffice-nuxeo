@@ -44,6 +44,14 @@ jobs:
           restore-keys: |
             maven-${{ runner.os }}-
 
+      # LicenseFinder runs a goal without a build, so onlyoffice-nuxeo-rest resolves onlyoffice-nuxeo-core
+      # from the local repository, where the current version is only after an install.
+      - name: Install Modules
+        run: mvn -B -ntp install -Dmaven.test.skip=true -Dcheckstyle.skip
+        env:
+          NUXEO_MAVEN_USERNAME: ${{ secrets.NUXEO_MAVEN_USERNAME }}
+          NUXEO_MAVEN_PASSWORD: ${{ secrets.NUXEO_MAVEN_PASSWORD }}
+
       - name: Get Repository License
         id: license
         run: |
