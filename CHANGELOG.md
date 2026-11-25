@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## 3.2.0
 ## Fixed
 - the editor answering 500 instead of 404 for a document without a file or with a file in a format ONLYOFFICE does not open, and failing for a version whose live document was deleted
 - ONLYOFFICE.Convert failing outside a web request (in an automation chain of a listener or a workflow); the links handed to Document Server then use the address of Nuxeo from its settings
