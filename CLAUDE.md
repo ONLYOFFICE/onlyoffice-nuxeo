@@ -45,7 +45,7 @@ Run them from the repository root (`checkstyle.xml` is resolved from there). Che
 
 Build requires **Java 21** (CI uses Temurin 21) and Maven 3.8.6+. Some Nuxeo artifacts come from the `maven-private` repository at packages.nuxeo.com, so the build needs credentials for it in `~/.m2/settings.xml`.
 
-Tests use `FeaturesRunner` with `@Features(OnlyofficeFeature.class)` (`onlyoffice-nuxeo-core/src/test/java/org/onlyoffice/test/`). REST tests in `onlyoffice-nuxeo-rest` call `OnlyofficeObject` methods directly with a mocked `WebContext`; they do not go through HTTP, JAX-RS routing or the authentication filter. Tests change global `Framework` properties and the `onlyoffice.properties` file, so they must run sequentially.
+Tests use `FeaturesRunner` with `@Features(OnlyofficeFeature.class)` (`onlyoffice-nuxeo-core/src/test/java/org/onlyoffice/test/`). REST tests in `onlyoffice-nuxeo-rest` call `OnlyofficeObject` methods directly with a mocked `WebContext`; they do not go through HTTP, JAX-RS routing or the authentication filter. That level (open URLs reached without a session, HTTP methods, statuses, administrators only) is covered by the end-to-end tests of the integration tests repository (`tests/nuxeo/*.spec.ts`), which run against a real Nuxeo and Document Server. Tests change global `Framework` properties and the `onlyoffice.properties` file, so they must run sequentially.
 
 ## Module Structure
 

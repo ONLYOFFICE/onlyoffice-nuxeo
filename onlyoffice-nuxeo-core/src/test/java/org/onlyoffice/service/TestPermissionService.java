@@ -36,10 +36,10 @@ import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.core.api.trash.TrashService;
 import org.nuxeo.ecm.core.api.security.SecurityConstants;
 import org.nuxeo.ecm.core.test.CoreFeature;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
-import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
 import org.onlyoffice.test.TestHelper;
 
@@ -139,6 +139,19 @@ public class TestPermissionService {
         assertFalse(canEdit(coreFeature.getCoreSession(USER), model.getRef()));
     }
 
+    /**
+     * What the callback of an editing session opened by the owner of {@code userSession} does: it runs as that user.
+     */
+    private void startEditingSession(final CoreSession userSession, final DocumentModel model) throws Exception {
+        Callback editing = new Callback();
+        editing.setStatus(Status.EDITING);
+        try (NuxeoLoginContext ignored = TestHelper.loginAs(userSession)) {
+            callbackService.processCallback(editing, model.getId());
+        }
+        assertEquals("the editing session lock is the user's", userSession.getPrincipal().getName(),
+                session.getLockInfo(model.getRef()).getOwner());
+    }
+
     @Test
     public void administratorAlwaysHasPermission() {
         DocumentModel model = createDoc();
@@ -184,11 +197,7 @@ public class TestPermissionService {
         TestHelper.grant(session, model, USER, SecurityConstants.READ_WRITE);
         TestHelper.grant(session, model, OTHER_USER, SecurityConstants.READ_WRITE);
 
-        Callback editing = new Callback();
-        editing.setStatus(Status.EDITING);
-        try (ActiveWebContext ignored = ActiveWebContext.activate(coreFeature.getCoreSession(OTHER_USER))) {
-            callbackService.processCallback(editing, model.getId());
-        }
+        startEditingSession(coreFeature.getCoreSession(OTHER_USER), model);
 
         assertTrue(canWrite(coreFeature.getCoreSession(USER), model));
     }
@@ -203,14 +212,11 @@ public class TestPermissionService {
         TestHelper.grant(session, model, USER, SecurityConstants.READ_WRITE);
         TestHelper.grant(session, model, OTHER_USER, SecurityConstants.READ_WRITE);
 
-        Callback editing = new Callback();
-        editing.setStatus(Status.EDITING);
         CoreSession otherSession = coreFeature.getCoreSession(OTHER_USER);
-        try (ActiveWebContext ignored = ActiveWebContext.activate(otherSession)) {
-            callbackService.processCallback(editing, model.getId());
-        }
+        startEditingSession(otherSession, model);
 
-        // the editing session lock is removed outside of ONLYOFFICE, then the same user locks the document manually
+        // the editing session lock is removed outside of ONLYOFFICE, then the same user locks the document manually:
+        // only its creation time tells it apart from the recorded editing session lock
         session.removeLock(model.getRef());
         Thread.sleep(LOCK_CREATION_GAP_MS);
         otherSession.setLock(model.getRef());
