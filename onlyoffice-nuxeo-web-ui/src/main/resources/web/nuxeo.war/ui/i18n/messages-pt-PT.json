@@ -10,6 +10,8 @@
   "label.onlyoffice.settings.server.nuxeo-inner-url": "Endereço do servidor para solicitações internas do ONLYOFFICE Docs",
   "label.onlyoffice.settings.success": "As configurações foram salvas com sucesso",
   "label.onlyoffice.settings.error": "Ocorreu um erro ao salvar as configurações",
+  "label.onlyoffice.settings.load-error": "Não é possível carregar as definições",
+  "label.onlyoffice.settings.validation.url": "Os endereços têm de começar por http:// ou https://",
   "label.onlyoffice.settings.validation.jwterror": "Erro de autorização",
   "label.onlyoffice.edit": "Editar no ONLYOFFICE",
   "label.onlyoffice.view": "Ver em ONLYOFFICE",

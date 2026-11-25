@@ -33,8 +33,6 @@
                         id="settings"
                         path="/onlyoffice/settings"
                         headers='{"Content-Type": "application/json"}'
-                        response="{{settings}}"
-                        auto
                 ></nuxeo-resource>
 
                 <nuxeo-resource
@@ -69,7 +67,7 @@
                         </nuxeo-input>
 
                         <div class="form-buttons">
-                            <paper-button noink id="saveButton" class="primary" on-click="_submit">
+                            <paper-button noink id="saveButton" class="primary" on-click="_submit" disabled="[[saving]]">
                                 [[i18n('command.save')]]
                             </paper-button>
                         </div>
@@ -96,14 +94,46 @@
 
                 settings: {
                     type: Object,
-                    value: {},
+                    value: () => ({}),
+                },
+
+                saving: {
+                    type: Boolean,
+                    value: false,
                 }
             },
 
+            ready() {
+                this.$.settings.get().then((settings) => {
+                    this.settings = settings;
+                    this._loaded = true;
+                }).catch(() => this._notifyNotLoaded());
+            },
+
+            _notifyNotLoaded() {
+                this.fire("notify", { message: this.i18n('label.onlyoffice.settings.load-error'), commandId: "settings" });
+            },
+
             _submit() {
+                if (this.saving) { return; }
+
+                // saving what did not load would overwrite the stored settings with an empty form
+                if (!this._loaded) {
+                    this._notifyNotLoaded();
+                    return;
+                }
+
                 const valid = this.$.form.validate();
                 if (!valid) { return; }
 
+                // an address without a scheme is taken as relative to Nuxeo, by the browser and by the server
+                const addresses = [this.settings.url, this.settings.innerUrl, this.settings.productInnerUrl];
+                if (addresses.some((address) => address && !/^https?:\/\/\S/i.test(address.trim()))) {
+                    this.fire("notify", { message: this.i18n('label.onlyoffice.settings.validation.url'), commandId: "settings" });
+                    return;
+                }
+
+                this.saving = true;
                 this._testDocServiceApi();
             },
 
@@ -189,6 +219,8 @@
                             commandId: "common"
                         }
                     );
+                }).finally(() => {
+                    this.saving = false;
                 });
             },
 
@@ -201,6 +233,7 @@
                             commandId: "testDocServiceApi"
                         }
                     );
+                    this.saving = false;
                     return;
                 }
 
