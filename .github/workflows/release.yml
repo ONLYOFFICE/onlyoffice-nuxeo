@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # the build runs the code of Maven plugins and dependencies; the release action gets its token as input
+          persist-credentials: false
 
       - name: Check the tag matches the project version
         run: |

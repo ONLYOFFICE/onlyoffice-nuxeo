@@ -79,6 +79,18 @@ jobs:
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
 
       - name: Upload package
+        if: ${{ github.server_url == 'https://github.com' }}
+        timeout-minutes: 15
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin
+          path: onlyoffice-nuxeo-package/target/onlyoffice-nuxeo-package-*.zip
+          retention-days: 1
+          if-no-files-found: error
+
+      # Gitea does not serve the artifact API of actions/upload-artifact v4+
+      - name: Upload package
+        if: ${{ github.server_url != 'https://github.com' }}
         timeout-minutes: 15
         uses: christopherHX/gitea-upload-artifact@v4
         with:
@@ -120,7 +132,17 @@ jobs:
           NUXEO_MAVEN_PASSWORD: ${{ secrets.NUXEO_MAVEN_PASSWORD }}
 
       - name: Upload test reports
-        if: always()
+        if: ${{ always() && github.server_url == 'https://github.com' }}
+        timeout-minutes: 15
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/'
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload test reports
+        if: ${{ always() && github.server_url != 'https://github.com' }}
         timeout-minutes: 15
         uses: christopherHX/gitea-upload-artifact@v4
         with:

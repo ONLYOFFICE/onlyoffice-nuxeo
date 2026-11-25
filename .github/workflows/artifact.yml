@@ -11,7 +11,10 @@ on:
       - '.gitignore'
       - '.github/**'
       - '.check-licenses.yml'
-  
+
+permissions:
+  contents: read
+
 jobs:
   artifact:
     runs-on: ubuntu-latest
