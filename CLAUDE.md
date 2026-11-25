@@ -56,7 +56,7 @@ onlyoffice-nuxeo-web-ui/     # Polymer web components and i18n resources
 onlyoffice-nuxeo-package/    # Marketplace package assembly
 ```
 
-`onlyoffice-nuxeo-rest` depends on `onlyoffice-nuxeo-core`. Both are bundled by `onlyoffice-nuxeo-package`. The ONLYOFFICE SDK and httpclient5/httpcore5 are shaded into the core jar (`org.apache.hc` is relocated); the package ships no jars to `nxserver/lib`.
+`onlyoffice-nuxeo-rest` depends on `onlyoffice-nuxeo-core`. Both are bundled by `onlyoffice-nuxeo-package`. The ONLYOFFICE SDK and httpclient5/httpcore5 are shaded into the core jar (`org.apache.hc` is relocated); the package ships no jars to `nxserver/lib`. Nuxeo platform dependencies (and `java-jwt`, Jackson) are `provided`: the server supplies them, and the license check of CI (`.github/workflows/licenses.yml`, LicenseFinder through `license-maven-plugin`, configured in the root `pom.xml`) covers only compile and runtime dependencies.
 
 ## Architecture
 
