@@ -199,9 +199,10 @@
                 this._stop();
             },
 
-            // closed by Cancel, Esc, a click on the backdrop or the end of the conversion
+            // closed by Cancel, Esc, a click on the backdrop or the end of the conversion; the event comes once the
+            // close is rendered, and must not stop a conversion started in a dialog opened again meanwhile
             _onDialogClosed(e) {
-                if (e.target === this.$.convertDialog) {
+                if (e.target === this.$.convertDialog && !this.$.convertDialog.opened) {
                     this._stop();
                 }
             },
