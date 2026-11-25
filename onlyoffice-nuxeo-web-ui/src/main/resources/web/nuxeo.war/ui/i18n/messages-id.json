@@ -10,6 +10,8 @@
   "label.onlyoffice.settings.server.nuxeo-inner-url": "Alamat server untuk request internal dari ONLYOFFICE Docs",
   "label.onlyoffice.settings.success": "Pengaturan berhasil terimpan",
   "label.onlyoffice.settings.error": "Ada kesalahan saat menyimpan pengaturan",
+  "label.onlyoffice.settings.load-error": "Pengaturan tidak dapat dimuat",
+  "label.onlyoffice.settings.validation.url": "Alamat harus diawali dengan http:// atau https://",
   "label.onlyoffice.settings.validation.jwterror": "Kesalahan otorisasi",
   "label.onlyoffice.edit": "Edit di ONLYOFFICE",
   "label.onlyoffice.view": "Tampilkan di ONLYOFFICE",

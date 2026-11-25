@@ -10,6 +10,8 @@
   "label.onlyoffice.settings.server.nuxeo-inner-url": "Serveradres voor interne verzoeken van ONLYOFFICE Docs",
   "label.onlyoffice.settings.success": "Instellingen zijn succesvol opgeslagen",
   "label.onlyoffice.settings.error": "Er is een fout opgetreden tijdens het opslaan van de instellingen",
+  "label.onlyoffice.settings.load-error": "De instellingen kunnen niet worden geladen",
+  "label.onlyoffice.settings.validation.url": "Adressen moeten beginnen met http:// of https://",
   "label.onlyoffice.settings.validation.jwterror": "Autorisatie fout",
   "label.onlyoffice.edit": "Bewerk in ONLYOFFICE",
   "label.onlyoffice.view": "Bekijk in ONLYOFFICE",

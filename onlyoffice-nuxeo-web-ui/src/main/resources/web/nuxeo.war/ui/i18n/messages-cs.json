@@ -10,6 +10,8 @@
   "label.onlyoffice.settings.server.nuxeo-inner-url": "Adresa serveru pro interní požadavky z ONLYOFFICE Docs",
   "label.onlyoffice.settings.success": "Nastavení byla úspěšně uložena",
   "label.onlyoffice.settings.error": "Při ukládání nastavení došlo k chybě",
+  "label.onlyoffice.settings.load-error": "Nastavení nelze načíst",
+  "label.onlyoffice.settings.validation.url": "Adresy musí začínat http:// nebo https://",
   "label.onlyoffice.settings.validation.jwterror": "Chyba autorizace",
   "label.onlyoffice.edit": "Upravit v ONLYOFFICE",
   "label.onlyoffice.view": "Zobrazit v ONLYOFFICE",
