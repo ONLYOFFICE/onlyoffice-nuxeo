@@ -53,6 +53,16 @@
     <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-zh-CN.json"
             to="nuxeo.war/ui/i18n/messages-zh-CN.json"/>
 
+    <!-- languages Web UI has a file of its own for: without the package's messages it shows their keys -->
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-fr.json"
+            to="nuxeo.war/ui/i18n/messages-fr-CA.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-fr.json"
+            to="nuxeo.war/ui/i18n/messages-fr-FR.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-pt-PT.json"
+            to="nuxeo.war/ui/i18n/messages-pt.json"/>
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages-sv-SE.json"
+            to="nuxeo.war/ui/i18n/messages-sv.json"/>
+
     <delete path="${bundle.fileName}.tmp"/>
   </install>
 

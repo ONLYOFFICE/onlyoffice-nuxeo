@@ -12,7 +12,6 @@
     "label.onlyoffice.settings.error": "保存设置时出错",
     "label.onlyoffice.settings.load-error": "无法加载设置",
     "label.onlyoffice.settings.validation.url": "地址必须以 http:// 或 https:// 开头",
-    "label.onlyoffice.settings.validation.jwterror": "鉴权失败",
     "label.onlyoffice.edit": "在 ONLYOFFICE 中编辑",
     "label.onlyoffice.view": "在 ONLYOFFICE 中查看",
     "label.onlyoffice.create": "通过 ONLYOFFICE 创建",
