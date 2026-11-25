@@ -74,6 +74,10 @@ public class CreateOperation {
         Utils utils = Framework.getService(Utils.class);
         DocumentManager documentManager = Framework.getService(DocumentManager.class);
 
+        if (title == null || title.isBlank()) {
+            throw new NuxeoException("Document title is empty", SC_BAD_REQUEST);
+        }
+
         Locale locale = Locale.ENGLISH;
 
         if (language != null && !language.isEmpty()) {
@@ -96,7 +100,12 @@ public class CreateOperation {
             newDoc.setPropertyValue("dc:title", title);
 
             Blob blob = Blobs.createBlob(inputStream);
-            blob.setFilename(FileUtils.getSafeFilename(title) + "." + extension);
+            String fileName = FileUtils.getSafeFilename(title);
+            // a title typed with the extension of its type ("report.docx") must not become "report.docx.docx"
+            if (!fileName.toLowerCase(Locale.ROOT).endsWith("." + extension)) {
+                fileName = fileName + "." + extension;
+            }
+            blob.setFilename(fileName);
             blob.setMimeType(utils.getMimeType(extension));
 
             newDoc.setPropertyValue("file:content", (Serializable) blob);
