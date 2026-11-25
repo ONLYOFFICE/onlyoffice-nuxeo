@@ -19,6 +19,7 @@ on:
       - 'LICENSE'
       - '.idea/**'
       - '.gitignore'
+      - '.check-licenses.yml'
   pull_request:
     branches: [master, develop]
     paths-ignore:
@@ -26,6 +27,7 @@ on:
       - 'LICENSE'
       - '.idea/**'
       - '.gitignore'
+      - '.check-licenses.yml'
 
 permissions:
   contents: read
