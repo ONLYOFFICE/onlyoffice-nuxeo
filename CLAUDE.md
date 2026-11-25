@@ -107,7 +107,7 @@ Web components are Polymer elements under `onlyoffice-nuxeo-web-ui/src/main/reso
 | `BLOB_ACTIONS` | `onlyoffice-convert-button.html` — format conversion (main file `file:content` only) |
 | `ADMINISTRATION_MENU/PAGES` | `onlyoffice-settings.html` — admin settings |
 
-Translations are in `ui/i18n/messages.json` (English base) and `ui/i18n/messages-{locale}.json`. Each locale file must also be added as an `<append>` in `onlyoffice-nuxeo-web-ui/src/main/resources/OSGI-INF/deployment-fragment.xml`, otherwise it is not installed. Every key of `messages.json` must be in every locale file: Web UI shows the bare key for a message missing from the file of the user's language, it falls back to English only for a language it has no file for (checked by `tests/nuxeo/web-ui/i18n.spec.ts` of the integration tests).
+Translations are in `ui/i18n/messages.json` (English base) and `ui/i18n/messages-{locale}.json`. Each locale file must also be added as an `<append>` in `onlyoffice-nuxeo-web-ui/src/main/resources/OSGI-INF/deployment-fragment.xml`, otherwise it is not installed. Every key of `messages.json` must be in every locale file: Web UI shows the bare key for a message missing from the file of the user's language, it falls back to English only for a language it has no file for (checked by `tests/nuxeo/web-ui/i18n.spec.ts` of the integration tests). Languages Web UI has a file of its own for and the package does not translate (`fr-CA`, `fr-FR`, `pt`, `sv`) get the closest translation through extra `<append>`s; add one when Web UI gains such a language.
 
 ### OSGI / Nuxeo Component Registration
 

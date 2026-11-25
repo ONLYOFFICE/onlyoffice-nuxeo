@@ -12,7 +12,6 @@
     "label.onlyoffice.settings.error": "Beim Speichern der Einstellungen ist ein Fehler aufgetreten",
     "label.onlyoffice.settings.load-error": "Die Einstellungen können nicht geladen werden",
     "label.onlyoffice.settings.validation.url": "Adressen müssen mit http:// oder https:// beginnen",
-    "label.onlyoffice.settings.validation.jwterror": "Autorisierungsfehler",
     "label.onlyoffice.edit": "Mit ONLYOFFICE bearbeiten",
     "label.onlyoffice.view": "Ansicht in ONLYOFFICE",
     "label.onlyoffice.create": "In ONLYOFFICE erstellen",

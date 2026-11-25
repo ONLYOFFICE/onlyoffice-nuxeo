@@ -19,6 +19,9 @@
 <script>
     var Nuxeo = Nuxeo || {};
     (function() {
+        // asked once per page: every blob of a document has a convert button of its own
+        let formatsRequest = null;
+
         /**
          * @polymerBehavior Nuxeo.ONLYOFFICEUtils
          */
@@ -26,7 +29,7 @@
             properties: {
                 onlyofficeFormats: {
                     type: Array,
-                    value: []
+                    value: () => []
                 },
             },
 
@@ -35,8 +38,15 @@
                     throw new Error('Missing ONLYOFFICEFormats resource');
                 }
 
-                this.$.requestFormats.get().then((response) => {
-                    this.onlyofficeFormats = response;
+                if (!formatsRequest) {
+                    // without the formats no action is offered; a later element asks again
+                    formatsRequest = this.$.requestFormats.get().catch(() => {
+                        formatsRequest = null;
+                        return [];
+                    });
+                }
+                formatsRequest.then((formats) => {
+                    this.onlyofficeFormats = formats || [];
                 });
             },
 
@@ -83,7 +93,7 @@
             },
 
             getTargetExtension(ext) {
-                for (i = 0; i < this.onlyofficeFormats.length; i++) {
+                for (let i = 0; i < this.onlyofficeFormats.length; i++) {
                     if (this.onlyofficeFormats[i].name == ext) {
                         if (this.onlyofficeFormats[i].convert != null) {
                             switch (this.onlyofficeFormats[i].type) {
@@ -115,7 +125,7 @@
 
             _deepFind(obj, props) {
                 for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
-                    if (!obj || obj === []) {
+                    if (!obj) {
                         break;
                     }
                     obj = obj[path[i]];

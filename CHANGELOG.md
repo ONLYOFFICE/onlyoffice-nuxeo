@@ -17,6 +17,8 @@
 - the dialog creating a document: Enter in the title did nothing, a title with the extension of its type ("report.docx") gave "report.docx.docx", a title of spaces only was accepted, and the reason the server refused to create the document was not shown; ONLYOFFICE.Create now answers 400 to a blank title
 - the editor action of a document page showing the action of the previously opened document until the new one was checked, and keeping it when the check failed
 - the settings page saving twice on a double click, saying nothing (and throwing on Save) when the settings failed to load, and accepting addresses without http:// or https://, which the browser took as relative to Nuxeo
+- the messages of the package shown as their keys to users of Web UI in fr-CA, fr-FR, pt and sv, languages Web UI has a file of its own for; they now get the French, Portuguese and Swedish translations
+- the supported formats asked again by the convert action of every file of a document, with a failure of the request left unhandled; they are now asked once per page
 - callback answering 500 with the text of the exception to malformed requests (not a JSON object, unknown or missing status, header token without payload, save without file url), now 400 without the exception text
 - versions, proxies, documents in the trash and documents under retention or legal hold opened for editing: the changes could not be saved and were lost (or saved into a deleted document); they now open for viewing
 - ONLYOFFICE.Convert answering 500 for a document that cannot be converted (unsupported format, no content) and ONLYOFFICE.Create for an unknown document type, now 400 with the reason

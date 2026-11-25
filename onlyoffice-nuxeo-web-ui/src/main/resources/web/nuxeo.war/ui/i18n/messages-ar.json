@@ -12,7 +12,6 @@
     "label.onlyoffice.settings.error": "حدث خطأ أثناء حفظ الإعدادات",
     "label.onlyoffice.settings.load-error": "تعذر تحميل الإعدادات",
     "label.onlyoffice.settings.validation.url": "يجب أن تبدأ العناوين بـ http:// أو https://",
-    "label.onlyoffice.settings.validation.jwterror": "خطأ في التفويض",
     "label.onlyoffice.edit": "تحرير باستخدام ONLYOFFICE",
     "label.onlyoffice.view": "عرض باستخدام ONLYOFFICE",
     "label.onlyoffice.create": "إنشاء باستخدام ONLYOFFICE",

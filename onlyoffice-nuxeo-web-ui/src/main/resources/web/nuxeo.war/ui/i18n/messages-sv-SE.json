@@ -12,7 +12,6 @@
   "label.onlyoffice.settings.error": "Ett fel uppstod när inställningarna skulle sparas",
   "label.onlyoffice.settings.load-error": "Inställningarna kan inte läsas in",
   "label.onlyoffice.settings.validation.url": "Adresserna måste börja med http:// eller https://",
-  "label.onlyoffice.settings.validation.jwterror": "Autentiseringsfel",
   "label.onlyoffice.edit": "Redigera i ONLYOFFICE",
   "label.onlyoffice.view": "Visa i ONLYOFFICE",
   "label.onlyoffice.create": "Skapa med ONLYOFFICE",

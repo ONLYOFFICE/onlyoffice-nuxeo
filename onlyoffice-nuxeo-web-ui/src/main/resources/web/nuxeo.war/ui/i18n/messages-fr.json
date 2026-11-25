@@ -12,7 +12,6 @@
     "label.onlyoffice.settings.error": "Une erreur s'est produite lors de la sauvegarde des paramètres",
     "label.onlyoffice.settings.load-error": "Impossible de charger les paramètres",
     "label.onlyoffice.settings.validation.url": "Les adresses doivent commencer par http:// ou https://",
-    "label.onlyoffice.settings.validation.jwterror": "Erreur d'autorisation",
     "label.onlyoffice.edit": "Modifier dans ONLYOFFICE",
     "label.onlyoffice.view": "Voir dans ONLYOFFICE",
     "label.onlyoffice.create": "Créer avec ONLYOFFICE",
