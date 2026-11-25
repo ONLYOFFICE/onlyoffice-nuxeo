@@ -9,13 +9,17 @@ com.fasterxml.jackson.core.jackson-databind - General data-binding functionality
 License:              Apache License 2.0
 License File:         com.fasterxml.jackson.core.jackson-databind.license
 
-javax.servlet-api     - Java Servlet API (https://opensource.org/licenses/CDDL-1.0 https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
-License:                CDDL, GPL 2.0
-License File:           javax.servlet-api.license
+com.onlyoffice.docs-integration-sdk - ONLYOFFICE Docs Integration SDK, bundled in onlyoffice-nuxeo-core (https://www.apache.org/licenses/LICENSE-2.0)
+License:              Apache License 2.0
+License File:         com.onlyoffice.docs-integration-sdk.license
 
-jersey-core           - Jersey Core (https://oss.oracle.com/licenses/CDDL+GPL-1.1)
-License:                CDDL+GPL 1.1
-License File:           jersey-core.license
+httpclient5           - Apache HttpClient, bundled in onlyoffice-nuxeo-core (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           httpclient5.license
+
+httpcore5             - Apache HttpCore, bundled in onlyoffice-nuxeo-core (https://www.apache.org/licenses/LICENSE-2.0)
+License:                Apache 2.0
+License File:           httpcore5.license
 
 maven-compiler-plugin - The Compiler Plugin is used to compile the sources of your project. (https://www.apache.org/licenses/LICENSE-2.0)
 License:                Apache 2.0
