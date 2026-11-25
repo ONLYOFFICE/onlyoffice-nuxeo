@@ -101,6 +101,41 @@ public class TestLinkTokenOpenUrls {
         assertFalse(bypassesAuthentication("POST", testFile));
     }
 
+    /**
+     * The id of a document is all that may follow the endpoint: anything that could lead the request elsewhere once
+     * the container decodes or normalizes the path must not bypass the authentication.
+     */
+    @Test
+    public void pathTricksAfterTheEndpointStayAuthenticated() {
+        String[] suffixes = {
+            "",
+            "/",
+            "8f1c5c2e/",
+            "8f1c5c2e/other",
+            "..",
+            "..;",
+            "8f1c5c2e;/../../../me",
+            "..%2F..%2F..%2Fme",
+            "8f1c5c2e%2F..%2F..%2Fme",
+            "%2e%2e",
+        };
+
+        for (String endpoint : new String[] {"/nuxeo/api/v1/onlyoffice/download/",
+            "/nuxeo/site/api/v1/onlyoffice/download/"}) {
+            for (String suffix : suffixes) {
+                assertFalse(endpoint + suffix, bypassesAuthentication("GET", endpoint + suffix));
+            }
+        }
+        for (String endpoint : new String[] {"/nuxeo/api/v1/onlyoffice/callback/",
+            "/nuxeo/site/api/v1/onlyoffice/callback/"}) {
+            for (String suffix : suffixes) {
+                assertFalse(endpoint + suffix, bypassesAuthentication("POST", endpoint + suffix));
+            }
+        }
+        assertFalse(bypassesAuthentication("GET", "/nuxeo/api/v1/onlyoffice/test-txt/"));
+        assertFalse(bypassesAuthentication("GET", "/nuxeo/api/v1/onlyoffice/test-txt;/../me"));
+    }
+
     @Test
     public void otherUrlsStayAuthenticated() {
         String[] uris = {

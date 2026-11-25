@@ -9,10 +9,12 @@
 
     <!-- The links handed to Document Server carry their own token (LinkTokenService), checked by the endpoints
          themselves: they are not authenticated by Nuxeo, so that no Nuxeo credentials have to be handed out.
-         The authentication filter sees the request forwarded by the REST API servlet (/api/* to /site/api/*) -->
+         The authentication filter sees the request forwarded by the REST API servlet (/api/* to /site/api/*).
+         A document id (a UUID, or a number with sequence ids) is all that may follow an endpoint: "..", "%2F" or ";"
+         could lead the request elsewhere once the container decodes or normalizes the path -->
     <extension target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService" point="openUrl">
         <openUrl name="onlyoffice-download">
-            <grantPattern>${org.nuxeo.ecm.contextPath}(/site)?/api/v1/onlyoffice/download/[^/]+</grantPattern>
+            <grantPattern>${org.nuxeo.ecm.contextPath}(/site)?/api/v1/onlyoffice/download/[0-9A-Za-z-]+</grantPattern>
             <method>GET</method>
         </openUrl>
         <openUrl name="onlyoffice-test-file">
@@ -20,7 +22,7 @@
             <method>GET</method>
         </openUrl>
         <openUrl name="onlyoffice-callback">
-            <grantPattern>${org.nuxeo.ecm.contextPath}(/site)?/api/v1/onlyoffice/callback/[^/]+</grantPattern>
+            <grantPattern>${org.nuxeo.ecm.contextPath}(/site)?/api/v1/onlyoffice/callback/[0-9A-Za-z-]+</grantPattern>
             <method>POST</method>
         </openUrl>
     </extension>

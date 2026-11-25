@@ -20,6 +20,7 @@ package org.onlyoffice.sdk.service.settings;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +29,9 @@ import java.util.Map;
 import jakarta.inject.Inject;
 
 import com.onlyoffice.client.DocumentServerClient;
+import com.onlyoffice.model.commandservice.CommandResponse;
 import com.onlyoffice.model.common.CommonResponse;
+import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.model.settings.validation.ValidationResult;
 import com.onlyoffice.model.settings.validation.status.Status;
 import org.junit.After;
@@ -46,6 +49,7 @@ import org.onlyoffice.test.TestHelper.FieldOverrides;
 @Features(OnlyofficeFeature.class)
 public class TestSettingsValidationService {
     private static final String[] CHECKS = {"documentServer", "commandService", "convertService"};
+    private static final String CONVERTED_URL = "http://docs.example.com/cache/files/test.docx";
 
     @Inject
     private SettingsValidationService settingsValidationService;
@@ -70,14 +74,46 @@ public class TestSettingsValidationService {
         overrides.close();
     }
 
+    /** What a Document Server that works answers to the three checks. */
+    private void answerAsHealthyDocumentServer() {
+        when(documentServerClient.healthcheck()).thenReturn(true);
+
+        CommandResponse command = new CommandResponse();
+        command.setError(CommandResponse.Error.NO);
+        when(documentServerClient.command(any())).thenReturn(command);
+
+        ConvertResponse convert = new ConvertResponse();
+        convert.setEndConvert(true);
+        convert.setFileUrl(CONVERTED_URL);
+        when(documentServerClient.convert(any())).thenReturn(convert);
+        when(documentServerClient.getFile(eq(CONVERTED_URL))).thenReturn(new byte[] {1});
+    }
+
     @Test
-    public void allChecksAreReported() {
+    public void healthyDocumentServerPassesEveryCheck() {
+        answerAsHealthyDocumentServer();
+
         Map<String, ValidationResult> result = settingsValidationService.validateSettings();
 
         assertEquals(CHECKS.length, result.size());
         for (String check : CHECKS) {
-            assertEquals(check, true, result.containsKey(check));
+            assertEquals(check, Status.SUCCESS, result.get(check).getStatus());
         }
+    }
+
+    @Test
+    public void aFailedCheckDoesNotFailTheOthers() {
+        answerAsHealthyDocumentServer();
+        CommandResponse refused = new CommandResponse();
+        refused.setError(CommandResponse.Error.TOKEN);
+        when(documentServerClient.command(any())).thenReturn(refused);
+
+        Map<String, ValidationResult> result = settingsValidationService.validateSettings();
+
+        assertEquals(Status.FAILED, result.get("commandService").getStatus());
+        assertEquals(CommandResponse.Error.TOKEN, result.get("commandService").getError());
+        assertEquals(Status.SUCCESS, result.get("documentServer").getStatus());
+        assertEquals(Status.SUCCESS, result.get("convertService").getStatus());
     }
 
     @Test

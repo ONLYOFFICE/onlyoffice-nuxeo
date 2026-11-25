@@ -20,7 +20,6 @@ package org.nuxeo.ecm.restapi.server.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +43,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -664,19 +666,25 @@ public class TestOnlyofficeObject {
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
 
-        AtomicReference<Object> status = new AtomicReference<>();
-        Thread documentServerRequest = new Thread(() -> {
-            try {
-                status.set(((Response) endpoint(session).getDownload(model.getId(), linkToken,
-                        mock(HttpServletRequest.class), mock(HttpServletResponse.class))).getStatus());
-            } catch (Exception e) {
-                status.set(e);
-            }
-        });
-        documentServerRequest.start();
-        documentServerRequest.join(OTHER_REQUEST_TIMEOUT_MS);
+        // a thread of its own, as a request of Document Server comes in: nobody is logged in there; its failure, or
+        // not ending in time, fails the test with its own cause
+        ExecutorService documentServerRequest = Executors.newSingleThreadExecutor();
+        try {
+            Future<Integer> status = documentServerRequest.submit(() -> {
+                try {
+                    return ((Response) endpoint(session).getDownload(model.getId(), linkToken,
+                            mock(HttpServletRequest.class), mock(HttpServletResponse.class))).getStatus();
+                } finally {
+                    requestContext.dispose();
+                    requestContext = null;
+                }
+            });
 
-        assertEquals(Response.Status.OK.getStatusCode(), status.get());
+            assertEquals(Response.Status.OK.getStatusCode(),
+                    (int) status.get(OTHER_REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        } finally {
+            documentServerRequest.shutdownNow();
+        }
     }
 
     @Test
@@ -690,14 +698,12 @@ public class TestOnlyofficeObject {
         session.setACP(model.getRef(), acp, true);
         session.save();
 
-        try {
-            Response response = (Response) endpoint(session).getDownload(model.getId(),
-                    link(Operation.DOWNLOAD, model.getId(), USER, null), mock(HttpServletRequest.class),
-                    mock(HttpServletResponse.class));
-            assertNotEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        } catch (IOException e) {
-            // refused by the repository
-        }
+        Response response = (Response) endpoint(session).getDownload(model.getId(),
+                link(Operation.DOWNLOAD, model.getId(), USER, null), mock(HttpServletRequest.class),
+                mock(HttpServletResponse.class));
+
+        // as for a document that does not exist: the link does not tell that it does
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
         verify(downloadService, never()).downloadBlob(any(DownloadService.DownloadContext.class));
     }
 
