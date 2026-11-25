@@ -4,6 +4,7 @@
 ## Fixed
 - the editor answering 500 instead of 404 for a document without a file or with a file in a format ONLYOFFICE does not open, and failing for a version whose live document was deleted
 - ONLYOFFICE.Convert failing outside a web request (in an automation chain of a listener or a workflow); the links handed to Document Server then use the address of Nuxeo from its settings
+- the package installing two jars of the annotation processors of the build (nuxeo-apt-extensions, nuxeo-webengine-apt) into nxserver/bundles
 - Nuxeo failing to start alongside other addons (e.g. OpenSearch) because the package replaced httpclient5 in nxserver/lib
 - users opening the same document ending up in separate editing sessions after a background update of the document (thumbnail, fulltext, ...), with all but the first one to save losing their changes (Invalid change token)
 - the file of a document replaced by other means than the editor (Blob.AttachOnDocument, WebDAV, Drive, ONLYOFFICE.Convert, ...) keeping the same document key: Document Server served the previous file from its cache, and an editing session saved over the new file; the key now also carries a hash of the file, so that any change of the file (including restoring a version) changes it

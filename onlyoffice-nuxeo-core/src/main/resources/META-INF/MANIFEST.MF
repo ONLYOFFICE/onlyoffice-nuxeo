@@ -2,7 +2,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Manifest-Version: 1.0
 Bundle-Vendor: org.onlyoffice
-Bundle-Version: 3.1.0
 Bundle-Name: onlyoffice-nuxeo-core
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.onlyoffice.onlyoffice-nuxeo-core;singleton=true

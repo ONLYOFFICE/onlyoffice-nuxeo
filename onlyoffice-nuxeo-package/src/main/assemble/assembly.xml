@@ -49,6 +49,8 @@
           <artifact scope="provided"/>
           <artifact type="pom"/>
           <artifact groupId="org.nuxeo.lib*"/>
+          <!-- annotation processors of the build, not bundles -->
+          <artifact groupId="org.nuxeo.build"/>
         </excludes>
       </artifact:set>
     </copy>
