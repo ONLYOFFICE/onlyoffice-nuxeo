@@ -1,6 +1,6 @@
 # Change Log
 
-##
+## [Unreleased]
 ## Fixed
 - Nuxeo failing to start alongside other addons (e.g. OpenSearch) because the package replaced httpclient5 in nxserver/lib
 - users opening the same document ending up in separate editing sessions after a background update of the document (thumbnail, fulltext, ...), with all but the first one to save losing their changes (Invalid change token)
