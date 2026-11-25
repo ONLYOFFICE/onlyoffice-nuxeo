@@ -184,9 +184,15 @@
                 // every conversion started gets a number of its own: the answers to an earlier one, cancelled
                 // or replaced, must neither go on polling nor end this one
                 this._run = (this._run || 0) + 1;
-                this._started = Date.now();
+                const run = this._run;
+                // a timer of its own rather than a check on each answer: a request that hangs never answers
+                this._deadline = setTimeout(() => {
+                    if (run === this._run) {
+                        this._finish(this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage("TIMEOUT")));
+                    }
+                }, this.pollingTimeout);
                 this._setConverting(true);
-                this._executeConvert(this._run);
+                this._executeConvert(run);
             },
 
             _cancel() {
@@ -203,6 +209,7 @@
             _stop() {
                 this._run = (this._run || 0) + 1;
                 clearTimeout(this._pollTimer);
+                clearTimeout(this._deadline);
                 this._clear();
             },
 
@@ -236,8 +243,6 @@
                     if (data.endConvert) {
                         this._finish(this.i18n("onlyoffice.convert.message.success", this.getTitle(this.document)));
                         this.fire('document-updated');
-                    } else if (Date.now() - this._started > this.pollingTimeout) {
-                        this._finish(this.i18n("onlyoffice.convert.message.error.service", this._getServiceErrorMessage("TIMEOUT")));
                     } else {
                         this._pollTimer = setTimeout(() => this._executeConvert(run), 1000);
                     }
