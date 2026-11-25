@@ -20,6 +20,7 @@ package org.onlyoffice.sdk.manager.document;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -41,6 +42,7 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.kv.KeyValueService;
 import org.nuxeo.runtime.kv.KeyValueStore;
 import org.nuxeo.runtime.test.runner.Features;
@@ -184,6 +186,32 @@ public class TestDocumentManager {
         try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
             assertNotEquals(documentManager.getDocumentKey(first.getId(), false),
                     documentManager.getDocumentKey(second.getId(), false));
+        }
+    }
+
+    @Test
+    public void documentWithoutContentHasNoName() {
+        DocumentModel model = TestHelper.createFile(session, "empty", null, null, null);
+
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            assertNull(documentManager.getDocumentName(model.getId()));
+        }
+    }
+
+    /**
+     * ONLYOFFICE.Convert may run in an automation chain of a listener or a workflow, outside any web request.
+     */
+    @Test
+    public void documentKeyAndNameAreBuiltOutsideAWebRequest() throws Exception {
+        DocumentModel model = createDoc();
+        String key;
+        try (ActiveWebContext ignored = ActiveWebContext.activate(session)) {
+            key = documentManager.getDocumentKey(model.getId(), false);
+        }
+
+        try (NuxeoLoginContext ignored = TestHelper.loginAs(session)) {
+            assertEquals(key, documentManager.getDocumentKey(model.getId(), false));
+            assertEquals("report.docx", documentManager.getDocumentName(model.getId()));
         }
     }
 

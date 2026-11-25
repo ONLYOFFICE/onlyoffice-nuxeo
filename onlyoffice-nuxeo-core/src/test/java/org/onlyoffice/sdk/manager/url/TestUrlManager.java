@@ -32,8 +32,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.VersioningOption;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.tokenauth.service.TokenAuthenticationService;
+import org.nuxeo.runtime.api.login.NuxeoLoginContext;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.onlyoffice.service.LinkTokenService;
@@ -41,6 +44,7 @@ import org.onlyoffice.service.LinkTokenService.LinkToken;
 import org.onlyoffice.service.LinkTokenService.Operation;
 import org.onlyoffice.test.ActiveWebContext;
 import org.onlyoffice.test.OnlyofficeFeature;
+import org.onlyoffice.test.TestHelper;
 import org.onlyoffice.test.TestHelper.FrameworkProperties;
 
 @RunWith(FeaturesRunner.class)
@@ -48,6 +52,8 @@ import org.onlyoffice.test.TestHelper.FrameworkProperties;
 public class TestUrlManager {
     private static final String PRODUCT_INNER_URL_PROPERTY = "onlyoffice." + SettingsConstants.PRODUCT_INNER_URL;
     private static final String INNER_URL = "http://nuxeo-internal:8080";
+    private static final String NUXEO_URL_PROPERTY = "nuxeo.url";
+    private static final String NUXEO_URL = "https://nuxeo.example.com/nuxeo";
 
     @Inject
     private UrlManager urlManager;
@@ -70,7 +76,7 @@ public class TestUrlManager {
 
     @Before
     public void setUp() {
-        properties = new FrameworkProperties().set(PRODUCT_INNER_URL_PROPERTY, null);
+        properties = new FrameworkProperties().set(PRODUCT_INNER_URL_PROPERTY, null).set(NUXEO_URL_PROPERTY, null);
 
         DocumentModel folder = session.createDocument(session.createDocumentModel("/", "folder", "Folder"));
         model = session.createDocumentModel(folder.getPathAsString(), "doc", "File");
@@ -113,6 +119,46 @@ public class TestUrlManager {
         LinkToken link = linkTokenService.verifyToken(tokenOf(url), Operation.CALLBACK, model.getId());
         assertEquals(session.getPrincipal().getName(), link.getUserName());
         assertEquals(documentManager.getDocumentKey(model.getId(), false), link.getDocumentKey());
+    }
+
+    /**
+     * The live document of a version can be deleted: the version then has no path to go back to.
+     */
+    @Test
+    public void gobackUrlOfVersionWhoseDocumentWasDeletedIsHome() {
+        DocumentRef version = session.checkIn(model.getRef(), VersioningOption.MINOR, null);
+        String versionId = session.getDocument(version).getId();
+        session.removeDocument(model.getRef());
+        session.save();
+
+        assertEquals(baseUrl(ActiveWebContext.SERVER_URL) + "/ui/", urlManager.getGobackUrl(versionId));
+    }
+
+    /**
+     * ONLYOFFICE.Convert may run in an automation chain of a listener or a workflow, outside any web request: the
+     * address of Nuxeo then comes from the settings, as Nuxeo does for its own links outside a request.
+     */
+    @Test
+    public void fileUrlOutsideAWebRequestUsesTheConfiguredAddressOfNuxeo() throws Exception {
+        webContext.close();
+        try {
+            properties.set(NUXEO_URL_PROPERTY, NUXEO_URL);
+            String url;
+            try (NuxeoLoginContext ignored = TestHelper.loginAs(session)) {
+                url = urlManager.getFileUrl(model.getId());
+            }
+            assertTrue(url, url.startsWith(NUXEO_URL + "/api/v1/onlyoffice/download/" + model.getId() + "?token="));
+            LinkToken link = linkTokenService.verifyToken(tokenOf(url), Operation.DOWNLOAD, model.getId());
+            assertEquals(session.getPrincipal().getName(), link.getUserName());
+
+            properties.set(PRODUCT_INNER_URL_PROPERTY, INNER_URL);
+            try (NuxeoLoginContext ignored = TestHelper.loginAs(session)) {
+                url = urlManager.getFileUrl(model.getId());
+            }
+            assertTrue(url, url.startsWith(INNER_URL + "/nuxeo/api/v1/onlyoffice/download/"));
+        } finally {
+            webContext = ActiveWebContext.activate(session);
+        }
     }
 
     @Test

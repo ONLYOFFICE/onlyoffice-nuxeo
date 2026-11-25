@@ -43,7 +43,6 @@ import org.nuxeo.ecm.core.api.DocumentNotFoundException;
 import org.nuxeo.ecm.core.api.DocumentSecurityException;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.webengine.model.WebContext;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
@@ -85,6 +84,13 @@ public class Editor extends ModuleRoot {
 
             DocumentModel model = session.getDocument(new IdRef(id));
 
+            // nothing to open: a document without a file, or a file in a format ONLYOFFICE does not know
+            String docFilename = documentManager.getDocumentName(id);
+            DocumentType docType = docFilename != null ? documentManager.getDocumentType(docFilename) : null;
+            if (docType == null) {
+                return Response.status(SC_NOT_FOUND).build();
+            }
+
             Config config = configService.createConfig(
                     id,
                     Mode.EDIT,
@@ -92,9 +98,6 @@ public class Editor extends ModuleRoot {
             );
 
             config.getEditorConfig().setLang(ctx.getLocale().toLanguageTag());
-
-            String docFilename = model.getAdapter(BlobHolder.class).getBlob().getFilename();
-            DocumentType docType = documentManager.getDocumentType(docFilename);
 
             ObjectMapper objectMapper = new ObjectMapper();
 

@@ -23,9 +23,11 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.settings.SettingsConstants;
 import com.onlyoffice.manager.url.DefaultUrlManager;
 import org.apache.commons.lang3.StringUtils;
+import org.nuxeo.ecm.core.api.CoreInstance;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebContext;
@@ -36,14 +38,23 @@ import org.onlyoffice.service.LinkTokenService.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class UrlManagerImpl extends DefaultUrlManager {
+    private static final String NUXEO_URL_PROPERTY = "nuxeo.url";
+    private static final String CONTEXT_PATH_PROPERTY = "org.nuxeo.ecm.contextPath";
+    private static final String DEFAULT_CONTEXT_PATH = "/nuxeo";
+
     public UrlManagerImpl() {
         super(Framework.getService(SettingsManager.class));
+    }
+
+    // ONLYOFFICE.Convert may run outside a web request, in an automation chain of a listener or a workflow
+    private static CoreSession getSession(final WebContext ctx) {
+        return ctx != null ? ctx.getCoreSession() : CoreInstance.getCoreSession(null);
     }
 
     @Override
     public String getFileUrl(final String fileId) {
         WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession(ctx);
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
@@ -52,14 +63,14 @@ public class UrlManagerImpl extends DefaultUrlManager {
                 getBaseNuxeoUrl(ctx, true),
                 model.getId(),
                 LinkTokenService.PARAMETER,
-                createToken(Operation.DOWNLOAD, model.getId(), ctx, null)
+                createToken(Operation.DOWNLOAD, model.getId(), session, null)
         );
     }
 
     @Override
     public String getCallbackUrl(final String fileId) {
         WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession(ctx);
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
 
@@ -68,7 +79,7 @@ public class UrlManagerImpl extends DefaultUrlManager {
                 getBaseNuxeoUrl(ctx, true),
                 model.getId(),
                 LinkTokenService.PARAMETER,
-                createToken(Operation.CALLBACK, model.getId(), ctx,
+                createToken(Operation.CALLBACK, model.getId(), session,
                         Framework.getService(DocumentManager.class).getDocumentKey(model.getId(), false))
         );
     }
@@ -76,9 +87,14 @@ public class UrlManagerImpl extends DefaultUrlManager {
     @Override
     public String getGobackUrl(final String fileId) {
         WebContext ctx = WebEngine.getActiveContext();
-        CoreSession session = ctx.getCoreSession();
+        CoreSession session = getSession(ctx);
 
         DocumentModel model = session.getDocument(new IdRef(fileId));
+
+        // a version whose live document was deleted has no path
+        if (model.getPath() == null) {
+            return getBaseNuxeoUrl(ctx, false) + "/ui/";
+        }
 
         return String.format(
                 "%1s/ui/#!/browse%2s",
@@ -95,16 +111,30 @@ public class UrlManagerImpl extends DefaultUrlManager {
                 "%1s/api/v1/onlyoffice/test-txt?%2s=%3s",
                 getBaseNuxeoUrl(ctx, true),
                 LinkTokenService.PARAMETER,
-                createToken(Operation.TEST_FILE, null, ctx, null)
+                createToken(Operation.TEST_FILE, null, getSession(ctx), null)
         );
     }
 
     private String getBaseNuxeoUrl(final WebContext ctx, final Boolean inner) {
+        String productInnerUrl = getSettingsManager().getSetting(SettingsConstants.PRODUCT_INNER_URL);
+
+        // outside a request, the address of Nuxeo comes from its settings, as for its own links (mails, invitations)
+        if (ctx == null) {
+            if (inner && StringUtils.isNotBlank(productInnerUrl)) {
+                return sanitizeUrl(productInnerUrl)
+                        + Framework.getProperty(CONTEXT_PATH_PROPERTY, DEFAULT_CONTEXT_PATH);
+            }
+            String nuxeoUrl = Framework.getProperty(NUXEO_URL_PROPERTY);
+            if (StringUtils.isBlank(nuxeoUrl)) {
+                throw new NuxeoException("The address of Nuxeo is not set (" + NUXEO_URL_PROPERTY + ")");
+            }
+            return sanitizeUrl(nuxeoUrl);
+        }
+
         HttpServletRequest request = ctx.getRequest();
         String webAppName = VirtualHostHelper.getWebAppName(request);
         String serverUrl = null;
 
-        String productInnerUrl = getSettingsManager().getSetting(SettingsConstants.PRODUCT_INNER_URL);
         if (inner && productInnerUrl != null && !productInnerUrl.isEmpty()) {
             serverUrl = productInnerUrl;
         } else {
@@ -114,9 +144,9 @@ public class UrlManagerImpl extends DefaultUrlManager {
         return StringUtils.isNotBlank(webAppName) ? sanitizeUrl(serverUrl) + "/" + webAppName : sanitizeUrl(serverUrl);
     }
 
-    private static String createToken(final Operation operation, final String documentId, final WebContext ctx,
+    private static String createToken(final Operation operation, final String documentId, final CoreSession session,
                                       final String documentKey) {
         return Framework.getService(LinkTokenService.class)
-                .createToken(operation, documentId, ctx.getPrincipal().getName(), documentKey);
+                .createToken(operation, documentId, session.getPrincipal().getName(), documentKey);
     }
 }
